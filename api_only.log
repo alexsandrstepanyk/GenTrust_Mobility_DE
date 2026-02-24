@@ -1,0 +1,13 @@
+[Bot] Initialized.
+(node:3770) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+🚀 GenTrust API Server running on port 3000
+[0mGET /health [32m200[0m 5.999 ms - 54[0m
+[Auth] Login attempt for: "admin"
+[Auth] User not found: "admin"
+[0mPOST /api/auth/login [33m401[0m 34.442 ms - 31[0m
+[0mGET /health [32m200[0m 0.446 ms - 54[0m
+[0mGET /health [32m200[0m 3.399 ms - 54[0m
+[0mGET /health [32m200[0m 10.056 ms - 54[0m
+[0mGET /health [32m200[0m 1.997 ms - 54[0m
+[0mGET /api/health [32m200[0m 9.394 ms - 54[0m

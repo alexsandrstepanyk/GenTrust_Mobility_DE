@@ -1,0 +1,208 @@
+// Prisma Schema (schema.prisma)
+// Налаштування підключення (для прототипу використовуємо SQLite, для релізу — PostgreSQL)
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+// 1. УЧАСНИКИ СИСТЕМИ
+model User {
+  id            String   @id @default(uuid())
+  telegramId    BigInt?  @unique
+  email         String?  @unique
+  passwordHash  String?
+  username      String?
+  firstName     String?
+  lastName      String?
+  birthDate     String?  // DD.MM.YYYY
+  school        String?
+  grade         String?  // Клас/Група
+  
+  role          String   @default("SCOUT") // Role: SCOUT, ADMIN, MODERATOR
+  status        String   @default("PENDING") // Status: PENDING, ACTIVE, PROBATION
+  language      String?  @default("uk")
+  
+  // Показники
+  dignityScore  Int      @default(50)
+  balance       Float    @default(0.0)
+  district      String?  // Район (напр. Zellerau)
+  city          String?  // Місто (напр. Würzburg)
+  country       String?  @default("DE") // Країна для масштабування
+  urbanBanExpiresAt DateTime? // Блокування доступу до Urban Guardian
+  
+  // Push notifications
+  pushToken     String? // Expo push token for notifications
+  
+  // Зв'язки
+  reports       Report[] // Звіти про поламки
+  quests        Quest[]  // Виконані доставки
+  taskOrders    TaskOrder[]
+  activities    ActivityRecord[]
+  bioReports    BioReport[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// 2. ПРОВАЙДЕРИ ЗАВДАНЬ (Бізнес, Школи)
+model Provider {
+  id            String   @id @default(uuid())
+  telegramId    BigInt   @unique
+  name          String
+  type          String   @default("BUSINESS") // Type: BUSINESS, SCHOOL, GOV
+  city          String?
+  quests        Quest[]
+  
+  status        String   @default("PENDING") // Status: PENDING, ACTIVE, REJECTED, BANNED
+  createdAt     DateTime @default(now())
+}
+
+// 3. ЗВІТИ ПРО ІНФРАСТРУКТУРУ (Urban Guardian)
+model Report {
+  id          String       @id @default(uuid())
+  author      User         @relation(fields: [authorId], references: [id])
+  authorId    String
+  
+  photoId     String       // ID файлу в Telegram
+  description String?      // Опис від користувача (якщо ШІ не впевнений)
+  latitude    Float
+  longitude   Float
+  
+  // Робота ШІ та модерація
+  aiVerdict   String?      // Результат від Gemini (JSON-string)
+  category    String?      // Категорія проблеми (напр. Дороги, Сміття)
+  status      String       @default("PENDING") // ReportStatus: PENDING, APPROVED, REJECTED
+  
+  // Зв'язок з комунальною службою
+  municipalTask MunicipalTask?
+  
+  createdAt   DateTime     @default(now())
+}
+
+// 4. ЗАВДАННЯ (Logistics Scout / Work)
+model Quest {
+  id          String      @id @default(uuid())
+  title       String      @default("Завдання")
+  description String?
+  type        String      @default("LOGISTICS") // QuestType: LOGISTICS, WORK, VOLUNTEER
+  status      String      @default("OPEN") // QuestStatus: OPEN, IN_PROGRESS, COMPLETED
+  reward      Float       // Грошова винагорода або Dignity Score
+  
+  // Географія
+  city        String?
+  district    String?
+  location    String?     // Текстова адреса
+  
+  // Коди безпеки
+  pickupCode    String?   // Код, щоб забрати (4 digits)
+  deliveryCode  String?   // Код, отримувач каже скауту (4 digits)
+  
+  // Локація завершення
+  completionLatitude  Float?
+  completionLongitude Float?
+  
+  // Зв'язки
+  provider      Provider?  @relation(fields: [providerId], references: [id])
+  providerId    String?
+  
+  assignee      User?       @relation(fields: [assigneeId], references: [id])
+  assigneeId    String?
+
+  taskOrder     TaskOrder?  @relation(fields: [taskOrderId], references: [id])
+  taskOrderId   String?     @unique
+  
+  createdAt     DateTime    @default(now())
+}
+
+// 4B. ЗАМОВЛЕННЯ НА ЗАВДАННЯ (від клієнтів у мобільному додатку)
+model TaskOrder {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  subject     String?
+  grade       String?
+  budget      Float
+  city        String?
+  district    String?
+  location    String?
+  status      String   @default("PENDING_MODERATION") // PENDING_MODERATION, APPROVED, REJECTED, PUBLISHED
+
+  requester    User     @relation(fields: [requesterId], references: [id])
+  requesterId  String
+
+  quest        Quest?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// 5. ЖИТТЄПИС ТА ЛОГУВАННЯ ДІЙ
+model ActivityRecord {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  type      String   // LOGIN, QUEST_COMPLETED, REPORT_APPROVED, REPORT_REJECTED, etc.
+  metadata  String?  // JSON string
+  createdAt DateTime @default(now())
+}
+
+model BioReport {
+  id           String   @id @default(uuid())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String
+  content      String   // Характеристика від Gemini
+  rating       String?  // A+, B, C etc.
+  responsibility Int    // 0-100 score
+  stability     Int    // 0-100 score
+  generatedAt  DateTime @default(now())
+}
+
+// 6. ІСТОРІЯ РЕЙТИНГУ (Leaderboard Snapshots)
+model LeaderboardSnapshot {
+  id            String   @id @default(uuid())
+  userId        String
+  username      String?
+  firstName     String?
+  dignityScore  Int
+  city          String?
+  district      String?
+  school        String?
+  rank          Int      // Позиція в рейтингу
+  snapshotDate  DateTime // Дата знімку (без часу)
+  createdAt     DateTime @default(now())
+  
+  @@index([snapshotDate, rank])
+  @@index([userId, snapshotDate])
+}
+
+// 7. КОМУНАЛЬНА СЛУЖБА (Municipal Services)
+model MunicipalWorker {
+  id            String   @id @default(uuid())
+  telegramId    BigInt   @unique
+  firstName     String?
+  lastName      String?
+  phone         String?
+  department    String?  // Відділ (Дороги, Сміття, Освітлення, Парки)
+  status        String   @default("PENDING") // PENDING, ACTIVE, BLOCKED
+  assignedTasks MunicipalTask[]
+  createdAt     DateTime @default(now())
+}
+
+model MunicipalTask {
+  id            String   @id @default(uuid())
+  report        Report   @relation(fields: [reportId], references: [id])
+  reportId      String   @unique
+  assignedTo    MunicipalWorker? @relation(fields: [workerId], references: [id])
+  workerId      String?
+  status        String   @default("OPEN") // OPEN, IN_PROGRESS, COMPLETED
+  priority      String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  completedAt   DateTime?
+  completionResult String? // DONE, NO_ISSUE, IMPOSSIBLE
+  completionPhotoId String? // proof photo file_id
+  completionNote    String?
+  createdAt     DateTime @default(now())
+}

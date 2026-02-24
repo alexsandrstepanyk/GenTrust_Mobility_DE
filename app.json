@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "51906321-f265-43c5-bc9c-f5a5ed261d2a"
+      }
+    },
+    "android": {
+      "package": "com.stepanyk2012.gentrustalphabot"
+    }
+  }
+}

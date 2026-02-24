@@ -1,0 +1,71 @@
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.app-header {
+  background: linear-gradient(135deg, var(--primary) 0%, #0051d5 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+}
+
+.app-header h1 {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.app-header p {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.content {
+  padding: 20px 0;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.filters button {
+  padding: 10px 20px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.filters button.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+.quests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 16px;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--success);
+  font-size: 18px;
+  font-weight: 600;
+}
