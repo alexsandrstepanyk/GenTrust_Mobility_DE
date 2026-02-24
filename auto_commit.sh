@@ -59,7 +59,7 @@ bump_version() {
 }
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║  🤖 GENTRUST - AUTO COMMIT & PUSH                     ║${NC}"
+echo -e "${BLUE}║  🤖 GENTRUST - AUTO COMMIT & PUSH (ROLLBACK READY)    ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -82,6 +82,10 @@ VERSION_TYPE=$(get_version_type "$MESSAGE")
 # Отримання поточної версії
 CURRENT_VERSION=$(get_current_version)
 NEW_VERSION=$(bump_version $VERSION_TYPE)
+
+# Створення timestamp для унікальності тегу
+TIMESTAMP=$(date +%Y%m%d-%H%M)
+UNIQUE_TAG="${NEW_VERSION}-${TIMESTAMP}"
 
 echo -e "${YELLOW}📊 Поточна версія: ${GREEN}$CURRENT_VERSION${NC}"
 echo -e "${YELLOW}📈 Нова версія: ${GREEN}$NEW_VERSION${NC}"
@@ -120,14 +124,19 @@ if git remote -v | grep -q origin; then
     git push origin main
     echo -e "${GREEN}   ✅ Push завершено${NC}"
     
-    # Створення тегу
-    echo -e "${YELLOW}🏷️  Створення тегу v$NEW_VERSION...${NC}"
-    git tag -a "v$NEW_VERSION" -m "$MESSAGE"
-    git push origin "v$NEW_VERSION"
-    echo -e "${GREEN}   ✅ Тег створено${NC}"
+    # Створення тегу з timestamp для швидкого відкату
+    echo -e "${YELLOW}🏷️  Створення тегу $UNIQUE_TAG...${NC}"
+    git tag -a "$UNIQUE_TAG" -m "$MESSAGE (auto-backup)"
+    git push origin "$UNIQUE_TAG"
+    echo -e "${GREEN}   ✅ Тег створено: $UNIQUE_TAG${NC}"
+    echo -e "${GREEN}   💡 Для відкату: git checkout $UNIQUE_TAG${NC}"
 else
     echo -e "${YELLOW}   ⚠️  GitHub не налаштовано (немає remote 'origin')${NC}"
     echo -e "${YELLOW}   💡 Для налаштування: git remote add origin <URL>${NC}"
+    # Створення локального тегу
+    echo -e "${YELLOW}🏷️  Створення локального тегу $UNIQUE_TAG...${NC}"
+    git tag -a "$UNIQUE_TAG" -m "$MESSAGE (auto-backup)"
+    echo -e "${GREEN}   ✅ Локальний тег створено: $UNIQUE_TAG${NC}"
 fi
 echo ""
 
