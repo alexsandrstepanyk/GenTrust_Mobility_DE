@@ -1,5 +1,19 @@
 # 🚀 GENTRUST MOBILITY - GitHub Workflow
 
+## 🤖 Автоматизація
+
+### Після КОЖНОЇ зміни я (Qwen Code) автоматично:
+
+1. ✅ Роблю `git add -A`
+2. ✅ Створюю commit з описом змін
+3. ✅ Оновлюю версію в package.json
+4. ✅ Створюю тег (v3.1.1, v3.1.2, v4.0.0)
+5. ✅ Роблю push на GitHub
+
+**Вам нічого не потрібно робити!**
+
+---
+
 ## 📋 Версіонування
 
 Використовуємо **Semantic Versioning** (SemVer): `MAJOR.MINOR.PATCH`
