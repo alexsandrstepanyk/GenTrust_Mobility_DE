@@ -1,0 +1,66 @@
+Starting project at /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school
+Starting Metro Bundler
+Waiting on http://localhost:8082
+Logs for your project will appear below.
+Unable to resolve asset "./assets/icon.png" from "icon" in your app.json or app.config.js
+iOS ./index.ts ░░░░░░░░░░░░░░░░  0.0% (0/1)
+iOS ./index.ts ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 94.9% (1010/1044)
+iOS Bundled 5589ms index.ts (1115 modules)
+ ERROR  i18next::pluralResolver: Your environment seems not to be Intl API compatible, use an Intl.PluralRules polyfill. Will fallback to the compatibilityJSON v3 format handling.
+ LOG  [CONFIG] Resolved API host: 192.168.178.34
+ LOG  [AUTH DEBUG] API_URL configured as: http://192.168.178.34:3000/api
+ LOG  [AUTH DEBUG] Sending login to: http://192.168.178.34:3000/api/auth/login
+ LOG  [AUTH DEBUG] Payload: {"email": "1", "passwordLength": 1}
+ LOG  [AUTH DEBUG] Making axios POST request...
+ ERROR  [AUTH DEBUG] Login error caught
+ ERROR  [AUTH DEBUG] Error type: AxiosError
+ ERROR  [AUTH DEBUG] Error message: Network Error
+ ERROR  [AUTH DEBUG] No response received
+ ERROR  [AUTH DEBUG] Request details: {"DONE": 4, "HEADERS_RECEIVED": 2, "LOADING": 3, "OPENED": 1, "UNSENT": 0, "_aborted": false, "_cachedResponse": undefined, "_hasError": true, "_headers": {"accept": "application/json, text/plain, */*", "content-type": "application/json"}, "_incrementalEvents": false, "_lowerCaseResponseHeaders": {}, "_method": "POST", "_perfKey": "network_XMLHttpRequest_http://192.168.178.34:3000/api/auth/login", "_performanceLogger": {"_closed": false, "_extras": {}, "_pointExtras": {}, "_points": {"initializeCore_end": 20959258.610682, "initializeCore_start": 20958901.370531}, "_timespans": {"network_XMLHttpRequest_http://192.168.178.34:3000/api/auth/login": [Object], "network_XMLHttpRequest_http://192.168.178.34:8082/symbolicate": [Object]}}, "_requestId": null, "_response": "Could not connect to the server.", "_responseType": "", "_sent": true, "_startTime": 20967411.288887, "_subscriptions": [], "_timedOut": false, "_url": "http://192.168.178.34:3000/api/auth/login", "readyState": 4, "responseHeaders": undefined, "status": 0, "timeout": 0, "upload": {}, "withCredentials": true, Symbol(bubblingListeners): Map {"loadend" => Map {[Object] => [Object]}, "abort" => Map {[Object] => [Object]}, "error" => Map {[Object] => [Object]}, "timeout" => Map {[Object] => [Object]}}, Symbol(eventHandlerAttributeMap): Map {"loadend" => {"handleEvent": [Function onloadend]}, "abort" => {"handleEvent": [Function handleAbort]}, "error" => {"handleEvent": [Function handleError]}, "timeout" => {"handleEvent": [Function handleTimeout]}}}
+ LOG  [AUTH DEBUG] API_URL configured as: http://192.168.178.34:3000/api
+ LOG  [AUTH DEBUG] Sending login to: http://192.168.178.34:3000/api/auth/login
+ LOG  [AUTH DEBUG] Payload: {"email": "1", "passwordLength": 1}
+ LOG  [AUTH DEBUG] Making axios POST request...
+ ERROR  [AUTH DEBUG] Login error caught
+ ERROR  [AUTH DEBUG] Error type: AxiosError
+ ERROR  [AUTH DEBUG] Error message: Network Error
+ ERROR  [AUTH DEBUG] No response received
+ ERROR  [AUTH DEBUG] Request details: {"DONE": 4, "HEADERS_RECEIVED": 2, "LOADING": 3, "OPENED": 1, "UNSENT": 0, "_aborted": false, "_cachedResponse": undefined, "_hasError": true, "_headers": {"accept": "application/json, text/plain, */*", "content-type": "application/json"}, "_incrementalEvents": false, "_lowerCaseResponseHeaders": {}, "_method": "POST", "_perfKey": "network_XMLHttpRequest_http://192.168.178.34:3000/api/auth/login", "_performanceLogger": {"_closed": false, "_extras": {}, "_pointExtras": {}, "_points": {"initializeCore_end": 20959258.610682, "initializeCore_start": 20958901.370531}, "_timespans": {"network_XMLHttpRequest_http://192.168.178.34:3000/api/auth/login": [Object], "network_XMLHttpRequest_http://192.168.178.34:8082/symbolicate": [Object]}}, "_requestId": null, "_response": "Could not connect to the server.", "_responseType": "", "_sent": true, "_startTime": 20970513.616153, "_subscriptions": [], "_timedOut": false, "_url": "http://192.168.178.34:3000/api/auth/login", "readyState": 4, "responseHeaders": undefined, "status": 0, "timeout": 0, "upload": {}, "withCredentials": true, Symbol(bubblingListeners): Map {"loadend" => Map {[Object] => [Object]}, "abort" => Map {[Object] => [Object]}, "error" => Map {[Object] => [Object]}, "timeout" => Map {[Object] => [Object]}}, Symbol(eventHandlerAttributeMap): Map {"loadend" => {"handleEvent": [Function onloadend]}, "abort" => {"handleEvent": [Function handleAbort]}, "error" => {"handleEvent": [Function handleError]}, "timeout" => {"handleEvent": [Function handleTimeout]}}}
+ LOG  [AUTH DEBUG] API_URL configured as: http://192.168.178.34:3000/api
+ LOG  [AUTH DEBUG] Sending login to: http://192.168.178.34:3000/api/auth/login
+ LOG  [AUTH DEBUG] Payload: {"email": "admin", "passwordLength": 5}
+ LOG  [AUTH DEBUG] Making axios POST request...
+ ERROR  [AUTH DEBUG] Login error caught
+ ERROR  [AUTH DEBUG] Error type: AxiosError
+ ERROR  [AUTH DEBUG] Error message: Network Error
+ ERROR  [AUTH DEBUG] No response received
+ ERROR  [AUTH DEBUG] Request details: {"DONE": 4, "HEADERS_RECEIVED": 2, "LOADING": 3, "OPENED": 1, "UNSENT": 0, "_aborted": false, "_cachedResponse": undefined, "_hasError": true, "_headers": {"accept": "application/json, text/plain, */*", "content-type": "application/json"}, "_incrementalEvents": false, "_lowerCaseResponseHeaders": {}, "_method": "POST", "_perfKey": "network_XMLHttpRequest_http://192.168.178.34:3000/api/auth/login", "_performanceLogger": {"_closed": false, "_extras": {}, "_pointExtras": {}, "_points": {"initializeCore_end": 20959258.610682, "initializeCore_start": 20958901.370531}, "_timespans": {"network_XMLHttpRequest_http://192.168.178.34:3000/api/auth/login": [Object], "network_XMLHttpRequest_http://192.168.178.34:8082/symbolicate": [Object]}}, "_requestId": null, "_response": "Could not connect to the server.", "_responseType": "", "_sent": true, "_startTime": 20999446.200308, "_subscriptions": [], "_timedOut": false, "_url": "http://192.168.178.34:3000/api/auth/login", "readyState": 4, "responseHeaders": undefined, "status": 0, "timeout": 0, "upload": {}, "withCredentials": true, Symbol(bubblingListeners): Map {"loadend" => Map {[Object] => [Object]}, "abort" => Map {[Object] => [Object]}, "error" => Map {[Object] => [Object]}, "timeout" => Map {[Object] => [Object]}}, Symbol(eventHandlerAttributeMap): Map {"loadend" => {"handleEvent": [Function onloadend]}, "abort" => {"handleEvent": [Function handleAbort]}, "error" => {"handleEvent": [Function handleError]}, "timeout" => {"handleEvent": [Function handleTimeout]}}}
+ LOG  [AUTH DEBUG] API_URL configured as: http://192.168.178.34:3000/api
+ LOG  [AUTH DEBUG] Sending login to: http://192.168.178.34:3000/api/auth/login
+ LOG  [AUTH DEBUG] Payload: {"email": "admin", "passwordLength": 5}
+ LOG  [AUTH DEBUG] Making axios POST request...
+ ERROR  [AUTH DEBUG] Login error caught
+ ERROR  [AUTH DEBUG] Error type: AxiosError
+ ERROR  [AUTH DEBUG] Error message: Network Error
+ ERROR  [AUTH DEBUG] No response received
+ ERROR  [AUTH DEBUG] Request details: {"DONE": 4, "HEADERS_RECEIVED": 2, "LOADING": 3, "OPENED": 1, "UNSENT": 0, "_aborted": false, "_cachedResponse": undefined, "_hasError": true, "_headers": {"accept": "application/json, text/plain, */*", "content-type": "application/json"}, "_incrementalEvents": false, "_lowerCaseResponseHeaders": {}, "_method": "POST", "_perfKey": "network_XMLHttpRequest_http://192.168.178.34:3000/api/auth/login", "_performanceLogger": {"_closed": false, "_extras": {}, "_pointExtras": {}, "_points": {"initializeCore_end": 20959258.610682, "initializeCore_start": 20958901.370531}, "_timespans": {"network_XMLHttpRequest_http://192.168.178.34:3000/api/auth/login": [Object], "network_XMLHttpRequest_http://192.168.178.34:8082/symbolicate": [Object]}}, "_requestId": null, "_response": "Could not connect to the server.", "_responseType": "", "_sent": true, "_startTime": 21005496.331873, "_subscriptions": [], "_timedOut": false, "_url": "http://192.168.178.34:3000/api/auth/login", "readyState": 4, "responseHeaders": undefined, "status": 0, "timeout": 0, "upload": {}, "withCredentials": true, Symbol(bubblingListeners): Map {"loadend" => Map {[Object] => [Object]}, "abort" => Map {[Object] => [Object]}, "error" => Map {[Object] => [Object]}, "timeout" => Map {[Object] => [Object]}}, Symbol(eventHandlerAttributeMap): Map {"loadend" => {"handleEvent": [Function onloadend]}, "abort" => {"handleEvent": [Function handleAbort]}, "error" => {"handleEvent": [Function handleError]}, "timeout" => {"handleEvent": [Function handleTimeout]}}}
+ LOG  [AUTH DEBUG] API_URL configured as: http://192.168.178.34:3000/api
+ LOG  [AUTH DEBUG] Sending login to: http://192.168.178.34:3000/api/auth/login
+ LOG  [AUTH DEBUG] Payload: {"email": "admin", "passwordLength": 5}
+ LOG  [AUTH DEBUG] Making axios POST request...
+ ERROR  [AUTH DEBUG] Login error caught
+ ERROR  [AUTH DEBUG] Error type: AxiosError
+ ERROR  [AUTH DEBUG] Error message: Request failed with status code 401
+ ERROR  [AUTH DEBUG] Response status: 401
+ ERROR  [AUTH DEBUG] Response data: {"error": "Invalid credentials"}
+ ERROR  [AUTH DEBUG] Response headers: {"access-control-allow-origin": "*", "connection": "keep-alive", "content-length": "31", "content-type": "application/json; charset=utf-8", "date": "Tue, 24 Feb 2026 00:31:22 GMT", "etag": "W/\"1f-mRYQ6Yx/raK/ssDeWseqQCiH0yM\"", "keep-alive": "timeout=5", "x-powered-by": "Express"}
+ LOG  [AUTH DEBUG] API_URL configured as: http://192.168.178.34:3000/api
+ LOG  [AUTH DEBUG] Sending login to: http://192.168.178.34:3000/api/auth/login
+ LOG  [AUTH DEBUG] Payload: {"email": "admin", "passwordLength": 5}
+ LOG  [AUTH DEBUG] Making axios POST request...
+ ERROR  [AUTH DEBUG] Login error caught
+ ERROR  [AUTH DEBUG] Error type: AxiosError
+ ERROR  [AUTH DEBUG] Error message: Request failed with status code 401
+ ERROR  [AUTH DEBUG] Response status: 401
+ ERROR  [AUTH DEBUG] Response data: {"error": "Invalid credentials"}
+ ERROR  [AUTH DEBUG] Response headers: {"access-control-allow-origin": "*", "connection": "keep-alive", "content-length": "31", "content-type": "application/json; charset=utf-8", "date": "Tue, 24 Feb 2026 00:31:25 GMT", "etag": "W/\"1f-mRYQ6Yx/raK/ssDeWseqQCiH0yM\"", "keep-alive": "timeout=5", "x-powered-by": "Express"}

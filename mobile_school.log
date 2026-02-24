@@ -1,0 +1,9 @@
+Starting project at /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school
+Starting Metro Bundler
+Waiting on http://localhost:8082
+Logs for your project will appear below.
+Error: Asset not found: /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school/assets/icon.png for platform: (unspecified)
+    at getAbsoluteAssetRecord (/Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school/node_modules/metro/src/Assets.js:129:11)
+    at getAsset (/Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school/node_modules/metro/src/Assets.js:224:18)
+    at Server._processSingleAssetRequest (/Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school/node_modules/metro/src/Server.js:436:20)
+    at Server._processRequest (/Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school/node_modules/metro/src/Server.js:535:7)

@@ -1,0 +1,137 @@
+.finance-report {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.finance-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.finance-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid;
+}
+
+.finance-card.primary {
+  border-left-color: var(--primary);
+  background: linear-gradient(135deg, #007AFF10 0%, #007AFF05 100%);
+}
+
+.finance-card.warning {
+  border-left-color: var(--warning);
+  background: linear-gradient(135deg, #FF950010 0%, #FF950005 100%);
+}
+
+.finance-card.success {
+  border-left-color: var(--success);
+  background: linear-gradient(135deg, #34C75910 0%, #34C75905 100%);
+}
+
+.finance-icon {
+  font-size: 40px;
+  min-width: 60px;
+}
+
+.finance-content h3 {
+  font-size: 13px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.finance-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.top-quests {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.top-quests h2 {
+  color: var(--primary);
+  margin-bottom: 20px;
+}
+
+.quests-table {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--dark);
+  border-bottom: 1px solid var(--border);
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  font-size: 13px;
+  transition: all 0.3s;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row:hover {
+  background: #f9f9f9;
+}
+
+.col {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col.budget {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status.completed {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status.submitted {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.status.pending_verification {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}

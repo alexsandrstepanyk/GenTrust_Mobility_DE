@@ -1,0 +1,17 @@
+Starting project at /Users/apple/Desktop/GenTrust_Mobility_DE/mobile/gentrustmobility
+React Compiler enabled
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+iOS node_modules/expo-router/entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+iOS node_modules/expo-router/entry.js ░░░░░░░░░░░░░░░░  1.0% (1/1)
+iOS node_modules/expo-router/entry.js ▓▓░░░░░░░░░░░░░░ 16.0% ( 37/205)
+iOS node_modules/expo-router/entry.js ▓▓░░░░░░░░░░░░░░ 18.4% (145/338)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 39.0% (349/559)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 58.7% (527/688)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 72.1% (675/803)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 77.7% (828/965)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 83.0% ( 967/1117)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.7% (1178/1244)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.0% (1384/1405)
+iOS Bundled 36753ms node_modules/expo-router/entry.js (1433 modules)

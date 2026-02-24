@@ -1,0 +1,62 @@
+.statistics {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.stat-section {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-section h2 {
+  margin-bottom: 20px;
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  border-left: 4px solid var(--border);
+  transition: all 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.highlight {
+  border-left-color: var(--primary);
+  background: linear-gradient(135deg, #007AFF20 0%, #007AFF10 100%);
+}
+
+.stat-card.success {
+  border-left-color: var(--success);
+  background: linear-gradient(135deg, #34C75920 0%, #34C75910 100%);
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

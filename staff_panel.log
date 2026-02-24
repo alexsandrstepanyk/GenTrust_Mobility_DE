@@ -1,0 +1,12 @@
+
+> staff-panel@1.0.0 dev
+> vite
+
+
+  VITE v4.5.14  ready in 891 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+9:51:11 AM [vite] vite.config.js changed, restarting server...
+9:51:11 AM [vite] changed tsconfig file detected: /Users/apple/Desktop/GenTrust_Mobility_DE/staff-panel/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+9:51:11 AM [vite] server restarted.

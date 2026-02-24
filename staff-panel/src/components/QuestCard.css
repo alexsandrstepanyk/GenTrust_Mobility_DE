@@ -1,0 +1,163 @@
+.quest-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid var(--warning);
+}
+
+.quest-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.quest-header h3 {
+  font-size: 18px;
+  color: var(--dark);
+}
+
+.status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status.pending_verification,
+.status.submitted {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status.completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.quest-info {
+  margin-bottom: 16px;
+}
+
+.quest-info p {
+  padding: 8px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.quest-info strong {
+  color: var(--dark);
+  min-width: 100px;
+  display: inline-block;
+}
+
+.submission-details {
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 16px 0;
+  border-left: 3px solid var(--primary);
+}
+
+.submission-details h4 {
+  margin-bottom: 8px;
+  color: var(--primary);
+}
+
+.submission-details p {
+  color: #555;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.submission-photo {
+  max-width: 100%;
+  border-radius: 6px;
+  margin-top: 12px;
+  max-height: 300px;
+}
+
+.quest-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  flex: 1;
+}
+
+.btn-approve {
+  background: var(--success);
+  color: white;
+}
+
+.btn-approve:hover {
+  background: #2dbb50;
+  transform: translateY(-2px);
+}
+
+.btn-reject {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-reject:hover {
+  background: #ff1f1f;
+  transform: translateY(-2px);
+}
+
+.reject-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.reject-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  resize: none;
+}
+
+.reject-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-confirm,
+.btn-cancel {
+  flex: 1;
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.btn-confirm {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-cancel {
+  background: #ddd;
+  color: #666;
+}

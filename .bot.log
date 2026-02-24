@@ -1,0 +1,63 @@
+
+> gentrust-alpha-bot@1.0.0 start
+> node dist/index.js
+
+[Bot] Initialized.
+[Quest Provider Bot] Initialized.
+[Master Bot] Initialized.
+[Municipal Bot] Initialized.
+Starting GenTrust Alpha Bots...
+⚙️  Initializing cron jobs...
+[Cron] Cron jobs initialized:
+  - Daily leaderboard snapshot at 00:00
+  - Cleanup old snapshots at 01:00
+[Cron] Creating initial snapshot...
+🚀 Launching Master Core Bot...
+[MessengerHub] Registered bot: master
+🚀 Launching Scout Bot...
+[MessengerHub] Registered bot: scout
+🚀 Launching City Hall Bot...
+[MessengerHub] Registered bot: cityhall
+🚀 Launching Quest Provider Bot...
+[MessengerHub] Registered bot: provider
+🚀 Launching Municipal Services Bot...
+[MessengerHub] Registered bot: municipal
+
+✨ All bots startup initiated! They are now listening...
+(node:46934) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+🚀 GenTrust API Server running on port 3000
+[LeaderboardSnapshot] Created 1 snapshots for 2026-02-16T23:00:00.000Z
+[Incoming] message from 312248641 - HasText: true
+[Auth] Processing user: 312248641 (stepashka_sl)
+[Auth] User found: a66e4117-7aa1-4182-b924-99cb88ecf784 (ADMIN)
+[Safety] Time Check: 2/17/2026, 9:08:00 PM (Hour: 21)
+[Incoming] message from 312248641 - HasText: true
+[Auth] Processing user: 312248641 (stepashka_sl)
+[Auth] User found: a66e4117-7aa1-4182-b924-99cb88ecf784 (ADMIN)
+[Safety] Time Check: 2/17/2026, 9:09:35 PM (Hour: 21)
+[Incoming] message from 312248641 - HasText: false
+[Auth] Processing user: 312248641 (stepashka_sl)
+[Auth] User found: a66e4117-7aa1-4182-b924-99cb88ecf784 (ADMIN)
+[Safety] Time Check: 2/17/2026, 9:09:41 PM (Hour: 21)
+Gemini Analysis Error (all models failed): GoogleGenerativeAIError: [404 Not Found] models/gemini-1.5-pro-latest is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at makeRequest (/Users/apple/Desktop/GenTrust_Mobility/node_modules/@google/generative-ai/dist/index.js:212:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async generateContent (/Users/apple/Desktop/GenTrust_Mobility/node_modules/@google/generative-ai/dist/index.js:536:22)
+    at async analyzeImage (/Users/apple/Desktop/GenTrust_Mobility/dist/services/gemini.js:54:32)
+    at async exports.urbanGuardianScene.telegraf_1.Scenes.WizardScene.callbackData (/Users/apple/Desktop/GenTrust_Mobility/dist/scenes/urban_guardian.js:59:30)
+    at async execute (/Users/apple/Desktop/GenTrust_Mobility/node_modules/telegraf/lib/composer.js:518:17)
+    at async /Users/apple/Desktop/GenTrust_Mobility/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/Users/apple/Desktop/GenTrust_Mobility/node_modules/telegraf/lib/composer.js:518:17)
+    at async /Users/apple/Desktop/GenTrust_Mobility/node_modules/telegraf/lib/composer.js:519:21
+    at async execute (/Users/apple/Desktop/GenTrust_Mobility/node_modules/telegraf/lib/composer.js:518:17)
+Analysis: { is_issue: false, confidence: 0, category: 'error' }
+[Incoming] callback_query from 312248641 - HasText: false
+[Auth] Processing user: 312248641 (stepashka_sl)
+[Auth] User found: a66e4117-7aa1-4182-b924-99cb88ecf784 (ADMIN)
+[Safety] Time Check: 2/17/2026, 9:09:43 PM (Hour: 21)
+[Incoming] message from 312248641 - HasText: false
+[Auth] Processing user: 312248641 (stepashka_sl)
+[Auth] User found: a66e4117-7aa1-4182-b924-99cb88ecf784 (ADMIN)
+[Safety] Time Check: 2/17/2026, 9:09:48 PM (Hour: 21)
+[City Hall] Created municipal task 966e8ce7-7d43-4e00-8f8a-814f7610207a for report 35f661f3-ba94-42e4-b139-fefe08aedd8b
