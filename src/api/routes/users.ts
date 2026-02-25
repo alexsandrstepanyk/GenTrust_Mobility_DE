@@ -40,4 +40,21 @@ router.get('/stats', authenticateToken, async (req, res) => {
   }
 });
 
+
+// Get user's active quest
+router.get('/active-quest', authenticateToken, async (req: any, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const activeQuest = await prisma.quest.findFirst({
+            where: {
+                assigneeId: userId,
+                status: 'IN_PROGRESS'
+            }
+        });
+        res.json(activeQuest || null);
+    } catch (error) {
+        next(error);
+    }
+});
+
 export default router;

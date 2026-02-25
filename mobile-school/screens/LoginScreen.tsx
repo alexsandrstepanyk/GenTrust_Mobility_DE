@@ -62,7 +62,7 @@ export default function LoginScreen({ navigation }: any) {
             }
 
             Alert.alert(t('success', 'Success'), `${t('welcome_back', 'Welcome back')}, ${user.firstName}!`);
-            navigation.navigate('Impact');
+            navigation.navigate('Home');
         } catch (error: any) {
             console.error('[AUTH DEBUG] Login error caught');
             console.error('[AUTH DEBUG] Error type:', error.constructor.name);
