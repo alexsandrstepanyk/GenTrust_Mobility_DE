@@ -29,7 +29,104 @@ Starting GenTrust Alpha Bots...
 [MessengerHub] Registered bot: municipal
 
 ✨ All bots startup initiated! They are now listening...
-(node:25743) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:27155) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 🚀 GenTrust API Server running on port 3000
 [LeaderboardSnapshot] Snapshot for 2026-02-24T23:00:00.000Z already exists
+❌ Municipal Services Bot Error: TelegramError: 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+    at Telegram.callApi (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/client.js:315:19)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Polling.[Symbol.asyncIterator] (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:30:33)
+    at async Polling.loop (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:73:30)
+    at async Telegraf.launch (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/telegraf.js:194:13)
+    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/index.ts:25:13 {
+  response: {
+    ok: false,
+    error_code: 409,
+    description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running'
+  },
+  on: {
+    method: 'getUpdates',
+    payload: { timeout: 50, offset: 0, allowed_updates: [] }
+  }
+}
+❌ Quest Provider Bot Error: TelegramError: 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+    at Telegram.callApi (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/client.js:315:19)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Polling.[Symbol.asyncIterator] (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:30:33)
+    at async Polling.loop (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:73:30)
+    at async Telegraf.launch (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/telegraf.js:194:13)
+    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/index.ts:25:13 {
+  response: {
+    ok: false,
+    error_code: 409,
+    description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running'
+  },
+  on: {
+    method: 'getUpdates',
+    payload: { timeout: 50, offset: 0, allowed_updates: [] }
+  }
+}
+❌ Master Core Bot Error: TelegramError: 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+    at Telegram.callApi (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/client.js:315:19)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Polling.[Symbol.asyncIterator] (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:30:33)
+    at async Polling.loop (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:73:30)
+    at async Telegraf.launch (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/telegraf.js:194:13)
+    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/index.ts:25:13 {
+  response: {
+    ok: false,
+    error_code: 409,
+    description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running'
+  },
+  on: {
+    method: 'getUpdates',
+    payload: { timeout: 50, offset: 0, allowed_updates: [] }
+  }
+}
+❌ Scout Bot Error: TelegramError: 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+    at Telegram.callApi (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/client.js:315:19)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Polling.[Symbol.asyncIterator] (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:30:33)
+    at async Polling.loop (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:73:30)
+    at async Telegraf.launch (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/telegraf.js:194:13)
+    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/index.ts:25:13 {
+  response: {
+    ok: false,
+    error_code: 409,
+    description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running'
+  },
+  on: {
+    method: 'getUpdates',
+    payload: { timeout: 50, offset: 0, allowed_updates: [] }
+  }
+}
+❌ City Hall Bot Error: TelegramError: 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+    at Telegram.callApi (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/client.js:315:19)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Polling.[Symbol.asyncIterator] (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:30:33)
+    at async Polling.loop (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:73:30)
+    at async Telegraf.launch (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/telegraf.js:194:13)
+    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/index.ts:25:13 {
+  response: {
+    ok: false,
+    error_code: 409,
+    description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running'
+  },
+  on: {
+    method: 'getUpdates',
+    payload: { timeout: 50, offset: 0, allowed_updates: [] }
+  }
+}
+[0mGET /health [32m200[0m 15.181 ms - 54[0m
+[Auth] Login attempt for: "admin"
+[Auth] Login successful: "admin"
+[0mPOST /api/auth/login [32m200[0m 269.018 ms - 727[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIwNTc4OTAsImV4cCI6MTc3MjY2MjY5MH0.dEIlWtRKyO5L44kfNPi3PjmWwb9AJBxNy-qzOsHRBDQ
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/quests/available [32m200[0m 14.890 ms - 1069[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIwNTc4OTAsImV4cCI6MTc3MjY2MjY5MH0.dEIlWtRKyO5L44kfNPi3PjmWwb9AJBxNy-qzOsHRBDQ
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/users/active-quest [32m200[0m 10.337 ms - 574[0m
