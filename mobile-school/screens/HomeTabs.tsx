@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TouchableOpacity, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import ReportScreen from './ReportScreen';
-import QuestsScreen from './QuestsScreenClean';
+import QuestsScreen from './QuestsScreen';
 import LeaderboardScreen from './LeaderboardScreen';
 import ProfileScreen from './ProfileScreen';
 

@@ -1,9 +1,0 @@
-Starting project at /Users/apple/Desktop/GenTrust_Mobility/mobile
-(node:59278) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
-› Port 8081 is running this app in another window
-  /Users/apple/Desktop/GenTrust_Mobility/mobile (pid 4651)
-Input is required, but 'npx expo' is in non-interactive mode.
-Required input:
-> Use port 8082 instead?
-› Skipping dev server
