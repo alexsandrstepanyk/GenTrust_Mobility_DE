@@ -448,8 +448,9 @@ app.post('/api/enable-auto-start', (req, res) => {
     <string>com.gentrust.monitor</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/local/bin/node</string>
-        <string>${path.join(__dirname, 'server.js')}</string>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>cd ${path.join(__dirname)} && node server.js > /tmp/gentrust-monitor.log 2>&1 & sleep 5 && open http://localhost:9000</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
@@ -481,13 +482,69 @@ app.post('/api/enable-auto-start', (req, res) => {
                 res.json({ success: false, message: 'Помилка запуску launchctl' });
             } else {
                 console.log('✅ Автозапуск увімкнено');
-                res.json({ success: true, message: 'Додано в автозапуск macOS!' });
+                res.json({ success: true, message: 'Додано в автозапуск macOS!\n\nMonitor Dashboard тепер запускається автоматично при вході в macOS і відкривається в Safari!' });
             }
         });
     } catch (error) {
         console.error('Auto-start error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
+});
+
+// API endpoint для отримання логів в реальному часі
+app.get('/api/logs/:service', (req, res) => {
+    const fs = require('fs');
+    const service = req.params.service;
+    const logFiles = {
+        'backend': '/tmp/backend.log',
+        'admin': '/tmp/admin-panel.log',
+        'city-hall': '/tmp/city-hall.log',
+        'expo-client': '/tmp/expo-client.log',
+        'expo-school': '/tmp/expo-school.log',
+        'monitor': '/tmp/monitor.log'
+    };
+    
+    const logFile = logFiles[service];
+    if (!logFile) {
+        return res.status(404).json({ error: 'Log file not found' });
+    }
+    
+    if (!fs.existsSync(logFile)) {
+        return res.json({ logs: 'Лог файл ще не створено', service });
+    }
+    
+    try {
+        const data = fs.readFileSync(logFile, 'utf8');
+        const lines = data.split('\n').slice(-100); // Останні 100 рядків
+        res.json({ logs: lines.join('\n'), service });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// API endpoint для отримання всіх логів
+app.get('/api/all-logs', (req, res) => {
+    const fs = require('fs');
+    const logFiles = {
+        'backend': '/tmp/backend.log',
+        'admin': '/tmp/admin-panel.log',
+        'city-hall': '/tmp/city-hall.log',
+        'expo-client': '/tmp/expo-client.log',
+        'expo-school': '/tmp/expo-school.log',
+        'monitor': '/tmp/monitor.log'
+    };
+    
+    const allLogs = {};
+    for (const [service, logFile] of Object.entries(logFiles)) {
+        if (fs.existsSync(logFile)) {
+            const data = fs.readFileSync(logFile, 'utf8');
+            allLogs[service] = data.split('\n').slice(-50).join('\n');
+        } else {
+            allLogs[service] = 'Лог файл ще не створено';
+        }
+    }
+    
+    res.json(allLogs);
 });
 
 // Головна сторінка
