@@ -6,48 +6,73 @@ Ukrainian edtech platform connecting students with earning opportunities through
 
 **GenTrust Mobility** is a complete ecosystem featuring:
 - **Client Mobile App**: Students create task orders and manage submissions
-- **School Mobile App**: Educational institutions view and approve student contributions  
+- **School Mobile App**: Educational institutions view and approve student contributions
 - **Admin Panel**: Manage task approvals, users, and system operations
 - **Staff Panel**: Monitor operations and user activities
+- **City-Hall Dashboard**: Municipal monitoring with AI recommendations
+- **Monitor Dashboard**: Real-time system health & process control
 - **Telegram Bots**: Notification system and admin commands
 - **Backend API**: Express.js with PostgreSQL (Prisma ORM)
 
-## ✨ Key Features
+## 🎛️ DASHBOARD SYSTEM - Real-Time Control Center
 
-### Mobile Applications
-- **Client App** (Port 8081): Task order creation, progress tracking, earning history
-- **School App** (Port 8082): Quest discovery, task completion, reputation tracking
-  - **Фото-підтвердження завдань**: Завантаження фото після виконання
-  - Очікування підтвердження від замовника/батьків
-  - Автоматичне нарахування винагороди після approve
-- **Parent App** (Port 8082): Family control panel, children monitoring, profile management
-  - Профіль з трьома секціями: Bewertung der Kinder, Persönliche Daten, Einstellungen
-  - **Datenschutz (Privacy Policy)**: Повна DSGVO-сумісна політика конфіденційності
-  - **Мовний вибір**: Deutsch, English, Українська, Русский, Français (react-i18next)
-  - Динамічна зміна мови в реальному часі
-  - Тестовий доступ: admin@parent.com / admin
-  - Виправлено критичні помилки charAt та краш ProfileScreen
-  - **NEW: Підтвердження виконаних завдань** - перегляд фото-звітів та approve/reject
-- **Telegram Bots**: Розширений профіль з налаштуваннями
-  - Кнопка "👤 Профіль" у головному меню
-  - Налаштування: 🌐 Вибір мови (5 мов), 🔒 Privacy Policy (DSGVO), ℹ️ Про додаток
-  - Білінгвальний інтерфейс (Deutsch/Українська)
-  - Відображення балансу та рейтингу
-  - **NEW: Фото-підтвердження** - отримання сповіщень з фото та approve/reject через бота
-- Real-time quest synchronization (30-second refresh interval)
-- User authentication and authorization
-- Leaderboard and rating system
-- **Photo Verification System**: Complete workflow for task approval with photo evidence
+### **Monitor Dashboard** (Port 9000) ⭐ NEW!
+**Centralized System Health Monitoring & Process Control**
 
-### Backend Services
-- **Express.js API** (Port 3000): RESTful endpoints for all operations
-- **Task Order Management**: TaskOrder → Quest synchronization
-- **Admin Approval Workflow**: Auto-creates Quests when approving TaskOrders
-- **Telegram Integration**: Instant notifications to students and admins
-- **Database**: PostgreSQL with Prisma ORM for type-safe data access
+- ✅ **Real-time Status** of all 7 services (3-second refresh)
+- ✅ **Live Logs** for each service (last 10 lines)
+- ✅ **One-Click Launch Commands** - copy-paste ready terminal commands
+- ✅ **Port Management** - detect & kill stuck processes
+- ✅ **Database Status** - user count & connection health
+- ✅ **Telegram Bots Status** - all 5 bots monitoring
 
-### Admin & Staff Panels
-- **Admin Panel** (Port 5174, Vite): Task order approvals, user management
+**Features:**
+- 📊 Visual status cards (Online/Offline/Warning)
+- 💻 Built-in terminal commands for each service
+- 🚀 Quick start: `cd` + `start` + `kill` commands
+- 📋 Logs viewer with error highlighting
+- 🔗 Health check endpoints for all services
+
+**Access:** http://localhost:9000
+
+---
+
+### **City-Hall Dashboard** (Port 5173) 🏛️ UPDATED!
+**Municipal Control Center with AI-Powered Report Management**
+
+- ✅ **AI Recommendations Display** - Gemini analysis results
+  - `is_issue`: Problem detection (✅ Yes / ❌ No)
+  - `confidence`: Confidence score (0-100%)
+  - `category`: Auto-suggested category (Roads, Waste, Lighting, etc.)
+- ✅ **Moderator Actions** - Approve/Reject buttons
+  - ✅ **Approve Modal** - 8 department selection
+  - ❌ **Reject Modal** - Reason input textarea
+- ✅ **Real-time Status Updates** - instant UI refresh
+- ✅ **Interactive Map** - Leaflet with custom markers
+- ✅ **Photo Zoom** - enlarged view modal
+- ✅ **Smart Filters** - by status, category, priority
+
+**AI Integration:**
+- 🤖 Google Gemini 1.5 Flash analysis
+- 🎯 Auto-categorization with confidence scoring
+- 🎨 Color-coded confidence (Green/Yellow/Red)
+- ⚡ One-click "Apply AI Recommendation" button
+
+**Access:** http://localhost:5173/reports
+
+---
+
+### **Admin Panel** (Port 5174) 🔐
+**Core Administration Dashboard**
+
+- User management & moderation
+- Task order approvals
+- System configuration
+- Analytics & reporting
+
+**Access:** http://localhost:5174
+
+---
 - **Staff Panel** (Port 5173, Vite): Dashboard, statistics, user monitoring
 - Role-based access control
 - Real-time data updates

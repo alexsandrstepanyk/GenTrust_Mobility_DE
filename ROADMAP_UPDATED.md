@@ -82,19 +82,35 @@
 - [x] Виключення backend папок з Metro bundler
 - [x] Monitor Dashboard з real-time логами
 
-#### **8. Database Schema**
-- [x] User (14 користувачів в базі)
-- [x] Report (Urban Guardian)
-- [x] Quest (Logistics)
-- [x] TaskOrder (Client requests)
-- [x] TaskCompletion (Photo verification) ✅ НОВЕ
-- [x] ParentChild (Family links) ✅ НОВЕ
-- [x] GPSLocation (Child tracking) ✅ НОВЕ
-- [x] PersonalTask (Home quests) ✅ НОВЕ
-- [x] Provider (Business partners)
-- [x] MunicipalWorker + MunicipalTask
-- [x] LeaderboardSnapshot
-- [x] ActivityRecord + BioReport
+#### **8. Dashboard System - Real-Time Control** ✅ НОВЕ (Березень 2026)
+- [x] **Monitor Dashboard** (порт 9000)
+  - Real-time статус всіх 7 сервісів (3 секунди refresh)
+  - Live logs для кожного сервісу
+  - Вбудовані термінал команди для запуску
+  - Управління портами (detect & kill)
+  - Статус бази даних (кількість користувачів)
+  - Моніторинг 5 Telegram ботів
+  - No-cache режим для розробки
+  
+- [x] **City-Hall Dashboard** (порт 5173)
+  - AI Recommendations Display (Gemini 1.5 Flash)
+    - is_issue: boolean (чи є проблемою)
+    - confidence: number (0-1, кольорова індикація)
+    - category: string (автоматична категоризація)
+  - Moderator Actions
+    - ✅ Approve Modal (8 департаментів)
+    - ❌ Reject Modal (textarea для причини)
+  - Real-time статус оновлення
+  - Interactive Map (Leaflet)
+  - Photo Zoom modal
+  - Smart Filters (status, category, priority)
+
+#### **9. System Automation & DevOps** ✅ НОВЕ (Березень 2026)
+- [x] Dashboard Commands Integration
+  - Кожний сервіс має блок "Команди запуску"
+  - 4 типи команд: cd, start, kill, full-command
+  - Copy-paste ready для терміналу
+  - Auto-detection зайнятих портів
 
 ---
 
