@@ -14,13 +14,24 @@ router.get('/available', authenticateToken, async (req: any, res, next) => {
     try {
         const user = await prisma.user.findUnique({ where: { id: req.user.userId } });
         const showAll = req.query?.all === 'true' || user?.role === 'ADMIN';
+        const userCity = user?.city?.trim();
+        const userDistrict = user?.district?.trim();
+
         const where: any = { status: 'OPEN' };
         if (!showAll) {
             where.OR = [
                 {
                     isPersonal: false,
-                    city: user?.city || undefined,
-                    district: user?.district || undefined
+                    city: userCity || undefined,
+                    district: userDistrict || undefined
+                },
+                {
+                    isPersonal: false,
+                    city: userCity || undefined
+                },
+                {
+                    isPersonal: false,
+                    district: userDistrict || undefined
                 },
                 {
                     isPersonal: true,
@@ -29,11 +40,24 @@ router.get('/available', authenticateToken, async (req: any, res, next) => {
             ];
         }
 
-        const quests = await (prisma as any).quest.findMany({
+        let quests = await (prisma as any).quest.findMany({
             where,
             take: 10,
             orderBy: { createdAt: 'desc' }
         });
+
+        // Fallback: if geo filters returned nothing, show latest open non-personal quests
+        if (!showAll && quests.length === 0) {
+            quests = await (prisma as any).quest.findMany({
+                where: {
+                    status: 'OPEN',
+                    isPersonal: false
+                },
+                take: 10,
+                orderBy: { createdAt: 'desc' }
+            });
+        }
+
         res.json(quests);
     } catch (error) {
         next(error);
