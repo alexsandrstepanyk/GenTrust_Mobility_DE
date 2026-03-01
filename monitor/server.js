@@ -22,6 +22,18 @@ const io = socketIo(server);
 const PORT = 9000;
 const PROJECT_DIR = '/Users/apple/Desktop/GenTrust_Mobility_DE';
 
+// Middleware для парсингу JSON
+app.use(express.json());
+
+// CORS middleware
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') return res.sendStatus(200);
+    next();
+});
+
 // Вимкнення кешування для розробки
 app.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
