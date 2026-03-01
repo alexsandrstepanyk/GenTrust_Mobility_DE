@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/Button';
 import { Bell, Shield, Database, Webhook } from 'lucide-react';
 
-export default function Settings() {
+function Settings() {
   return (
     <div className="space-y-6">
       <div>
@@ -140,3 +140,5 @@ export default function Settings() {
     </div>
   );
 }
+
+export default Settings;
