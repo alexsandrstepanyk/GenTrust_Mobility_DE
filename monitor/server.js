@@ -34,7 +34,12 @@ const SERVICES = [
         port: 3000,
         healthCheck: 'http://localhost:3000/api/health',
         logFile: '/tmp/backend.log',
-        processName: 'nodemon'
+        processName: 'nodemon',
+        commands: {
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE',
+            start: 'npm run dev',
+            kill: 'lsof -ti:3000 | xargs kill -9'
+        }
     },
     {
         id: 'admin-panel',
@@ -43,7 +48,12 @@ const SERVICES = [
         port: 5174,
         healthCheck: 'http://localhost:5174',
         logFile: '/tmp/admin-panel.log',
-        processName: 'vite'
+        processName: 'vite',
+        commands: {
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/admin-panel',
+            start: 'npm run dev',
+            kill: 'lsof -ti:5174 | xargs kill -9'
+        }
     },
     {
         id: 'city-hall-dashboard',
@@ -52,7 +62,12 @@ const SERVICES = [
         port: 5173,
         healthCheck: 'http://localhost:5173',
         logFile: '/tmp/city-hall.log',
-        processName: 'vite'
+        processName: 'vite',
+        commands: {
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/city-hall-dashboard',
+            start: 'npm run dev',
+            kill: 'lsof -ti:5173 | xargs kill -9'
+        }
     },
     {
         id: 'staff-panel',
@@ -62,7 +77,26 @@ const SERVICES = [
         healthCheck: 'http://localhost:5175',
         logFile: '/tmp/staff-panel.log',
         processName: 'vite',
-        optional: true
+        optional: true,
+        commands: {
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/staff-panel',
+            start: 'npm run dev',
+            kill: 'lsof -ti:5175 | xargs kill -9'
+        }
+    },
+    {
+        id: 'expo-client',
+        name: 'Expo Mobile-Client',
+        icon: '📱',
+        port: 8081,
+        healthCheck: 'http://localhost:8081',
+        logFile: '/tmp/expo-client.log',
+        processName: 'expo',
+        commands: {
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile/gentrustmobility',
+            start: 'npx expo start --port 8081 --lan',
+            kill: 'lsof -ti:8081 | xargs kill -9'
+        }
     },
     {
         id: 'expo-school',
@@ -71,7 +105,12 @@ const SERVICES = [
         port: 8082,
         healthCheck: 'http://localhost:8082',
         logFile: '/tmp/expo-school.log',
-        processName: 'expo'
+        processName: 'expo',
+        commands: {
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school',
+            start: 'npx expo start --port 8082 --lan',
+            kill: 'lsof -ti:8082 | xargs kill -9'
+        }
     },
     {
         id: 'expo-parent',
@@ -80,17 +119,12 @@ const SERVICES = [
         port: 8083,
         healthCheck: 'http://localhost:8083',
         logFile: '/tmp/expo-parent.log',
-        processName: 'expo'
-    },
-    {
-        id: 'expo-client',
-        name: 'Expo Mobile-Client',
-        icon: '📲',
-        port: 8081,
-        healthCheck: 'http://localhost:8081',
-        logFile: '/tmp/expo-client.log',
         processName: 'expo',
-        optional: true
+        commands: {
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-parent',
+            start: 'npx expo start --port 8083 --lan',
+            kill: 'lsof -ti:8083 | xargs kill -9'
+        }
     }
 ];
 
