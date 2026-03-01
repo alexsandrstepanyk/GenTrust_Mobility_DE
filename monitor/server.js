@@ -22,6 +22,14 @@ const io = socketIo(server);
 const PORT = 9000;
 const PROJECT_DIR = '/Users/apple/Desktop/GenTrust_Mobility_DE';
 
+// Вимкнення кешування для розробки
+app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+});
+
 // Статична папка для HTML/CSS/JS
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -223,26 +231,58 @@ function checkTelegramBots() {
 }
 
 /**
+ * Отримання CPU/Memory usage для процесу на порту
+ */
+function getProcessMetrics(port) {
+    return new Promise((resolve) => {
+        exec(`lsof -i :${port} 2>/dev/null | grep LISTEN | awk '{print $2}' | head -1`, (error, stdout) => {
+            if (error || !stdout.trim()) {
+                resolve({ cpu: '0%', memory: '0 MB', pid: null });
+                return;
+            }
+
+            const pid = stdout.trim();
+            
+            // Отримання CPU/Memory через ps
+            exec(`ps aux | grep "${pid}" | grep -v grep | awk '{print $3, $6}'`, (err, psOut) => {
+                if (err || !psOut.trim()) {
+                    resolve({ cpu: '0%', memory: '0 MB', pid });
+                    return;
+                }
+
+                const parts = psOut.trim().split(/\s+/);
+                const cpu = parts[0] ? `${parseFloat(parts[0]).toFixed(1)}%` : '0%';
+                const memoryKB = parts[1] ? parseInt(parts[1]) : 0;
+                const memoryMB = (memoryKB / 1024).toFixed(1);
+
+                resolve({ cpu, memory: `${memoryMB} MB`, pid });
+            });
+        });
+    });
+}
+
+/**
  * Збір статусу всіх сервісів
  */
 async function collectServicesStatus() {
     const statuses = [];
-    
+
     for (const service of SERVICES) {
         const portActive = await checkPort(service.port);
         const healthOk = portActive ? await checkHealth(service.healthCheck) : false;
         const logs = await getLastLogLines(service.logFile, 15);
-        
+        const metrics = await getProcessMetrics(service.port);
+
         // Аналіз логів на помилки
-        const hasErrors = logs.includes('ERROR') || 
-                         logs.includes('Error') || 
+        const hasErrors = logs.includes('ERROR') ||
+                         logs.includes('Error') ||
                          logs.includes('EADDRINUSE') ||
                          logs.includes('failed') ||
                          logs.includes('Failed');
-        
+
         let status = 'offline';
         let message = 'Не запущено';
-        
+
         if (portActive && healthOk) {
             status = 'online';
             message = hasErrors ? '⚠️ Працює, але є помилки' : '✅ Працює без проблем';
@@ -261,7 +301,8 @@ async function collectServicesStatus() {
             logs: logs.split('\n').slice(-10).join('\n'), // Останні 10 рядків
             port: service.port,
             portActive,
-            healthOk
+            healthOk,
+            metrics // CPU/Memory usage
         });
     }
     
