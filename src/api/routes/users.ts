@@ -5,6 +5,46 @@ import { authenticateToken } from '../middleware/auth';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// City Hall Dashboard: list users for moderation/management
+router.get('/', async (req, res) => {
+  try {
+    const { status, role, limit = '200' } = req.query as any;
+
+    const where: any = {};
+    if (status) where.status = status;
+    if (role) where.role = role;
+
+    const users = await prisma.user.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: Number(limit) || 200,
+      include: {
+        reports: { select: { id: true } },
+        completedTasks: { select: { id: true } }
+      }
+    });
+
+    const transformed = users.map((u) => ({
+      id: u.id,
+      name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username || 'Користувач',
+      email: u.email || '',
+      phone: u.phone || '',
+      role: (u.role === 'CLIENT' ? 'STUDENT' : u.role) as string,
+      status: u.status as string,
+      createdAt: u.createdAt,
+      stats: {
+        reportsSubmitted: u.reports?.length || 0,
+        questsCompleted: u.completedTasks?.length || 0
+      }
+    }));
+
+    res.json(transformed);
+  } catch (error: any) {
+    console.error('Error listing users:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get user stats (for dashboard)
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
@@ -155,6 +195,55 @@ router.patch('/me', authenticateToken, async (req: any, res) => {
     res.json({ message: 'Profile updated successfully' });
   } catch (error: any) {
     console.error('Error updating user profile:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// City Hall Dashboard: get user details by id
+router.get('/:id', async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// City Hall Dashboard: approve registration request
+router.post('/:id/approve', async (req, res) => {
+  try {
+    const user = await prisma.user.update({
+      where: { id: req.params.id },
+      data: { status: 'ACTIVE' }
+    });
+
+    const io = (global as any).io;
+    if (io) {
+      io.to('users').emit('user:updated', { id: user.id, status: 'ACTIVE' });
+    }
+
+    res.json({ success: true, user });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// City Hall Dashboard: reject registration request
+router.post('/:id/reject', async (req, res) => {
+  try {
+    const user = await prisma.user.update({
+      where: { id: req.params.id },
+      data: { status: 'REJECTED' }
+    });
+
+    const io = (global as any).io;
+    if (io) {
+      io.to('users').emit('user:updated', { id: user.id, status: 'REJECTED' });
+    }
+
+    res.json({ success: true, user });
+  } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });

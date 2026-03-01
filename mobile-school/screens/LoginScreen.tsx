@@ -25,6 +25,12 @@ export default function LoginScreen({ navigation }: any) {
             return;
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            Alert.alert(t('error', 'Error'), 'Емейл невірний');
+            return;
+        }
+
         const cyrillicPattern = /[А-Яа-яЁёІіЇїЄєҐґ]/;
         if (cyrillicPattern.test(password) || cyrillicPattern.test(email)) {
             Alert.alert(t('error'), 'Switch keyboard to Latin (EN) and try again.');
@@ -73,7 +79,23 @@ export default function LoginScreen({ navigation }: any) {
                 console.error('[AUTH DEBUG] Response status:', error.response.status);
                 console.error('[AUTH DEBUG] Response data:', error.response.data);
                 console.error('[AUTH DEBUG] Response headers:', error.response.headers);
-                Alert.alert('Error', `Server error ${error.response.status}: ${error.response.data.error || 'Invalid credentials'}`);
+
+                const code = error.response.data?.code;
+                if (code === 'INVALID_EMAIL_FORMAT') {
+                    Alert.alert('Помилка', 'Емейл невірний');
+                } else if (code === 'USER_NOT_FOUND') {
+                    Alert.alert('Помилка', 'Такого користувача не існує');
+                } else if (code === 'INVALID_PASSWORD') {
+                    Alert.alert('Помилка', 'Пароль невірний');
+                } else if (code === 'PENDING_CITY_HALL') {
+                    Alert.alert('Очікує підтвердження', 'Реєстрація очікує підтвердження City Hall');
+                } else if (code === 'PENDING_PARENT') {
+                    Alert.alert('Очікує підтвердження', 'Реєстрація очікує підтвердження батьків');
+                } else if (code === 'ACCOUNT_RESTRICTED') {
+                    Alert.alert('Доступ обмежено', 'Акаунт відхилено або заблоковано');
+                } else {
+                    Alert.alert('Error', `Server error ${error.response.status}: ${error.response.data.error || 'Invalid credentials'}`);
+                }
             } else if (error.request) {
                 console.error('[AUTH DEBUG] No response received');
                 console.error('[AUTH DEBUG] Request details:', error.request);
