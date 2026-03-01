@@ -4,9 +4,15 @@ import './FinanceReport.css';
 
 const API_URL = '/api/admin';
 
+interface Finance {
+  total_paid: number;
+  pending_payment: number;
+  today_earnings: number;
+}
+
 export default function FinanceReport({ token }: { token: string }) {
-  const [finance, set_finance] = useState(null);
-  const [quests, set_quests] = useState([]);
+  const [finance, set_finance] = useState<Finance | null>(null);
+  const [quests, set_quests] = useState<any[]>([]);
   const [loading, set_loading] = useState(true);
 
   useEffect(() => {

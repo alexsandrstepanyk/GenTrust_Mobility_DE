@@ -1,0 +1,8 @@
+The /ios project does not contain any URI schemes. Expo CLI will not be able to use links to launch the project. You can configure a custom URI scheme using the --scheme option.
+Starting project at /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school
+› Port 8082 is running this app in another window
+  /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school (pid 25250)
+Input is required, but 'npx expo' is in non-interactive mode.
+Required input:
+> Use port 8083 instead?
+› Skipping dev server

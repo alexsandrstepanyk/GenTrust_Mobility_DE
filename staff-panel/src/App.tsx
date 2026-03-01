@@ -5,7 +5,7 @@ import DashboardStats from './components/DashboardStats';
 import './App.css';
 
 export default function App() {
-  const [quests, setQuests] = useState([]);
+  const [quests, setQuests] = useState<any[]>([]);
   const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -31,7 +31,7 @@ export default function App() {
     }
   };
 
-  const handleApprove = async (questId) => {
+  const handleApprove = async (questId: number) => {
     try {
       await axios.post(`/api/staff/quests/${questId}/approve`, {
         verifiedBy: 'staff-member' // TODO: Get actual staff user
@@ -42,7 +42,7 @@ export default function App() {
     }
   };
 
-  const handleReject = async (questId, reason) => {
+  const handleReject = async (questId: number, reason: string) => {
     try {
       await axios.post(`/api/staff/quests/${questId}/reject`, {
         reason,

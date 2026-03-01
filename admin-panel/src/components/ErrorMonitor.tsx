@@ -13,9 +13,16 @@ interface ErrorLog {
   resolved: boolean;
 }
 
+interface ErrorStats {
+  errors: number;
+  warnings: number;
+  unresolved: number;
+  resolved: number;
+}
+
 export default function ErrorMonitor({ token }: { token: string }) {
   const [errors, set_errors] = useState<ErrorLog[]>([]);
-  const [stats, set_stats] = useState(null);
+  const [stats, set_stats] = useState<ErrorStats | null>(null);
   const [loading, set_loading] = useState(true);
 
   useEffect(() => {

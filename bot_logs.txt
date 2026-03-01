@@ -1,0 +1,35 @@
+
+> gentrust-alpha-bot@1.0.0 dev
+> NODE_OPTIONS=--max-old-space-size=4096 nodemon src/index.ts
+
+[33m[nodemon] 3.1.14[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): src/**/*[39m
+[33m[nodemon] watching extensions: ts,js[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[Bot] Initialized.
+[Quest Provider Bot] Initialized.
+[Master Bot] Initialized.
+[Municipal Bot] Initialized.
+Starting GenTrust Alpha Bots...
+⚙️  Initializing cron jobs...
+[Cron] Cron jobs initialized:
+  - Daily leaderboard snapshot at 00:00
+  - Cleanup old snapshots at 01:00
+[Cron] Creating initial snapshot...
+🚀 Launching Master Core Bot...
+[MessengerHub] Registered bot: master
+🚀 Launching Scout Bot...
+[MessengerHub] Registered bot: scout
+🚀 Launching City Hall Bot...
+[MessengerHub] Registered bot: cityhall
+🚀 Launching Quest Provider Bot...
+[MessengerHub] Registered bot: provider
+🚀 Launching Municipal Services Bot...
+[MessengerHub] Registered bot: municipal
+
+✨ All bots startup initiated! They are now listening...
+(node:13627) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+🚀 GenTrust API Server running on port 3000
+[LeaderboardSnapshot] Snapshot for 2026-02-27T23:00:00.000Z already exists

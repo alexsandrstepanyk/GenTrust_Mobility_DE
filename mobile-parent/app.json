@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "GenTrust - School",
+    "slug": "gentrust-school",
+    "version": "1.0.0",
+    "sdkVersion": "54.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gentrust.school",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Потрібно для визначення місця розташування проблеми при надсиланні звіту.",
+        "NSCameraUsageDescription": "Потрібно для фотографування проблем у місті.",
+        "NSPhotoLibraryUsageDescription": "Потрібно для вибору фото з галереї."
+      }
+    },
+    "android": {
+      "package": "com.gentrust.school",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

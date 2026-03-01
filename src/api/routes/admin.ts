@@ -201,7 +201,7 @@ router.get('/task-orders/pending', auth_admin, async (req, res) => {
     //     requester: { select: { firstName: true, lastName: true, email: true } },
     //   },
     // });
-    const pending_orders = [];
+    const pending_orders: any[] = [];
 
     res.json(pending_orders);
   } catch (error: any) {
