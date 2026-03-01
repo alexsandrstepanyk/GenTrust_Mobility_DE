@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { 
   AreaChart, Area, BarChart, Bar, LineChart, Line, 
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -8,17 +9,31 @@ import {
 } from 'recharts';
 import { 
   TrendingUp, Users, FileText, CheckCircle, XCircle, 
-  Clock, AlertCircle 
+  Clock, AlertCircle, Send, ThumbsUp, Trash2
 } from 'lucide-react';
 import { statsAPI } from '@/lib/api';
 import { useSocket, useSocketEvent } from '@/lib/socket';
+import { api } from '@/lib/api';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [pendingReports, setPendingReports] = useState<any[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState<Record<string, string>>({});
+  const [approving, setApproving] = useState<Record<string, boolean>>({});
   const { socket } = useSocket();
+
+  const departments = [
+    { id: 'roads', name: '🛣️ Дороги' },
+    { id: 'lighting', name: '💡 Освітлення' },
+    { id: 'waste', name: '🗑️ Сміття' },
+    { id: 'parks', name: '🌳 Парки' },
+    { id: 'water', name: '🚰 Водопровід' },
+    { id: 'transport', name: '🚗 Транспорт' },
+    { id: 'other', name: '❓ Інше' },
+  ];
 
   useEffect(() => {
     loadStats();
@@ -28,6 +43,11 @@ export default function Dashboard() {
     try {
       const { data } = await statsAPI.getDashboard();
       setStats(data);
+      
+      // Load pending reports
+      const reportsRes = await api.get('/reports?status=PENDING&limit=10');
+      const reports = Array.isArray(reportsRes) ? reportsRes : reportsRes.data || [];
+      setPendingReports(reports);
     } catch (error) {
       console.error('Failed to load stats:', error);
     } finally {
@@ -35,9 +55,48 @@ export default function Dashboard() {
     }
   };
 
+  const handleApprove = async (reportId: string) => {
+    setApproving(prev => ({ ...prev, [reportId]: true }));
+    try {
+      const department = selectedDepartment[reportId];
+      if (!department) {
+        alert('Виберіть відділ');
+        return;
+      }
+      
+      await api.post(`/reports/${reportId}/approve`, { department });
+      setPendingReports(prev => prev.filter(r => r.id !== reportId));
+      setSelectedDepartment(prev => {
+        const updated = { ...prev };
+        delete updated[reportId];
+        return updated;
+      });
+      loadStats();
+    } catch (error) {
+      console.error('Failed to approve report:', error);
+      alert('Помилка при підтвердженні звіту');
+    } finally {
+      setApproving(prev => ({ ...prev, [reportId]: false }));
+    }
+  };
+
+  const handleReject = async (reportId: string) => {
+    setApproving(prev => ({ ...prev, [reportId]: true }));
+    try {
+      await api.post(`/reports/${reportId}/reject`, {});
+      setPendingReports(prev => prev.filter(r => r.id !== reportId));
+      loadStats();
+    } catch (error) {
+      console.error('Failed to reject report:', error);
+      alert('Помилка при відхиленні звіту');
+    } finally {
+      setApproving(prev => ({ ...prev, [reportId]: false }));
+    }
+  };
+
   // Real-time updates
   useSocketEvent(socket, 'stats:update', (data: any) => {
-    setStats(prev => ({ ...prev, ...data }));
+    setStats(в  => ({ ...prev, ...data }));
   });
 
   useSocketEvent(socket, 'report:new', () => {
@@ -222,6 +281,95 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Pending Reports Management */}
+      {pendingReports.length > 0 && (
+        <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-900">
+          <CardHeader>
+            <CardTitle className="text-yellow-800 dark:text-yellow-200">
+              ⏳ Звіти на розгляді ({pendingReports.length})
+            </CardTitle>
+            <CardDescription className="text-yellow-700 dark:text-yellow-300">
+              Затвердіть звіти та направте до відповідного відділу
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {pendingReports.map((report) => (
+                <div 
+                  key={report.id} 
+                  className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-yellow-200 dark:border-yellow-900"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-bold text-gray-900 dark:text-white">
+                          {report.title}
+                        </h4>
+                        <Badge className="bg-yellow-100 text-yellow-800">
+                          {report.category}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        {report.description}
+                      </p>
+                      {report.location && (
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mb-3">
+                          📍 {report.location.lat.toFixed(4)}, {report.location.lng.toFixed(4)}
+                        </p>
+                      )}
+                      
+                      {/* Department Selection */}
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {departments.map(dept => (
+                          <button
+                            key={dept.id}
+                            onClick={() => setSelectedDepartment(prev => ({
+                              ...prev,
+                              [report.id]: dept.id
+                            }))}
+                            className={`px-3 py-1 rounded-full text-sm transition ${
+                              selectedDepartment[report.id] === dept.id
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300'
+                            }`}
+                          >
+                            {dept.name}
+                          </button>
+                        ))}
+                      </div>
+
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        Від: {report.createdBy?.name} | {new Date(report.createdAt).toLocaleDateString('uk-UA')}
+                      </p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => handleApprove(report.id)}
+                        disabled={!selectedDepartment[report.id] || approving[report.id]}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg transition flex items-center gap-2 text-sm font-medium"
+                      >
+                        <ThumbsUp className="h-4 w-4" />
+                        Підтвердити
+                      </button>
+                      <button
+                        onClick={() => handleReject(report.id)}
+                        disabled={approving[report.id]}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg transition flex items-center gap-2 text-sm font-medium"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Відхилити
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent Activity */}
       <Card>

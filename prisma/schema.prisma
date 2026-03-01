@@ -152,7 +152,9 @@ model Report {
   // Робота ШІ та модерація
   aiVerdict   String?      // Результат від Gemini (JSON-string)
   category    String?      // Категорія проблеми (напр. Дороги, Сміття)
-  status      String       @default("PENDING") // ReportStatus: PENDING, APPROVED, REJECTED
+  status      String       @default("PENDING") // ReportStatus: PENDING, APPROVED, REJECTED, FORWARDED
+  forwardedTo String?      // Відділ, до якого направлено (roads, lighting, waste, parks, water, transport, other)
+  rejectionReason String?  // Причина відхилення
   
   // Зв'язок з комунальною службою
   municipalTask MunicipalTask?
