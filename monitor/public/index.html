@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenTrust Mobility - Моніторинг Системи</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 GenTrust Mobility</h1>
+            <h2>Система Моніторингу Процесів</h2>
+            <div class="timestamp">Оновлено: <span id="timestamp">--:--:--</span></div>
+        </header>
+
+        <!-- База даних -->
+        <section class="section">
+            <h3>🗄️ База Даних</h3>
+            <div id="database-status" class="service-grid">
+                <!-- Заповнюється динамічно -->
+            </div>
+        </section>
+
+        <!-- Основні сервіси -->
+        <section class="section">
+            <h3>🚀 Основні Сервіси</h3>
+            <div id="services-status" class="service-grid">
+                <!-- Заповнюється динамічно -->
+            </div>
+        </section>
+
+        <!-- Telegram боти -->
+        <section class="section">
+            <h3>🤖 Telegram Боти</h3>
+            <div id="bots-status" class="bot-grid">
+                <!-- Заповнюється динамічно -->
+            </div>
+        </section>
+
+        <footer>
+            <p>💡 Підключення: <span id="connection-status" class="status-online">Підключено</span></p>
+            <p>🔄 Оновлення кожні 3 секунди</p>
+        </footer>
+    </div>
+
+    <script>
+        const socket = io();
+        
+        // Підключення до сервера
+        socket.on('connect', () => {
+            document.getElementById('connection-status').textContent = 'Підключено';
+            document.getElementById('connection-status').className = 'status-online';
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('connection-status').textContent = 'Від\'єднано';
+            document.getElementById('connection-status').className = 'status-offline';
+        });
+
+        // Отримання оновлень статусу
+        socket.on('status-update', (data) => {
+            updateTimestamp(data.timestamp);
+            updateDatabase(data.database);
+            updateServices(data.services);
+            updateBots(data.bots);
+        });
+
+        function updateTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            document.getElementById('timestamp').textContent = date.toLocaleTimeString('uk-UA');
+        }
+
+        function updateDatabase(db) {
+            const container = document.getElementById('database-status');
+            
+            const statusClass = db.status === 'online' ? 'online' : 
+                               db.status === 'error' ? 'offline' : 'warning';
+            
+            container.innerHTML = `
+                <div class="service-card ${statusClass}">
+                    <div class="service-header">
+                        <div class="service-icon">🗄️</div>
+                        <div class="service-info">
+                            <h4>SQLite Database</h4>
+                            <p class="service-description">/prisma/dev.db</p>
+                        </div>
+                        <div class="status-indicator ${statusClass}"></div>
+                    </div>
+                    <div class="service-status">
+                        <p>${db.message}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateServices(services) {
+            const container = document.getElementById('services-status');
+
+            container.innerHTML = services.map(service => {
+                const statusClass = service.status === 'online' ? 'online' :
+                                   service.status === 'error' ? 'warning' : 'offline';
+
+                const hasLogs = service.logs && service.logs.trim() !== '(Лог порожній)';
+                
+                const hasCommands = service.commands ? `
+                    <div class="commands-section">
+                        <details class="commands">
+                            <summary>💻 Команди запуску</summary>
+                            <div class="command-blocks">
+                                <div class="command-item">
+                                    <div class="command-label">📂 Перейти в папку:</div>
+                                    <code class="command-code">${service.commands.cd}</code>
+                                </div>
+                                <div class="command-item">
+                                    <div class="command-label">🚀 Запустити:</div>
+                                    <code class="command-code">${service.commands.start}</code>
+                                </div>
+                                <div class="command-item">
+                                    <div class="command-label">🛑 Зупинити (якщо порт зайнятий):</div>
+                                    <code class="command-code">${service.commands.kill}</code>
+                                </div>
+                                <div class="command-item">
+                                    <div class="command-label">📋 Повна команда (копіювати):</div>
+                                    <code class="command-code full-command">${service.commands.cd} && ${service.commands.start}</code>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="service-card ${statusClass}">
+                        <div class="service-header">
+                            <div class="service-icon">${service.icon}</div>
+                            <div class="service-info">
+                                <h4>${service.name}</h4>
+                                <p class="service-description">Порт: ${service.port}</p>
+                            </div>
+                            <div class="status-indicator ${statusClass}"></div>
+                        </div>
+                        <div class="service-status">
+                            <p><strong>${service.message}</strong></p>
+                            <div class="service-details">
+                                <span class="detail-item">
+                                    Порт активний: ${service.portActive ? '✅' : '❌'}
+                                </span>
+                                <span class="detail-item">
+                                    Health check: ${service.healthOk ? '✅' : '❌'}
+                                </span>
+                            </div>
+                        </div>
+                        ${hasCommands}
+                        ${hasLogs ? `
+                            <details class="logs-section">
+                                <summary>📋 Логи (останні 10 рядків)</summary>
+                                <pre class="logs">${escapeHtml(service.logs)}</pre>
+                            </details>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateBots(bots) {
+            const container = document.getElementById('bots-status');
+            
+            container.innerHTML = bots.map(bot => {
+                const statusClass = bot.status ? 'online' : 'offline';
+                
+                return `
+                    <div class="bot-card ${statusClass}">
+                        <div class="bot-icon">${bot.icon}</div>
+                        <div class="status-indicator ${statusClass}"></div>
+                        <h4>${bot.name}</h4>
+                        <p>${bot.message}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
