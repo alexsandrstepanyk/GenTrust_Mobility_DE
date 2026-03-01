@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { usersAPI } from '@/lib/api';
 import { useSocket, useSocketEvent } from '@/lib/socket';
-import { CheckCircle, XCircle, Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { CheckCircle, XCircle, Mail, Phone } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
 interface User {
@@ -22,7 +22,7 @@ interface User {
   };
 }
 
-export default function Users() {
+function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const { socket } = useSocket();
@@ -239,3 +239,5 @@ export default function Users() {
     </div>
   );
 }
+
+export default Users;

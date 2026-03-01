@@ -25,9 +25,13 @@ export default function LoginScreen({ navigation }: any) {
             return;
         }
 
+        // Allow both email and username login
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email.trim())) {
-            Alert.alert(t('error', 'Error'), 'Емейл невірний');
+        const isEmailFormat = emailRegex.test(email.trim());
+        const isUsernameFormat = /^[a-zA-Z0-9_]{3,}$/i.test(email.trim());
+        
+        if (!isEmailFormat && !isUsernameFormat) {
+            Alert.alert(t('error', 'Error'), 'Введіть email або username (мінімум 3 символи)');
             return;
         }
 

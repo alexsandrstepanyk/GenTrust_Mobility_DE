@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { 
-  AreaChart, Area, BarChart, Bar, LineChart, Line, 
+  AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
 import { 
   TrendingUp, Users, FileText, CheckCircle, XCircle, 
-  Clock, AlertCircle, Send, ThumbsUp, Trash2
+  Clock, AlertCircle, ThumbsUp, Trash2
 } from 'lucide-react';
 import { statsAPI } from '@/lib/api';
 import { useSocket, useSocketEvent } from '@/lib/socket';
@@ -96,7 +95,7 @@ export default function Dashboard() {
 
   // Real-time updates
   useSocketEvent(socket, 'stats:update', (data: any) => {
-    setStats(в  => ({ ...prev, ...data }));
+    setStats((prev: any) => ({ ...prev, ...data }));
   });
 
   useSocketEvent(socket, 'report:new', () => {
@@ -250,7 +249,7 @@ export default function Dashboard() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {statusDistribution.map((entry, index) => (
+                  {statusDistribution.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
