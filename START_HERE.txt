@@ -1,0 +1,35 @@
+🚀 GenTrust Mobility - QUICK START
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TO RUN EVERYTHING:
+  bash start_dev.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ON YOUR PHONE:
+  1. Open "Expo Go" app
+  2. Find "GenTrust School"
+  3. Login: admin / admin
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SERVICES:
+  ✅ Backend:   http://192.168.178.34:3000/api
+  ✅ Admin:     http://192.168.178.34:5174
+  ✅ Staff:     http://192.168.178.34:5173
+  ✅ Mobile:    Expo Go (tunnel mode)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DOCS:
+  📄 SESSION_SUMMARY.md      - What was fixed
+  📄 SYSTEM_READY.md         - Full details
+  📄 MOBILE_RUN_UA.md        - Ukrainian guide
+  📄 ALL_LINKS.md            - All URLs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STATUS: ✅ READY FOR TESTING
+
+Last updated: 28 Feb 2026

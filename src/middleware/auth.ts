@@ -27,6 +27,7 @@ interface MySessionData {
         pickupCode: string;   // Code to show merchant
         deliveryCode: string; // Code to receive from recipient
     };
+    awaitingCompletionQuestId?: string;
 }
 
 // Combine with Wizard session structure

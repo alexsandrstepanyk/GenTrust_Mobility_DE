@@ -17,9 +17,27 @@ Ukrainian edtech platform connecting students with earning opportunities through
 ### Mobile Applications
 - **Client App** (Port 8081): Task order creation, progress tracking, earning history
 - **School App** (Port 8082): Quest discovery, task completion, reputation tracking
+  - **Фото-підтвердження завдань**: Завантаження фото після виконання
+  - Очікування підтвердження від замовника/батьків
+  - Автоматичне нарахування винагороди після approve
+- **Parent App** (Port 8082): Family control panel, children monitoring, profile management
+  - Профіль з трьома секціями: Bewertung der Kinder, Persönliche Daten, Einstellungen
+  - **Datenschutz (Privacy Policy)**: Повна DSGVO-сумісна політика конфіденційності
+  - **Мовний вибір**: Deutsch, English, Українська, Русский, Français (react-i18next)
+  - Динамічна зміна мови в реальному часі
+  - Тестовий доступ: admin@parent.com / admin
+  - Виправлено критичні помилки charAt та краш ProfileScreen
+  - **NEW: Підтвердження виконаних завдань** - перегляд фото-звітів та approve/reject
+- **Telegram Bots**: Розширений профіль з налаштуваннями
+  - Кнопка "👤 Профіль" у головному меню
+  - Налаштування: 🌐 Вибір мови (5 мов), 🔒 Privacy Policy (DSGVO), ℹ️ Про додаток
+  - Білінгвальний інтерфейс (Deutsch/Українська)
+  - Відображення балансу та рейтингу
+  - **NEW: Фото-підтвердження** - отримання сповіщень з фото та approve/reject через бота
 - Real-time quest synchronization (30-second refresh interval)
 - User authentication and authorization
 - Leaderboard and rating system
+- **Photo Verification System**: Complete workflow for task approval with photo evidence
 
 ### Backend Services
 - **Express.js API** (Port 3000): RESTful endpoints for all operations
@@ -38,11 +56,60 @@ Ukrainian edtech platform connecting students with earning opportunities through
 
 ### Prerequisites
 - Node.js 20.18.x
-- PostgreSQL database
-- iOS simulators (iPhone 16e & iPhone 16 Pro)
-- Environment variables (.env file)
+- PostgreSQL database (або SQLite для розробки)
+- Expo Go app на телефоні
+- Mac і телефон в одній Wi-Fi мережі
 
-### One-Command Startup
+### ⚡ One-Command Startup (Новий спосіб - РЕКОМЕНДОВАНО)
+
+```bash
+cd /Users/apple/Desktop/GenTrust_Mobility_DE
+./start_mobile_school.sh
+```
+
+**Цей скрипт автоматично:**
+1. ✅ Визначає поточну IP адресу Mac
+2. ✅ Оновлює `mobile-school/config.ts` з актуальною IP
+3. ✅ Перевіряє що Backend слухає на `0.0.0.0` (доступний з мережі)
+4. ✅ Вбиває всі старі процеси (ts-node, expo)
+5. ✅ Видаляє папку `dist/` для уникнення конфліктів Metro bundler
+6. ✅ Запускає Backend API на порту 3000 (БЕЗ Telegram ботів для швидкості)
+7. ✅ Чекає поки Backend запуститься (до 15 секунд)
+8. ✅ Перевіряє що Backend доступний з мережі (`*:3000`)
+9. ✅ Тестує health endpoint з поточної IP
+10. ✅ Запускає Expo Metro Bundler на порту 8082 в LAN режимі
+11. ✅ Показує QR код для підключення з телефону
+
+**Час запуску: ~20-30 секунд** ⚡
+
+**Після запуску:**
+- Backend: `http://192.168.178.34:3000/api/health`
+- Expo: `exp://192.168.178.34:8082`
+- Відскануйте QR код в Expo Go на телефоні
+
+---
+
+### 📋 System Validation Checklist
+
+Перед кожним запуском перевіряйте: [SYSTEM_CHECKLIST.md](SYSTEM_CHECKLIST.md)
+
+**Критичні налаштування:**
+- ✅ Backend ЗАВЖДИ слухає на `0.0.0.0` (НЕ localhost!)
+- ✅ `mobile-school/config.ts` має актуальну IP Mac
+- ✅ Expo запускається з `--lan` прапором
+- ✅ Metro bundler виключає папки: `dist/`, `src/`, `prisma/`
+- ✅ Mac і телефон в одній Wi-Fi мережі
+
+**Якщо щось не працює:**
+1. Перевірте логи: `tail -50 server.log`
+2. Перевірте IP: `ifconfig en0 | grep inet`
+3. Тест з телефону: відкрийте в браузері `http://192.168.178.34:3000/api/health`
+4. Якщо не працює - Mac і телефон в різних мережах!
+
+---
+
+### 🔧 Manual Startup (Старий спосіб)
+
 ```bash
 ./start_all.sh
 ```
@@ -57,6 +124,87 @@ This script automatically:
 7. Boots client mobile app (port 8081)
 8. Boots school mobile app (port 8082)
 9. Auto-migrates existing TaskOrders to Quests
+
+### Parent App Startup
+```bash
+cd mobile-parent
+npx expo start --port 8082 --clear
+```
+
+**Expo Server**: exp://192.168.178.34:8082  
+**Test Login**: admin@parent.com / admin
+
+**Recent Fixes (Лютий 2026)**:
+- ✅ Виправлено TypeError: Cannot read property 'charAt' of null
+- ✅ Додано optional chaining (?.) до всіх charAt() викликів
+- ✅ Повністю переписано ProfileScreen з трьома секціями
+- ✅ Додано error handling для 404 API endpoints
+- ✅ Реалізовано logout з підтвердженням
+- ✅ **Додано Privacy Policy (DSGVO)** - відповідність німецькому законодавству
+- ✅ **Додано вибір мови** - 5 мов (DE, EN, UK, RU, FR) з react-i18next
+- ✅ **Повний переклад інтерфейсу на німецьку мову**
+- ✅ **i18n інтегровано** - динамічна зміна мови в реальному часі
+- ✅ **School App** - вже має i18n підтримку
+- ✅ **Telegram Bot** - розширений профіль з налаштуваннями та мовами
+- ✅ **Safe Area виправлено** - контент не залазить на статус бар та home indicator
+- ✅ **react-native-safe-area-context** - інтегровано у всі екрани Parent App
+- ✅ **NEW: Photo Verification System** - система підтвердження завдань з фото-звітами
+  - Студент надсилає фото після виконання
+  - Батьки/клієнти отримують сповіщення в Telegram
+  - Approve/Reject через додаток або Telegram бота
+  - Винагорода зараховується тільки після підтвердження
+
+### 📱 iOS Simulator Setup
+
+**IMPORTANT**: Clean old simulators before first run to save disk space!
+
+#### Step 1: Delete Old Simulators (Optional - frees ~6GB)
+```bash
+# Delete all unavailable simulators
+xcrun simctl delete unavailable
+
+# Or delete all simulators
+xcrun simctl erase all
+```
+
+#### Step 2: Boot New Simulators
+When you run `./start_all.sh` or `npm run school:dev`, Xcode will:
+1. Auto-detect need for iOS 18 simulator
+2. Download iOS runtime (~2GB)
+3. Create fresh iPhone 16 simulator
+4. Boot and install your app automatically
+
+**First time**: Takes 3-5 minutes ⏳
+**Subsequent runs**: 30 seconds ⚡
+
+#### Manual Simulator Control
+```bash
+# List all simulators
+xcrun simctl list devices
+
+# Boot iPhone 16
+xcrun simctl boot "iPhone 16"
+
+# Shutdown
+xcrun simctl shutdown "iPhone 16"
+
+# Delete specific simulator
+xcrun simctl delete "iPhone 16"
+```
+
+#### Troubleshooting
+If simulators fail to start:
+```bash
+# Kill simulator processes
+killall "Simulator"
+killall "SimulatorBridge"
+
+# Reset simulator
+xcrun simctl erase all
+
+# Restart Xcode services
+killall -9 com.apple.CoreSimulator.CoreSimulatorService
+```
 
 ### Manual Setup
 ```bash
@@ -77,6 +225,27 @@ npm run admin:dev             # Admin panel
 npm run staff:dev             # Staff panel
 npm run mobile:dev            # Client app
 npm run school:dev            # School app
+```
+
+### 💾 Disk Space Optimization
+
+If your SSD is full, clean up development caches:
+
+```bash
+# Clean iOS simulators and caches (saves ~12GB)
+xcrun simctl delete unavailable     # Delete unused simulators
+rm -rf ~/Library/Caches/com.microsoft.VSCode.ShipIt  # VS Code cache: 675MB
+rm -rf ~/Library/Caches/CloudKit    # CloudKit cache: 647MB
+rm -rf ~/Library/Caches/ms-playwright-go  # Playwright: 120MB
+
+# Clean npm and Expo
+npm cache clean --force             # NPM cache: 2.8GB
+rm -rf ~/.expo                      # Expo cache: 1.3GB
+
+# Clean Xcode
+rm -rf ~/Library/Developer/Xcode/DerivedData/*  # 250MB
+
+# Result: Frees ~18GB of space!
 ```
 
 ## 🔄 Task Order ↔ Quest Synchronization
@@ -113,6 +282,85 @@ Body: { reason?: string }
 GET /api/admin/task-orders/pending
 Header: admin_token=<token>
 ```
+
+---
+
+## 📸 Photo Verification System
+
+### Overview
+Quality control system where students submit photo evidence of completed tasks, and parents/clients approve before payment.
+
+### Workflow
+```
+1. Student completes task → uploads photo + description
+   ↓
+2. Quest status: COMPLETED → PENDING_VERIFICATION
+   ↓
+3. Notification sent to:
+   - Parent (if PersonalTask)
+   - Client (if TaskOrder)
+   ↓
+4. Parent/Client reviews photo:
+   → APPROVE: Reward paid + Dignity Score +5
+   → REJECT: No payment, student can retry
+   ↓
+5. Student receives notification
+```
+
+### Features
+- **Photo Upload**: Camera or gallery (React Native)
+- **GPS Tracking**: Location captured at completion
+- **Telegram Integration**: Approve/reject directly from bot
+- **Auto-approve**: Optional for trusted students/low-value tasks
+- **24-hour timeout**: Auto-approve if no response
+
+### API Endpoints
+```bash
+# Complete quest with photo
+POST /api/quests/:questId/complete
+Headers: Authorization: Bearer <student_token>
+Body: FormData { photo: File, description?: string }
+
+# Get pending approvals (Parent/Client)
+GET /api/completions/pending
+Headers: Authorization: Bearer <token>
+
+# Approve completion
+POST /api/completions/:completionId/approve
+Headers: Authorization: Bearer <parent_or_client_token>
+
+# Reject completion
+POST /api/completions/:completionId/reject
+Headers: Authorization: Bearer <parent_or_client_token>
+Body: { reason: string }
+```
+
+### Telegram Bot Commands
+```bash
+# For Students
+/complete - Show my active quests → upload photo
+
+# For Parents/Clients (via inline keyboard)
+✅ Підтвердити - Approve task
+❌ Відхилити - Reject task
+```
+
+### Database Schema
+```prisma
+model TaskCompletion {
+  id              String   @id @default(uuid())
+  quest           Quest    @relation(...)
+  student         User     @relation("completedBy", ...)
+  photoUrl        String?  // Cloudinary URL
+  photoTelegramId String?  // Telegram file_id
+  status          String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  verifiedBy      User?    @relation("verifiedBy", ...)
+  rewardAmount    Float?
+  rewardPaid      Boolean  @default(false)
+}
+```
+
+---
 
 ## 📁 Project Structure
 
@@ -221,17 +469,23 @@ GenTrust_Mobility/
 ### Key Tables
 - **Users**: Student profiles, auth, stats
 - **TaskOrder**: Client submissions (PENDING_MODERATION, PUBLISHED, REJECTED)
-- **Quest**: Student tasks (OPEN, IN_PROGRESS, COMPLETED)
-- **TaskCompletion**: Completion records with evidence
+- **Quest**: Student tasks (OPEN, IN_PROGRESS, COMPLETED, PENDING_VERIFICATION)
+- **TaskCompletion**: Photo verification records (PENDING, APPROVED, REJECTED)
+  - Stores photo evidence, GPS coordinates
+  - Links to student (executor) and verifier (parent/client)
+  - Tracks reward status and payment
 - **Report**: Infrastructure issue reports (CV-powered)
 - **LeaderboardSnapshot**: Historical rankings
 - **MunicipalService**: City services for Urban Guardian
+- **PersonalTask**: Parent-created tasks for children
 
 ### Relationships
 ```
 TaskOrder (1) ──→ (1) Quest [via taskOrderId]
+Quest (1) ──→ (∞) TaskCompletion [via questId]
 User (1) ──→ (∞) TaskOrder
-User (1) ──→ (∞) TaskCompletion
+User (1) ──→ (∞) TaskCompletion [as student]
+User (1) ──→ (∞) TaskCompletion [as verifier]
 Quest (1) ──→ (∞) TaskCompletion
 ```
 
@@ -387,5 +641,26 @@ For issues or questions:
 ---
 
 **Status**: ✅ Full working system ready for investor presentation
-**Last Updated**: February 23, 2026
-**Dual Emulator**: iPhone 16e & iPhone 16 Pro (simultaneous testing)
+**Last Updated**: March 1, 2026
+**System Status**: 
+  - ✅ Backend API (port 3000) - Running
+  - ✅ Staff Panel (port 5173) - Running  
+  - ✅ Admin Panel (port 5174) - Running
+  - ✅ School Mobile App (port 8082) - Running
+  - ✅ Parent Mobile App - Safe Area Fixed
+  - ✅ Telegram Bots (5 bots) - Running
+  - ✅ Database (PostgreSQL) - Connected
+  - ✅ **Photo Verification System** - Implemented and E2E-validated
+  - ✅ **Push Notifications** - Implemented (apps + backend + completion lifecycle)
+**Dual Emulator**: iPhone 16 & iPhone 16 Pro (simulators auto-created on demand)
+**Disk Space**: Optimized - cleaned 19GB of old caches and simulators
+**New Features (Mar 1)**:
+  - 📸 Photo Verification for task completion
+  - ✅ Approve/Reject workflow for parents and clients
+  - 💰 Reward payment only after approval
+  - 📱 Telegram integration for photo approvals
+  - 🔔 Push notifications from mobile apps (Expo token registration + lifecycle events)
+  - 🧪 E2E validation passed for client approve + parent reject flows
+
+**Verification Report**:
+  - [docs/E2E_PHOTO_VERIFICATION_REPORT_2026-03-01.md](docs/E2E_PHOTO_VERIFICATION_REPORT_2026-03-01.md)

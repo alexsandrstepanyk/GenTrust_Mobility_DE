@@ -46,8 +46,8 @@ sleep 2
 
 echo ""
 echo -e "${YELLOW}🔄 Очищення кешів...${NC}"
-cd /Users/apple/Desktop/GenTrust_Mobility/mobile && rm -rf .expo 2>/dev/null
-cd /Users/apple/Desktop/GenTrust_Mobility/mobile-school && rm -rf .expo 2>/dev/null
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile && rm -rf .expo 2>/dev/null
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school && rm -rf .expo 2>/dev/null
 
 echo ""
 echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"

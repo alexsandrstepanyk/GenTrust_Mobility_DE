@@ -98,6 +98,56 @@ GenTrust ламає традиційну модель civic tech. Замість
 - [x] Activity log
 - [x] Seed скрипти для тестових даних
 
+#### **Parent Mobile App (GenTrust Family)**
+- [x] Автентифікація батьків (JWT + SecureStore)
+- [x] ParentHomeScreen з переліком дітей
+- [x] ProfileScreen з трьома секціями:
+  - ⭐ **Рейтинг дітей**: Dignity Score та баланс кожної дитини
+  - 👤 **Персональні дані**: Ім'я, прізвище, email, роль, баланс, рейтинг
+  - ⚙️ **Налаштування**: 6 пунктів меню (Сповіщення, Конфіденційність, Мова, GPS, Допомога, Про додаток)
+- [x] Logout з підтвердженням (Alert)
+- [x] Error handling для null/undefined значень
+- [x] Loading states та retry функціонал
+- [x] Виправлено критичні баги:
+  - Виправлено TypeError: Cannot read property 'charAt' of null (додано optional chaining)
+  - Виправлено краш при відкритті профілю
+  - Виправлено помилки рендерингу JSX
+- [x] Expo Server на порті **8082** (exp://192.168.178.34:8082)
+
+#### **School Mobile App (GenTrust School) - Березень 2026**
+- [x] **Повний ProfileScreen з контактною інформацією**:
+  - Відображення: phone, address, birthDate, school, grade
+  - Редагування профілю через модальне вікно
+  - GPS sharing toggle для батьків
+  - Privacy Policy modal з повним текстом DSGVO
+  - Мовний вибір (5 мов: EN, UK, DE, FR, RU)
+- [x] **Backend API endpoints**:
+  - `GET /api/users/me` - отримання повного профілю з контактами
+  - `PATCH /api/users/me` - оновлення контактних даних та GPS settings
+- [x] **Database schema**:
+  - Додано поля User: `phone`, `address` (вже були: birthDate, school, grade)
+  - Міграція застосована: `20260301101316_add_user_contact_fields`
+- [x] **Push Notifications System**:
+  - Створено централізований сервіс `questNotifications.ts`
+  - Інтегровано в всі quest lifecycle routes
+  - Notifications: quest created, completed, verified (approved/rejected)
+  - Personal task notifications для батьків
+- [x] **Internationalization (i18n)**:
+  - 16 нових ключів перекладу для profile features
+  - Підтримка всіх 5 мов: EN, UK, DE, FR, RU
+- [x] **System Automation**:
+  - Створено `start_mobile_school.sh` - автоматичний запуск за 20 секунд
+  - Створено `SYSTEM_CHECKLIST.md` - validation checklist для кожного запуску
+  - Backend binding на `0.0.0.0` для доступу з телефону
+  - Auto-update config.ts з поточною IP адресою Mac
+  - Виключення backend папок з Metro bundler (dist/, src/, prisma/)
+- [x] **Bug Fixes (Березень 2026)**:
+  - Виправлено java.io.IOException - backend тепер слухає на всіх інтерфейсах
+  - Виправлено Metro bundler конфлікти з backend кодом
+  - Виправлено questNotifications помилки (PersonalTask fields)
+  - Додано детальне логування помилок для діагностики
+  - Content-Type: multipart/form-data для photo uploads
+
 #### **Користувачі**
 - [x] 5 ролей (Admin, Scout, Student, Municipal, Quest Provider)
 - [x] Система реєстрації та логіну

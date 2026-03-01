@@ -5,8 +5,8 @@
 [33m[nodemon] 3.1.14[39m
 [33m[nodemon] to restart at any time, enter `rs`[39m
 [33m[nodemon] watching path(s): src/**/*[39m
-[33m[nodemon] watching extensions: ts[39m
-[32m[nodemon] starting `ts-node src/index.ts src/index.ts`[39m
+[33m[nodemon] watching extensions: ts,js[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
 [Bot] Initialized.
 [Quest Provider Bot] Initialized.
 [Master Bot] Initialized.
@@ -29,104 +29,111 @@ Starting GenTrust Alpha Bots...
 [MessengerHub] Registered bot: municipal
 
 ✨ All bots startup initiated! They are now listening...
-(node:27155) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:43974) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 🚀 GenTrust API Server running on port 3000
-[LeaderboardSnapshot] Snapshot for 2026-02-24T23:00:00.000Z already exists
-❌ Municipal Services Bot Error: TelegramError: 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-    at Telegram.callApi (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/client.js:315:19)
-    at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at async Polling.[Symbol.asyncIterator] (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:30:33)
-    at async Polling.loop (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:73:30)
-    at async Telegraf.launch (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/telegraf.js:194:13)
-    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/index.ts:25:13 {
-  response: {
-    ok: false,
-    error_code: 409,
-    description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running'
-  },
-  on: {
-    method: 'getUpdates',
-    payload: { timeout: 50, offset: 0, allowed_updates: [] }
-  }
-}
-❌ Quest Provider Bot Error: TelegramError: 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-    at Telegram.callApi (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/client.js:315:19)
-    at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at async Polling.[Symbol.asyncIterator] (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:30:33)
-    at async Polling.loop (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:73:30)
-    at async Telegraf.launch (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/telegraf.js:194:13)
-    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/index.ts:25:13 {
-  response: {
-    ok: false,
-    error_code: 409,
-    description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running'
-  },
-  on: {
-    method: 'getUpdates',
-    payload: { timeout: 50, offset: 0, allowed_updates: [] }
-  }
-}
-❌ Master Core Bot Error: TelegramError: 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-    at Telegram.callApi (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/client.js:315:19)
-    at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at async Polling.[Symbol.asyncIterator] (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:30:33)
-    at async Polling.loop (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:73:30)
-    at async Telegraf.launch (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/telegraf.js:194:13)
-    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/index.ts:25:13 {
-  response: {
-    ok: false,
-    error_code: 409,
-    description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running'
-  },
-  on: {
-    method: 'getUpdates',
-    payload: { timeout: 50, offset: 0, allowed_updates: [] }
-  }
-}
-❌ Scout Bot Error: TelegramError: 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-    at Telegram.callApi (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/client.js:315:19)
-    at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at async Polling.[Symbol.asyncIterator] (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:30:33)
-    at async Polling.loop (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:73:30)
-    at async Telegraf.launch (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/telegraf.js:194:13)
-    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/index.ts:25:13 {
-  response: {
-    ok: false,
-    error_code: 409,
-    description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running'
-  },
-  on: {
-    method: 'getUpdates',
-    payload: { timeout: 50, offset: 0, allowed_updates: [] }
-  }
-}
-❌ City Hall Bot Error: TelegramError: 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-    at Telegram.callApi (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/client.js:315:19)
-    at processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at async Polling.[Symbol.asyncIterator] (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:30:33)
-    at async Polling.loop (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/core/network/polling.js:73:30)
-    at async Telegraf.launch (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/telegraf/lib/telegraf.js:194:13)
-    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/index.ts:25:13 {
-  response: {
-    ok: false,
-    error_code: 409,
-    description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running'
-  },
-  on: {
-    method: 'getUpdates',
-    payload: { timeout: 50, offset: 0, allowed_updates: [] }
-  }
-}
-[0mGET /health [32m200[0m 15.181 ms - 54[0m
+[LeaderboardSnapshot] Snapshot for 2026-02-28T23:00:00.000Z already exists
+[0mGET /api/health [32m200[0m 2.465 ms - 54[0m
+✅ Scout Bot launched and listening!
+[0mGET /api/health [32m200[0m 0.493 ms - 54[0m
+[0mGET /api/health [32m200[0m 0.297 ms - 54[0m
 [Auth] Login attempt for: "admin"
 [Auth] Login successful: "admin"
-[0mPOST /api/auth/login [32m200[0m 269.018 ms - 727[0m
-[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIwNTc4OTAsImV4cCI6MTc3MjY2MjY5MH0.dEIlWtRKyO5L44kfNPi3PjmWwb9AJBxNy-qzOsHRBDQ
+[0mPOST /api/auth/login [32m200[0m 108.936 ms - 728[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzNDUsImV4cCI6MTc3Mjk2NDE0NX0.Y4JF-xXCX6Mqh1SvoRLkETYnK9VT3POArzNPDgFrHS0
 [Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
 [Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
-[0mGET /api/quests/available [32m200[0m 14.890 ms - 1069[0m
-[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIwNTc4OTAsImV4cCI6MTc3MjY2MjY5MH0.dEIlWtRKyO5L44kfNPi3PjmWwb9AJBxNy-qzOsHRBDQ
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzNDUsImV4cCI6MTc3Mjk2NDE0NX0.Y4JF-xXCX6Mqh1SvoRLkETYnK9VT3POArzNPDgFrHS0
 [Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
 [Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
-[0mGET /api/users/active-quest [32m200[0m 10.337 ms - 574[0m
+[0mGET /api/quests/available [36m304[0m 12.030 ms - -[0m
+[0mGET /api/quests/available [36m304[0m 6.360 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzNDUsImV4cCI6MTc3Mjk2NDE0NX0.Y4JF-xXCX6Mqh1SvoRLkETYnK9VT3POArzNPDgFrHS0
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzNDUsImV4cCI6MTc3Mjk2NDE0NX0.Y4JF-xXCX6Mqh1SvoRLkETYnK9VT3POArzNPDgFrHS0
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/users/active-quest [32m200[0m 6.006 ms - 684[0m
+[0mGET /api/users/active-quest [32m200[0m 4.955 ms - 684[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzNDUsImV4cCI6MTc3Mjk2NDE0NX0.Y4JF-xXCX6Mqh1SvoRLkETYnK9VT3POArzNPDgFrHS0
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/users/active-quest [36m304[0m 3.163 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzNDUsImV4cCI6MTc3Mjk2NDE0NX0.Y4JF-xXCX6Mqh1SvoRLkETYnK9VT3POArzNPDgFrHS0
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/quests/available [36m304[0m 4.201 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzNDUsImV4cCI6MTc3Mjk2NDE0NX0.Y4JF-xXCX6Mqh1SvoRLkETYnK9VT3POArzNPDgFrHS0
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/users/active-quest [36m304[0m 2.096 ms - -[0m
+[Auth] Login attempt for: "admin"
+[Auth] Login successful: "admin"
+[0mPOST /api/auth/login [32m200[0m 78.998 ms - 728[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzODIsImV4cCI6MTc3Mjk2NDE4Mn0.ZkOJ1ubWGA74ubeWgA4Y4w88Pm_OdWA7JtiVZvw_r3w
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/quests/available [36m304[0m 2.908 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzODIsImV4cCI6MTc3Mjk2NDE4Mn0.ZkOJ1ubWGA74ubeWgA4Y4w88Pm_OdWA7JtiVZvw_r3w
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/quests/available [36m304[0m 2.765 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzODIsImV4cCI6MTc3Mjk2NDE4Mn0.ZkOJ1ubWGA74ubeWgA4Y4w88Pm_OdWA7JtiVZvw_r3w
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/users/active-quest [36m304[0m 1.345 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzODIsImV4cCI6MTc3Mjk2NDE4Mn0.ZkOJ1ubWGA74ubeWgA4Y4w88Pm_OdWA7JtiVZvw_r3w
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/users/active-quest [36m304[0m 1.418 ms - -[0m
+[0mGET /api/leaderboard [36m304[0m 2.027 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzODIsImV4cCI6MTc3Mjk2NDE4Mn0.ZkOJ1ubWGA74ubeWgA4Y4w88Pm_OdWA7JtiVZvw_r3w
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+Gemini Analysis Error (all models failed): GoogleGenerativeAIError: [404 Not Found] models/gemini-1.5-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at makeRequest (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/@google/generative-ai/dist/index.js:212:19)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async generateContent (/Users/apple/Desktop/GenTrust_Mobility_DE/node_modules/@google/generative-ai/dist/index.js:536:22)
+    at async analyzeImage (/Users/apple/Desktop/GenTrust_Mobility_DE/src/services/gemini.ts:68:32)
+    at async /Users/apple/Desktop/GenTrust_Mobility_DE/src/api/routes/reports.ts:24:26
+[0mPOST /api/reports/analyze [32m200[0m 1768.687 ms - 52[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzODIsImV4cCI6MTc3Mjk2NDE4Mn0.ZkOJ1ubWGA74ubeWgA4Y4w88Pm_OdWA7JtiVZvw_r3w
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mPOST /api/reports [32m201[0m 1421.911 ms - 426[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzODIsImV4cCI6MTc3Mjk2NDE4Mn0.ZkOJ1ubWGA74ubeWgA4Y4w88Pm_OdWA7JtiVZvw_r3w
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/quests/available [36m304[0m 10.666 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzODIsImV4cCI6MTc3Mjk2NDE4Mn0.ZkOJ1ubWGA74ubeWgA4Y4w88Pm_OdWA7JtiVZvw_r3w
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/users/active-quest [36m304[0m 1.809 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzODIsImV4cCI6MTc3Mjk2NDE4Mn0.ZkOJ1ubWGA74ubeWgA4Y4w88Pm_OdWA7JtiVZvw_r3w
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/quests/available [36m304[0m 3.373 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNTkzODIsImV4cCI6MTc3Mjk2NDE4Mn0.ZkOJ1ubWGA74ubeWgA4Y4w88Pm_OdWA7JtiVZvw_r3w
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/users/active-quest [36m304[0m 1.718 ms - -[0m
+[Auth] Login attempt for: "admin"
+[Auth] Login successful: "admin"
+[0mPOST /api/auth/login [32m200[0m 83.493 ms - 728[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNjAxMDEsImV4cCI6MTc3Mjk2NDkwMX0.B1_wjfuHwQahNwVyBALYh8f6dkuiOr5ApjeNfNCIpNw
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/quests/available [36m304[0m 3.840 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNjAxMDEsImV4cCI6MTc3Mjk2NDkwMX0.B1_wjfuHwQahNwVyBALYh8f6dkuiOr5ApjeNfNCIpNw
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/quests/available [36m304[0m 3.409 ms - -[0m
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNjAxMDEsImV4cCI6MTc3Mjk2NDkwMX0.B1_wjfuHwQahNwVyBALYh8f6dkuiOr5ApjeNfNCIpNw
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[Auth Middleware] Authorization header: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0ZDYwOTRiNy1kZTRjLTQ0ZjktYjQ4My0yNmY5ZWYwNDFkYzciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NzIzNjAxMDEsImV4cCI6MTc3Mjk2NDkwMX0.B1_wjfuHwQahNwVyBALYh8f6dkuiOr5ApjeNfNCIpNw
+[Auth Middleware] Extracted token: eyJhbGciOiJIUzI1NiIs...
+[Auth Middleware] Token verified for user: 4d6094b7-de4c-44f9-b483-26f9ef041dc7
+[0mGET /api/users/active-quest [36m304[0m 4.748 ms - -[0m
+[0mGET /api/users/active-quest [36m304[0m 3.558 ms - -[0m

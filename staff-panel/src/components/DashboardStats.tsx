@@ -1,7 +1,7 @@
 import React from 'react';
 import './DashboardStats.css';
 
-export default function DashboardStats({ stats }) {
+export default function DashboardStats({ stats }: { stats: any }) {
   return (
     <div className="dashboard-stats">
       <div className="stat-card pending">

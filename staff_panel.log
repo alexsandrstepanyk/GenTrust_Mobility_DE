@@ -2,19 +2,9 @@
 > staff-panel@1.0.0 dev
 > vite
 
-Port 5173 is in use, trying another one...
 
-  VITE v4.5.14  ready in 403 ms
+  VITE v4.5.14  ready in 283 ms
 
-  ➜  Local:   http://localhost:5174/
+  ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-(node:27233) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
-11:07:13 PM [vite] http proxy error at /api/staff/quests-pending:
-AggregateError [ECONNREFUSED]: 
-    at internalConnectMultiple (node:net:1134:18)
-    at afterConnectMultiple (node:net:1715:7)
-11:07:13 PM [vite] http proxy error at /api/staff/stats:
-AggregateError [ECONNREFUSED]: 
-    at internalConnectMultiple (node:net:1134:18)
-    at afterConnectMultiple (node:net:1715:7)
+  ➜  press h to show help

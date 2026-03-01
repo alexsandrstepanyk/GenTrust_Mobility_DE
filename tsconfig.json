@@ -7,17 +7,13 @@
     ],
     "outDir": "./dist",
     "rootDir": "./src",
-    "strict": false,
+    "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "sourceMap": true,
-    "types": [
-      "node"
-    ],
-    "noImplicitAny": false,
-    "moduleResolution": "node16"
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "src/**/*"
@@ -25,5 +21,6 @@
   "exclude": [
     "node_modules",
     "dist"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

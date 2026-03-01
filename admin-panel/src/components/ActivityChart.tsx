@@ -4,9 +4,15 @@ import './ActivityChart.css';
 
 const API_URL = '/api/admin';
 
+interface Activity {
+  active_last_hour: number;
+  new_users_today: number;
+  by_role: { [key: string]: number };
+}
+
 export default function ActivityChart({ token }: { token: string }) {
-  const [activity, set_activity] = useState(null);
-  const [timeline, set_timeline] = useState(null);
+  const [activity, set_activity] = useState<Activity | null>(null);
+  const [timeline, set_timeline] = useState<any>(null);
   const [loading, set_loading] = useState(true);
 
   useEffect(() => {
@@ -59,10 +65,10 @@ export default function ActivityChart({ token }: { token: string }) {
         <div className="roles-section">
           <h2>Users by Role</h2>
           <div className="roles-list">
-            {activity.by_role.map((role: any) => (
-              <div key={role.role} className="role-item">
-                <span className="role-name">{role.role}</span>
-                <span className="role-count">{role._count}</span>
+            {Object.entries(activity.by_role).map(([role, count]) => (
+              <div key={role} className="role-item">
+                <span className="role-name">{role}</span>
+                <span className="role-count">{count as number}</span>
               </div>
             ))}
           </div>

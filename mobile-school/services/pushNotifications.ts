@@ -3,6 +3,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import axios from 'axios';
 import { API_URL } from '../config';
+import * as SecureStore from 'expo-secure-store';
 
 // Налаштування поведінки сповіщень
 Notifications.setNotificationHandler({
@@ -15,13 +16,20 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export async function registerForPushNotifications() {
+export async function registerForPushNotifications(authToken?: string) {
   if (!Device.isDevice) {
     console.log('[PUSH] Не на фізичному девайсі - пропускаємо реєстрацію');
     return;
   }
 
   try {
+    // У Expo Go push notifications не працюють в SDK 53+
+    // Цей код буде працювати тільки в development build
+    if (!Constants.expoConfig?.extra?.eas?.projectId) {
+      console.log('[PUSH] Expo Go detected - push notifications disabled. Use development build for push.');
+      return;
+    }
+
     // Запитаємо дозвіл
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -45,15 +53,27 @@ export async function registerForPushNotifications() {
 
     // Реєструємо на бекенді
     try {
+      const jwt = authToken || await SecureStore.getItemAsync('userToken');
+      if (!jwt) {
+        console.log('[PUSH] JWT токен не знайдено, пропускаємо реєстрацію push на бекенді');
+        return token.data;
+      }
+
       await axios.post(`${API_URL}/users/push-token`, {
         token: token.data,
+      }, {
+        headers: {
+          Authorization: `Bearer ${jwt}`
+        }
       });
       console.log('[PUSH] Токен зареєстровано на бекенді');
     } catch (error) {
       console.error('[PUSH] Помилка реєстрації токена:', error);
     }
+    return token.data;
   } catch (error) {
     console.error('[PUSH] Помилка при реєстрації:', error);
+    return null;
   }
 }
 
@@ -87,7 +107,7 @@ export async function sendTestNotification(title: string, body: string) {
         body,
         data: { screen: 'quest' },
       },
-      trigger: { type: 'timeInterval', seconds: 1 },
+      trigger: null,
     });
     console.log('[PUSH] Тестове сповіщення заплановане');
   } catch (error) {

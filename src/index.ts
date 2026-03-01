@@ -27,7 +27,9 @@ const launchBot = (botInstance: any, botName: string, hubName: string) => {
         } catch (e) {
             console.error(`❌ ${botName} Error:`, e);
         }
-    })();
+    })().catch((err) => {
+        console.error(`❌ ${botName} Fatal error:`, err);
+    });
 };
 
 // Initialize async startup sequence

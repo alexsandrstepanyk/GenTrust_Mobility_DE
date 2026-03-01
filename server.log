@@ -1,0 +1,9 @@
+[Bot] Initialized.
+
+✅ API-only mode started (no Telegram bots)
+🔗 Backend API available at http://localhost:3000
+
+(node:84394) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+🚀 GenTrust API Server running on port 3000 (0.0.0.0)
+[0mGET /api/health [32m200[0m 2.554 ms - 182[0m

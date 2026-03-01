@@ -1,9 +1,9 @@
-Starting project at /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school
+env: load .env
+env: export BOT_TOKEN CITY_HALL_BOT_TOKEN MASTER_BOT_TOKEN ADMIN_CHAT_ID GEMINI_API_KEY QUEST_PROVIDER_BOT_TOKEN MUNICIPAL_BOT_TOKEN DATABASE_URL
+Starting project at /Users/apple/Desktop/GenTrust_Mobility_DE
 Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Unable to run simctl:
+Error: xcrun simctl help exited with non-zero code: 69
 Waiting on http://localhost:8082
 Logs for your project will appear below.
-Error: Asset not found: /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school/assets/icon.png for platform: (unspecified)
-    at getAbsoluteAssetRecord (/Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school/node_modules/metro/src/Assets.js:129:11)
-    at getAsset (/Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school/node_modules/metro/src/Assets.js:224:18)
-    at Server._processSingleAssetRequest (/Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school/node_modules/metro/src/Server.js:436:20)
-    at Server._processRequest (/Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school/node_modules/metro/src/Server.js:535:7)

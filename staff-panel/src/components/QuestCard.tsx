@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './QuestCard.css';
 
-export default function QuestCard({ quest, onApprove, onReject }) {
+export default function QuestCard({ quest, onApprove, onReject }: { quest: any; onApprove: () => void; onReject: (reason: string) => void }) {
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
 
@@ -61,7 +61,7 @@ export default function QuestCard({ quest, onApprove, onReject }) {
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Reason for rejection..."
-              rows="3"
+              rows={3}
             />
             <div className="reject-actions">
               <button 

@@ -28,6 +28,13 @@ class MessengerHub {
     }
 
     /**
+     * Send photo + caption to a Scout via the Scout Bot.
+     */
+    async sendPhotoToScout(telegramId: number | bigint, photo: string, caption: string, options: any = {}) {
+        return this.sendPhoto("scout", telegramId, photo, caption, options);
+    }
+
+    /**
      * Send a message to a Provider via the Quest Provider Bot.
      */
     async sendToProvider(telegramId: number | bigint, message: string, options: any = {}) {
@@ -75,6 +82,26 @@ class MessengerHub {
             return true;
         } catch (error) {
             console.error(`[MessengerHub] Failed to send message via ${botName} to ${telegramId}:`, error);
+            return false;
+        }
+    }
+
+    private async sendPhoto(botName: string, telegramId: number | bigint, photo: string, caption: string, options: any = {}) {
+        const bot = this.bots[botName];
+        if (!bot) {
+            console.warn(`[MessengerHub] Bot '${botName}' not registered. Photo message to ${telegramId} dropped.`);
+            return false;
+        }
+
+        try {
+            await bot.telegram.sendPhoto(Number(telegramId), photo, {
+                caption,
+                parse_mode: "Markdown",
+                ...options
+            });
+            return true;
+        } catch (error) {
+            console.error(`[MessengerHub] Failed to send photo via ${botName} to ${telegramId}:`, error);
             return false;
         }
     }
