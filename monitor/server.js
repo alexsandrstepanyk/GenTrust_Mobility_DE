@@ -379,11 +379,103 @@ io.on('connection', (socket) => {
 app.get('/api/status', async (req, res) => {
     const status = await collectServicesStatus();
     const dbStatus = await checkDatabase();
-    
+
     res.json({
         ...status,
         database: dbStatus
     });
+});
+
+// API endpoint для зупинки всіх процесів
+app.post('/api/stop-all', (req, res) => {
+    const { exec } = require('child_process');
+    
+    exec('killall -9 node npm vite expo 2>/dev/null || true', (error) => {
+        if (error) {
+            console.error('Stop all error:', error);
+        }
+        console.log('✅ Всі процеси зупинено');
+    });
+    
+    res.json({ success: true, message: 'Зупинка всіх процесів...' });
+});
+
+// API endpoint для запуску всіх сервісів
+app.post('/api/start-all', (req, res) => {
+    const { exec } = require('child_process');
+    const PROJECT_DIR = '/Users/apple/Desktop/GenTrust_Mobility_DE';
+    
+    const commands = [
+        `cd ${PROJECT_DIR} && NODE_OPTIONS=--max-old-space-size=4096 npm run dev > /tmp/backend.log 2>&1 &`,
+        `cd ${PROJECT_DIR}/admin-panel && npm run dev > /tmp/admin-panel.log 2>&1 &`,
+        `cd ${PROJECT_DIR}/city-hall-dashboard && npm run dev > /tmp/city-hall.log 2>&1 &`,
+        `cd ${PROJECT_DIR}/mobile/gentrustmobility && npx expo start --port 8081 --lan > /tmp/expo-client.log 2>&1 &`,
+        `cd ${PROJECT_DIR}/mobile-school && npx expo start --port 8082 --lan > /tmp/expo-school.log 2>&1 &`
+    ];
+    
+    commands.forEach(cmd => {
+        exec(cmd, (error) => {
+            if (error) console.error('Start error:', error);
+        });
+    });
+    
+    console.log('✅ Запуск всіх сервісів...');
+    res.json({ success: true, message: 'Запуск всіх сервісів...' });
+});
+
+// API endpoint для додавання в автозапуск macOS
+app.post('/api/enable-auto-start', (req, res) => {
+    const fs = require('fs');
+    const path = require('path');
+    
+    const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.gentrust.monitor</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/node</string>
+        <string>${path.join(__dirname, 'server.js')}</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/gentrust-monitor.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/gentrust-monitor-error.log</string>
+    <key>WorkingDirectory</key>
+    <string>${path.join(__dirname)}</string>
+</dict>
+</plist>`;
+    
+    const launchAgentsDir = `${process.env.HOME}/Library/LaunchAgents`;
+    const plistPath = `${launchAgentsDir}/com.gentrust.monitor.plist`;
+    
+    try {
+        if (!fs.existsSync(launchAgentsDir)) {
+            fs.mkdirSync(launchAgentsDir, { recursive: true });
+        }
+        
+        fs.writeFileSync(plistPath, plistContent);
+        
+        const { exec } = require('child_process');
+        exec(`launchctl load ${plistPath}`, (error) => {
+            if (error) {
+                console.error('Launchctl error:', error);
+                res.json({ success: false, message: 'Помилка запуску launchctl' });
+            } else {
+                console.log('✅ Автозапуск увімкнено');
+                res.json({ success: true, message: 'Додано в автозапуск macOS!' });
+            }
+        });
+    } catch (error) {
+        console.error('Auto-start error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
 // Головна сторінка

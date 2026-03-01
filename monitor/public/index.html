@@ -13,6 +13,22 @@
             <h1>🎯 GenTrust Mobility</h1>
             <h2>Система Моніторингу Процесів</h2>
             <div class="timestamp">Оновлено: <span id="timestamp">--:--:--</span></div>
+            
+            <!-- Кнопки управління -->
+            <div class="control-buttons">
+                <button onclick="stopAllProcesses()" class="control-btn stop-all">
+                    🛑 Зупинити ВСІ процеси
+                </button>
+                <button onclick="startAllProcesses()" class="control-btn start-all">
+                    🚀 Запустити ВСІ сервіси
+                </button>
+                <button onclick="enableAutoStart()" class="control-btn auto-start">
+                    ⚙️ Додати в автозапуск macOS
+                </button>
+                <button onclick="openInBrowser()" class="control-btn open-browser">
+                    🌐 Відкрити Monitor в Safari
+                </button>
+            </div>
         </header>
 
         <!-- База даних -->
@@ -192,6 +208,60 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // Функції для кнопок управління
+        async function stopAllProcesses() {
+            if (!confirm('⚠️ УВАГА! Це зупинить ВСІ процеси (Backend, Admin, City-Hall, Expo). Продовжити?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/stop-all', { method: 'POST' });
+                const data = await response.json();
+                alert('🛑 ' + data.message);
+                setTimeout(() => location.reload(), 2000);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        async function startAllProcesses() {
+            if (!confirm('🚀 Запустити ВСІ сервіси? Це може зайняти 30-60 секунд.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/start-all', { method: 'POST' });
+                const data = await response.json();
+                alert('✅ ' + data.message + '\n\nСервіси запускаються... Відкрийте Monitor Dashboard через 30 секунд для перевірки статусу.');
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        async function enableAutoStart() {
+            if (!confirm('⚙️ Додати Monitor Dashboard в автозапуск macOS?\n\nDashboard автоматично запускатиметься при вході в систему.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/enable-auto-start', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ ' + data.message + '\n\nMonitor Dashboard тепер запускається автоматично при вході в macOS!');
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        function openInBrowser() {
+            const url = 'http://localhost:9000';
+            window.open(url, '_blank');
         }
     </script>
 </body>
