@@ -3,7 +3,7 @@ import { api } from '../lib/api';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { MapPin, X, ZoomIn } from 'lucide-react';
+import { MapPin, X, ZoomIn, CheckCircle, XCircle, BrainCircuit } from 'lucide-react';
 
 interface Report {
   id: string;
@@ -16,6 +16,11 @@ interface Report {
   createdBy: { name: string; email: string };
   createdAt: string;
   priority: string;
+  aiVerdict?: {
+    is_issue: boolean;
+    confidence: number;
+    category: string;
+  };
 }
 
 interface MapMarker {
@@ -26,7 +31,7 @@ interface MapMarker {
   title: string;
 }
 
-export default function Reports() {
+function Reports() {
   const [reports, setReports] = useState<Report[]>([]);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +39,11 @@ export default function Reports() {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [mapOpen, setMapOpen] = useState(false);
   const [enlargedPhoto, setEnlargedPhoto] = useState<string | null>(null);
+  const [approveModalOpen, setApproveModalOpen] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState('general');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [processing, setProcessing] = useState(false);
   useEffect(() => {
     fetchReports();
   }, []);
@@ -63,6 +73,83 @@ export default function Reports() {
   const handleStatusFilter = (status: string) => {
     setStatusFilter(status);
     filterReports(reports, status);
+  };
+
+  const handleApprove = async () => {
+    if (!selectedReport) return;
+    setProcessing(true);
+    try {
+      await api.post(`/reports/${selectedReport.id}/approve`, {
+        department: selectedDepartment
+      });
+      // Оновити локальний стан
+      const updated = reports.map(r =>
+        r.id === selectedReport.id ? { ...r, status: 'APPROVED', forwardedTo: selectedDepartment } : r
+      );
+      setReports(updated);
+      filterReports(updated, statusFilter);
+      setApproveModalOpen(false);
+      setSelectedReport(null);
+      fetchReports(); // Перезавантажити дані
+    } catch (error) {
+      console.error('Approve error:', error);
+      alert('Помилка при підтвердженні звіту');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!selectedReport) return;
+    setProcessing(true);
+    try {
+      await api.post(`/reports/${selectedReport.id}/reject`, {
+        reason: rejectionReason
+      });
+      // Оновити локальний стан
+      const updated = reports.map(r =>
+        r.id === selectedReport.id ? { ...r, status: 'REJECTED', rejectionReason } : r
+      );
+      setReports(updated);
+      filterReports(updated, statusFilter);
+      setRejectModalOpen(false);
+      setSelectedReport(null);
+      fetchReports(); // Перезавантажити дані
+    } catch (error) {
+      console.error('Reject error:', error);
+      alert('Помилка при відхиленні звіту');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const getAIConfidenceColor = (confidence: number) => {
+    if (confidence >= 0.8) return 'text-green-600 bg-green-50';
+    if (confidence >= 0.5) return 'text-yellow-600 bg-yellow-50';
+    return 'text-red-600 bg-red-50';
+  };
+
+  const getAIConfidenceLabel = (confidence: number) => {
+    if (confidence >= 0.8) return '✅ Висока';
+    if (confidence >= 0.5) return '⚠️ Середня';
+    return '❌ Низька';
+  };
+
+  const applyAIRecommendation = () => {
+    if (!selectedReport?.aiVerdict) return;
+    // Автоматично вибрати департамент на основі AI категорії
+    const categoryToDepartment: Record<string, string> = {
+      'Roads': 'roads',
+      'Lighting': 'lighting',
+      'Waste': 'waste',
+      'Parks': 'parks',
+      'Water': 'water',
+      'Transport': 'transport',
+      'Graffiti': 'graffiti',
+      'Other': 'general'
+    };
+    const dept = categoryToDepartment[selectedReport.aiVerdict.category] || 'general';
+    setSelectedDepartment(dept);
   };
 
   const getMarkers = (): MapMarker[] => {
@@ -301,6 +388,43 @@ export default function Reports() {
                 )}
               </div>
 
+              {/* AI Recommendations */}
+              {selectedReport.aiVerdict && (
+                <Card className="border-2 border-purple-200 bg-purple-50">
+                  <div className="flex items-center gap-2 mb-3">
+                    <BrainCircuit className="h-5 w-5 text-purple-600" />
+                    <h3 className="font-bold text-purple-900">🤖 Рекомендація ШІ</h3>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-purple-700">Чи є проблемою:</span>
+                      <span className={`font-bold ${selectedReport.aiVerdict.is_issue ? 'text-green-600' : 'text-red-600'}`}>
+                        {selectedReport.aiVerdict.is_issue ? '✅ Так' : '❌ Ні'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-purple-700">Впевненість:</span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${getAIConfidenceColor(selectedReport.aiVerdict.confidence)}`}>
+                        {getAIConfidenceLabel(selectedReport.aiVerdict.confidence)} ({(selectedReport.aiVerdict.confidence * 100).toFixed(0)}%)
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-purple-700">Категорія:</span>
+                      <Badge className="bg-purple-100 text-purple-800">
+                        {selectedReport.aiVerdict.category}
+                      </Badge>
+                    </div>
+                    <Button
+                      onClick={applyAIRecommendation}
+                      className="w-full mt-2 bg-purple-600 hover:bg-purple-700"
+                      size="sm"
+                    >
+                      🤖 Застосувати рекомендацію ШІ
+                    </Button>
+                  </div>
+                </Card>
+              )}
+
               {selectedReport.description && (
                 <div>
                   <h3 className="font-bold text-gray-900 mb-2">Опис</h3>
@@ -350,6 +474,112 @@ export default function Reports() {
                     )}
                   </p>
                 </div>
+              </div>
+
+              {/* Action Buttons - тільки для PENDING звітів */}
+              {selectedReport.status === 'PENDING' && (
+                <div className="pt-4 border-t space-y-3">
+                  <h3 className="font-bold text-gray-900">Дії модератора</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      onClick={() => setApproveModalOpen(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                    >
+                      <CheckCircle size={18} />
+                      ✅ Підтвердити
+                    </Button>
+                    <Button
+                      onClick={() => setRejectModalOpen(true)}
+                      variant="outline"
+                      className="border-red-300 text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    >
+                      <XCircle size={18} />
+                      ❌ Відхилити
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Approve Modal */}
+      {approveModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <div className="p-6 space-y-4">
+              <h3 className="text-xl font-bold text-gray-900">✅ Підтвердити звіт</h3>
+              <p className="text-sm text-gray-600">
+                Оберіть департамент для відповідального виконання:
+              </p>
+              <select
+                value={selectedDepartment}
+                onChange={(e) => setSelectedDepartment(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2"
+              >
+                <option value="general">📋 Загальний відділ</option>
+                <option value="roads">🛣️ Дороги та тротуари</option>
+                <option value="lighting">💡 Освітлення</option>
+                <option value="waste">🗑️ Сміття та переробка</option>
+                <option value="parks">🌳 Парки та зони відпочинку</option>
+                <option value="water">💧 Водопостачання</option>
+                <option value="transport">🚌 Транспорт</option>
+                <option value="graffiti">🎨 Графіті</option>
+              </select>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleApprove}
+                  disabled={processing}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                >
+                  {processing ? '⏳ Обробка...' : '✅ Підтвердити'}
+                </Button>
+                <Button
+                  onClick={() => setApproveModalOpen(false)}
+                  variant="outline"
+                  className="flex-1"
+                  disabled={processing}
+                >
+                  Скасувати
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {rejectModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <div className="p-6 space-y-4">
+              <h3 className="text-xl font-bold text-red-600">❌ Відхилити звіт</h3>
+              <p className="text-sm text-gray-600">
+                Вкажіть причину відхилення:
+              </p>
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Наприклад: недостатньо інформації, фейкове фото, не відповідна категорія..."
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 min-h-[100px]"
+              />
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleReject}
+                  disabled={processing || !rejectionReason}
+                  className="flex-1 bg-red-600 hover:bg-red-700"
+                >
+                  {processing ? '⏳ Обробка...' : '❌ Відхилити'}
+                </Button>
+                <Button
+                  onClick={() => setRejectModalOpen(false)}
+                  variant="outline"
+                  className="flex-1"
+                  disabled={processing}
+                >
+                  Скасувати
+                </Button>
               </div>
             </div>
           </Card>
@@ -407,6 +637,7 @@ function GoogleMap({ markers }: { markers: MapMarker[] }) {
           ] as [number, number]
         : wurzburgCenter;
 
+      if (!mapRef.current) return;
       const map = L.map(mapRef.current).setView(center, markers.length > 0 ? 13 : 12);
 
       // OpenStreetMap tiles
@@ -492,3 +723,5 @@ function GoogleMap({ markers }: { markers: MapMarker[] }) {
     />
   );
 }
+
+export default Reports;
