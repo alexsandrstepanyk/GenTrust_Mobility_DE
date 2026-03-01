@@ -59,6 +59,32 @@
             <p>💡 Підключення: <span id="connection-status" class="status-online">Підключено</span></p>
             <p>🔄 Оновлення кожні 3 секунди</p>
         </footer>
+
+        <!-- Вбудований термінал для логів -->
+        <section class="section terminal-section">
+            <h3>📋 Live Термінал - Логи в реальному часі</h3>
+            <div class="terminal-controls">
+                <select id="log-service" onchange="loadLogs()">
+                    <option value="all">📊 Всі логи</option>
+                    <option value="backend">🌐 Backend API</option>
+                    <option value="admin">🔐 Admin Panel</option>
+                    <option value="city-hall">🏛️ City-Hall</option>
+                    <option value="expo-client">📱 Expo Client</option>
+                    <option value="expo-school">🎓 Expo School</option>
+                    <option value="monitor">🖥️ Monitor</option>
+                </select>
+                <button onclick="loadLogs()" class="terminal-btn">🔄 Оновити</button>
+                <button onclick="toggleAutoRefresh()" class="terminal-btn" id="auto-refresh-btn">⏸️ Пауза</button>
+                <button onclick="clearLogs()" class="terminal-btn">🗑️ Очистити</button>
+            </div>
+            <div class="terminal-window" id="terminal-window">
+                <div class="terminal-header">
+                    <span>📝 Live Logs</span>
+                    <span id="terminal-status">● Live</span>
+                </div>
+                <pre id="terminal-content">Завантаження логів...</pre>
+            </div>
+        </section>
     </div>
 
     <script>
@@ -209,6 +235,69 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // Функції для вбудованого терміналу
+        let autoRefreshInterval = null;
+        let isAutoRefresh = true;
+
+        async function loadLogs() {
+            const service = document.getElementById('log-service').value;
+            const terminalContent = document.getElementById('terminal-content');
+            
+            try {
+                const url = service === 'all' ? '/api/all-logs' : `/api/logs/${service}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (service === 'all') {
+                    let output = '';
+                    for (const [svc, logs] of Object.entries(data)) {
+                        output += `\n${'='.repeat(60)}\n`;
+                        output += `📋 ${svc.toUpperCase()} LOGS\n`;
+                        output += `${'='.repeat(60)}\n`;
+                        output += logs + '\n';
+                    }
+                    terminalContent.textContent = output;
+                } else {
+                    terminalContent.textContent = data.logs || 'Логів немає';
+                }
+                
+                // Автопрокрутка вниз
+                const terminalWindow = document.getElementById('terminal-window');
+                terminalWindow.scrollTop = terminalWindow.scrollHeight;
+            } catch (error) {
+                terminalContent.textContent = '❌ Помилка завантаження логів: ' + error.message;
+            }
+        }
+
+        function toggleAutoRefresh() {
+            const btn = document.getElementById('auto-refresh-btn');
+            const status = document.getElementById('terminal-status');
+            
+            if (isAutoRefresh) {
+                clearInterval(autoRefreshInterval);
+                btn.textContent = '▶️ Старт';
+                status.textContent = '⏸️ Пауза';
+                status.style.color = '#f59e0b';
+                isAutoRefresh = false;
+            } else {
+                autoRefreshInterval = setInterval(loadLogs, 3000);
+                btn.textContent = '⏸️ Пауза';
+                status.textContent = '● Live';
+                status.style.color = '#10b981';
+                isAutoRefresh = true;
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('terminal-content').textContent = '';
+        }
+
+        // Автозавантаження логів при старті
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLogs();
+            autoRefreshInterval = setInterval(loadLogs, 3000);
+        });
 
         // Функції для кнопок управління
         async function stopAllProcesses() {
