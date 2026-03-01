@@ -408,3 +408,15 @@ footer p {
 .command-code:active {
     transform: scale(0.99);
 }
+
+/* CPU/Memory metrics */
+.detail-item {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin: 4px 0;
+}
+
+.detail-item strong {
+    color: #1f2937;
+    font-weight: 600;
+}

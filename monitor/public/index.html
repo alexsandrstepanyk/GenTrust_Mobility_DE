@@ -149,6 +149,14 @@
                                 <span class="detail-item">
                                     Health check: ${service.healthOk ? '✅' : '❌'}
                                 </span>
+                                ${service.metrics && service.metrics.pid ? `
+                                <span class="detail-item">
+                                    🧠 CPU: <strong>${service.metrics.cpu}</strong>
+                                </span>
+                                <span class="detail-item">
+                                    💾 Memory: <strong>${service.metrics.memory}</strong>
+                                </span>
+                                ` : ''}
                             </div>
                         </div>
                         ${hasCommands}
