@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'reac
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import * as SecureStore from 'expo-secure-store';
+import { registerForPushNotifications } from '../services/pushNotifications';
 
 import { API_URL } from '../config';
 
@@ -53,6 +54,7 @@ export default function LoginScreen({ navigation }: any) {
             if (token) {
                 await SecureStore.setItemAsync('userToken', token);
                 console.log('[AUTH DEBUG] Token saved to SecureStore');
+                registerForPushNotifications(token).catch((e) => console.log('[PUSH] register after login failed:', e));
             }
 
             if (user.language) {

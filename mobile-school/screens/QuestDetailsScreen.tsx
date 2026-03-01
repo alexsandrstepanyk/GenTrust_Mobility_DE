@@ -1,21 +1,52 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator, Alert, SafeAreaView, TextInput, TouchableOpacity, Linking } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, Alert, SafeAreaView, TextInput, TouchableOpacity, Linking, Image } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '../config';
 
 export default function QuestDetailsScreen({ route, navigation }: any) {
-    const { quest, pickupCode, deliveryCode } = route.params || {};
+    const { quest: initialQuest, pickupCode: paramPickupCode, deliveryCode: paramDeliveryCode } = route.params || {};
+    const [quest, setQuest] = useState(initialQuest);
+    const [pickupCode, setPickupCode] = useState(paramPickupCode);
+    const [deliveryCode, setDeliveryCode] = useState(paramDeliveryCode);
     const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
     const [loading, setLoading] = useState(true);
     const [pickupConfirmed, setPickupConfirmed] = useState(false);
     const [pickupInput, setPickupInput] = useState('');
     const [deliveryInput, setDeliveryInput] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [photoUri, setPhotoUri] = useState<string | null>(null);
 
     const address = useMemo(() => [quest?.location, quest?.district, quest?.city].filter(Boolean).join(', '), [quest]);
+
+    // Завантажуємо коди з сервера, якщо їх немає в параметрах
+    useEffect(() => {
+        const loadQuestCodes = async () => {
+            if (pickupCode && deliveryCode) return; // Вже є коди
+            
+            try {
+                const token = await SecureStore.getItemAsync('userToken');
+                if (!token || !quest?.id) return;
+
+                const response = await axios.get(`${API_URL}/users/active-quest`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.data && response.data.id === quest.id) {
+                    setPickupCode(response.data.pickupCode);
+                    setDeliveryCode(response.data.deliveryCode);
+                    setQuest(response.data);
+                }
+            } catch (error) {
+                console.error('Error loading quest codes:', error);
+            }
+        };
+
+        loadQuestCodes();
+    }, [quest?.id]);
 
     useEffect(() => {
         const resolveLocation = async () => {
@@ -104,21 +135,69 @@ export default function QuestDetailsScreen({ route, navigation }: any) {
             });
 
             const codeToSend = deliveryInput.trim();
-            const res = await axios.post(`${API_URL}/quests/${quest?.id}/complete`, {
-                code: codeToSend,
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
+            const formData = new FormData();
+            formData.append('code', codeToSend);
+            formData.append('latitude', String(location.coords.latitude));
+            formData.append('longitude', String(location.coords.longitude));
+
+            const requiresPhoto = Boolean(quest?.taskOrderId || quest?.isPersonal || quest?.requiresPhoto);
+            if (requiresPhoto && !photoUri) {
+                Alert.alert('Фото обовʼязкове', 'Додайте фото-звіт перед завершенням завдання.');
+                setSubmitting(false);
+                return;
+            }
+
+            if (photoUri) {
+                // React Native requires specific format for file upload
+                const filename = photoUri.split('/').pop() || `completion-${Date.now()}.jpg`;
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : `image/jpeg`;
+                
+                formData.append('photo', {
+                    uri: photoUri,
+                    name: filename,
+                    type: type,
+                } as any);
+            }
+
+            console.log('[QUEST COMPLETE] Sending request to:', `${API_URL}/quests/${quest?.id}/complete`);
+            console.log('[QUEST COMPLETE] FormData keys:', Object.keys(formData));
+
+            const res = await axios.post(`${API_URL}/quests/${quest?.id}/complete`, formData, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    // DON'T set Content-Type manually - let axios set it with boundary
+                    'Accept': 'application/json',
+                }
             });
 
             Alert.alert('Виконано', res.data?.message || 'Квест успішно виконано!');
             navigation.goBack();
         } catch (e: any) {
-            const msg = e?.response?.data?.error || 'Не вдалося завершити квест.';
+            console.error('[QUEST COMPLETE ERROR]', e);
+            console.error('[QUEST COMPLETE ERROR RESPONSE]', e?.response?.data);
+            const msg = e?.response?.data?.error || e?.message || 'Не вдалося завершити квест.';
             Alert.alert('Помилка', msg);
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const pickPhoto = async () => {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+            Alert.alert('Доступ потрібен', 'Дозвольте доступ до фото для надсилання звіту.');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            quality: 0.7,
+            allowsEditing: true
+        });
+
+        if (!result.canceled && result.assets.length > 0) {
+            setPhotoUri(result.assets[0].uri);
         }
     };
 
@@ -159,6 +238,10 @@ export default function QuestDetailsScreen({ route, navigation }: any) {
                         value={deliveryInput}
                         onChangeText={setDeliveryInput}
                     />
+                    <TouchableOpacity style={styles.photoButton} onPress={pickPhoto}>
+                        <Text style={styles.photoButtonText}>{photoUri ? 'Фото вибрано ✅' : 'Додати фото-звіт'}</Text>
+                    </TouchableOpacity>
+                    {photoUri && <Image source={{ uri: photoUri }} style={styles.preview} />}
                     <TouchableOpacity style={[styles.actionButton, !pickupConfirmed && styles.disabled]} disabled={!pickupConfirmed || submitting} onPress={completeDelivery}>
                         <Text style={styles.actionButtonText}>{submitting ? 'Submitting...' : 'Complete delivery'}</Text>
                     </TouchableOpacity>
@@ -226,6 +309,20 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     actionButtonText: { color: '#fff', fontWeight: '700' },
+    photoButton: {
+        backgroundColor: '#2563EB',
+        paddingVertical: 10,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginBottom: 8
+    },
+    photoButtonText: { color: '#fff', fontWeight: '700' },
+    preview: {
+        width: '100%',
+        height: 140,
+        borderRadius: 12,
+        marginBottom: 8
+    },
     disabled: { opacity: 0.5 },
     map: { flex: 1, borderRadius: 16 },
     loading: { flex: 1, alignItems: 'center', justifyContent: 'center' }

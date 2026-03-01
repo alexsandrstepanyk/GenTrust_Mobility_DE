@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '../config';
+import TaskAcceptModal from './TaskAcceptModal';
 
 interface Quest {
     id: string;
@@ -35,10 +36,20 @@ export default function QuestsScreen({ navigation }: any) {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [takingId, setTakingId] = useState<string | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
+    const [modalLoading, setModalLoading] = useState(false);
 
     useEffect(() => {
         fetchAllQuests();
-    }, []);
+        
+        // Оновлюємо список при поверненні на екран
+        const unsubscribe = navigation.addListener('focus', () => {
+            fetchAllQuests();
+        });
+        
+        return unsubscribe;
+    }, [navigation]);
 
     const fetchAllQuests = async () => {
         try {
@@ -74,8 +85,17 @@ export default function QuestsScreen({ navigation }: any) {
     };
 
     const handleTakeQuest = async (questId: string) => {
+        // Show modal first
+        const quest = availableQuests.find(q => q.id === questId);
+        if (quest) {
+            setSelectedQuest(quest);
+            setModalVisible(true);
+        }
+    };
+
+    const handleConfirmAccept = async (questId: string) => {
         try {
-            setTakingId(questId);
+            setModalLoading(true);
             const token = await SecureStore.getItemAsync('userToken');
             
             const response = await axios.post(
@@ -86,9 +106,13 @@ export default function QuestsScreen({ navigation }: any) {
                 }
             );
 
+            // Close modal and refresh quests
+            setModalVisible(false);
+            setSelectedQuest(null);
+            
             Alert.alert(
                 t('success', 'Success'),
-                t('quest_accepted', 'Quest accepted!'),
+                t('quest_accepted', 'Quest accepted! Check your active quests.'),
                 [{ text: 'OK', onPress: () => fetchAllQuests() }]
             );
         } catch (error: any) {
@@ -98,7 +122,7 @@ export default function QuestsScreen({ navigation }: any) {
                 error.response?.data?.error || t('failed_to_accept', 'Failed to accept quest')
             );
         } finally {
-            setTakingId(null);
+            setModalLoading(false);
         }
     };
 
@@ -195,6 +219,20 @@ export default function QuestsScreen({ navigation }: any) {
                         <View key={quest.id}>{renderQuest({ item: quest })}</View>
                     ))}
                 </View>
+            )}
+
+            {/* МОДАЛЬ ДЛЯ ПРИЙНЯТТЯ ЗАВДАННЯ */}
+            {selectedQuest && (
+                <TaskAcceptModal 
+                    visible={modalVisible}
+                    quest={selectedQuest}
+                    onAccept={handleConfirmAccept}
+                    onCancel={() => {
+                        setModalVisible(false);
+                        setSelectedQuest(null);
+                    }}
+                    loading={modalLoading}
+                />
             )}
         </ScrollView>
     );

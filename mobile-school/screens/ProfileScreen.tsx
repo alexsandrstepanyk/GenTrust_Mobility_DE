@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Modal, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Modal, FlatList, Switch, TextInput, Alert, Linking } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { API_URL } from '../config';
 
 const languages = [
     { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -13,14 +16,93 @@ const languages = [
 export default function ProfileScreen({ navigation }: any) {
     const { t, i18n } = useTranslation();
     const [modalVisible, setModalVisible] = useState(false);
+    const [editModalVisible, setEditModalVisible] = useState(false);
+    const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
+    const [gpsEnabled, setGpsEnabled] = useState(true);
+    
+    const [user, setUser] = useState<any>({
+        firstName: 'Loading',
+        lastName: '...',
+        email: '',
+        role: 'SCOUT',
+        dignityScore: 0,
+        balance: 0,
+        phone: '',
+        address: '',
+        birthDate: '',
+        school: '',
+        grade: ''
+    });
 
-    const user = {
-        firstName: 'System',
-        lastName: 'Admin',
-        email: 'admin',
-        role: 'ADMIN',
-        dignityScore: 122,
-        balance: 45.50
+    const [editForm, setEditForm] = useState({
+        phone: '',
+        address: '',
+        birthDate: '',
+        school: '',
+        grade: ''
+    });
+
+    useEffect(() => {
+        loadUserProfile();
+    }, []);
+
+    const loadUserProfile = async () => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) return;
+
+            const response = await axios.get(`${API_URL}/users/me`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            setUser(response.data);
+            setEditForm({
+                phone: response.data.phone || '',
+                address: response.data.address || '',
+                birthDate: response.data.birthDate || '',
+                school: response.data.school || '',
+                grade: response.data.grade || ''
+            });
+            setGpsEnabled(response.data.gpsSharing !== false);
+        } catch (error) {
+            console.error('Failed to load profile:', error);
+        }
+    };
+
+    const saveProfile = async () => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) return;
+
+            await axios.patch(`${API_URL}/users/me`, editForm, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            Alert.alert(t('success'), t('profile_updated'));
+            setEditModalVisible(false);
+            loadUserProfile();
+        } catch (error) {
+            Alert.alert(t('error'), t('failed_to_update_profile'));
+        }
+    };
+
+    const toggleGPS = async (value: boolean) => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) return;
+
+            await axios.patch(`${API_URL}/users/me`, { gpsSharing: value }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            setGpsEnabled(value);
+            Alert.alert(
+                t('gps_sharing'), 
+                value ? t('gps_enabled_for_parents') : t('gps_disabled_for_parents')
+            );
+        } catch (error) {
+            Alert.alert(t('error'), t('failed_to_update_gps'));
+        }
     };
 
     const changeLanguage = (code: string) => {
@@ -52,16 +134,62 @@ export default function ProfileScreen({ navigation }: any) {
                     </View>
                 </View>
 
+                {/* Contact Information */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>{t('contact_information')}</Text>
+                    <View style={styles.infoCard}>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>📧 Email:</Text>
+                            <Text style={styles.infoValue}>{user.email || '-'}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>📱 {t('phone')}:</Text>
+                            <Text style={styles.infoValue}>{user.phone || t('not_specified')}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>🏠 {t('address')}:</Text>
+                            <Text style={styles.infoValue}>{user.address || t('not_specified')}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>🎂 {t('birth_date')}:</Text>
+                            <Text style={styles.infoValue}>{user.birthDate || t('not_specified')}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>🏫 {t('school')}:</Text>
+                            <Text style={styles.infoValue}>{user.school || t('not_specified')}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>📚 {t('grade')}:</Text>
+                            <Text style={styles.infoValue}>{user.grade || t('not_specified')}</Text>
+                        </View>
+                    </View>
+                </View>
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>{t('settings')}</Text>
-                    <TouchableOpacity style={styles.menuItem}>
+                    
+                    <TouchableOpacity 
+                        style={styles.menuItem}
+                        onPress={() => setEditModalVisible(true)}
+                    >
                         <Text style={styles.menuItemText}>{t('edit_profile')}</Text>
                         <Text style={styles.menuItemIcon}>›</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.menuItem}>
-                        <Text style={styles.menuItemText}>{t('notifications')}</Text>
-                        <Text style={styles.menuItemIcon}>›</Text>
-                    </TouchableOpacity>
+                    
+                    {/* GPS Sharing Toggle */}
+                    <View style={styles.menuItem}>
+                        <View style={styles.menuItemLeft}>
+                            <Text style={styles.menuItemText}>📍 {t('gps_sharing_for_parents')}</Text>
+                            <Text style={styles.menuItemSubtext}>{t('allow_parents_track_location')}</Text>
+                        </View>
+                        <Switch
+                            value={gpsEnabled}
+                            onValueChange={toggleGPS}
+                            trackColor={{ false: '#ccc', true: '#34C759' }}
+                            thumbColor="#fff"
+                        />
+                    </View>
+
                     <TouchableOpacity
                         style={styles.menuItem}
                         onPress={() => setModalVisible(true)}
@@ -70,6 +198,14 @@ export default function ProfileScreen({ navigation }: any) {
                             <Text style={styles.menuItemText}>{t('language')}</Text>
                             <Text style={styles.currentLangText}>{currentLanguage.flag} {currentLanguage.label}</Text>
                         </View>
+                        <Text style={styles.menuItemIcon}>›</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                        style={styles.menuItem}
+                        onPress={() => setPrivacyModalVisible(true)}
+                    >
+                        <Text style={styles.menuItemText}>🔒 {t('privacy_policy')}</Text>
                         <Text style={styles.menuItemIcon}>›</Text>
                     </TouchableOpacity>
                 </View>
@@ -82,6 +218,7 @@ export default function ProfileScreen({ navigation }: any) {
                 </TouchableOpacity>
             </ScrollView>
 
+            {/* Language Modal */}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -114,6 +251,119 @@ export default function ProfileScreen({ navigation }: any) {
                         <TouchableOpacity
                             style={styles.closeButton}
                             onPress={() => setModalVisible(false)}
+                        >
+                            <Text style={styles.closeButtonText}>{t('close')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Edit Profile Modal */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={editModalVisible}
+                onRequestClose={() => setEditModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>{t('edit_profile')}</Text>
+                        <ScrollView style={styles.editForm}>
+                            <Text style={styles.inputLabel}>{t('phone')}</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={editForm.phone}
+                                onChangeText={(v) => setEditForm({ ...editForm, phone: v })}
+                                placeholder="+49..."
+                                keyboardType="phone-pad"
+                            />
+                            
+                            <Text style={styles.inputLabel}>{t('address')}</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={editForm.address}
+                                onChangeText={(v) => setEditForm({ ...editForm, address: v })}
+                                placeholder="Straße, Stadt..."
+                            />
+                            
+                            <Text style={styles.inputLabel}>{t('birth_date')}</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={editForm.birthDate}
+                                onChangeText={(v) => setEditForm({ ...editForm, birthDate: v })}
+                                placeholder="DD.MM.YYYY"
+                            />
+                            
+                            <Text style={styles.inputLabel}>{t('school')}</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={editForm.school}
+                                onChangeText={(v) => setEditForm({ ...editForm, school: v })}
+                                placeholder={t('school_name')}
+                            />
+                            
+                            <Text style={styles.inputLabel}>{t('grade')}</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={editForm.grade}
+                                onChangeText={(v) => setEditForm({ ...editForm, grade: v })}
+                                placeholder="5A, 10B..."
+                            />
+                            
+                            <TouchableOpacity style={styles.saveButton} onPress={saveProfile}>
+                                <Text style={styles.saveButtonText}>{t('save')}</Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setEditModalVisible(false)}
+                        >
+                            <Text style={styles.closeButtonText}>{t('cancel')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Privacy Policy Modal */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={privacyModalVisible}
+                onRequestClose={() => setPrivacyModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>{t('privacy_policy')}</Text>
+                        <ScrollView style={styles.privacyContent}>
+                            <Text style={styles.privacyText}>
+                                <Text style={styles.privacyBold}>GenTrust Mobility</Text> зобов'язується захищати вашу конфіденційність.
+                                {'\n\n'}
+                                <Text style={styles.privacyBold}>Збір даних:</Text>{'\n'}
+                                • Контактна інформація (ім'я, email, телефон){'\n'}
+                                • Дані про виконані завдання{'\n'}
+                                • GPS локація (за вашою згодою){'\n'}
+                                {'\n'}
+                                <Text style={styles.privacyBold}>Використання:</Text>{'\n'}
+                                • Координація міських завдань{'\n'}
+                                • Безпека дітей (доступ для батьків){'\n'}
+                                • Винагороди за виконання{'\n'}
+                                {'\n'}
+                                <Text style={styles.privacyBold}>Доступ:</Text>{'\n'}
+                                • Батьки (за налаштуваннями){'\n'}
+                                • Міська рада (анонімізовано){'\n'}
+                                • Адміністратори системи{'\n'}
+                                {'\n'}
+                                <Text style={styles.privacyBold}>Ваші права:</Text>{'\n'}
+                                • Право на видалення даних{'\n'}
+                                • Право змінити налаштування конфіденційності{'\n'}
+                                • Право заблокувати GPS-трекінг{'\n'}
+                                {'\n'}
+                                Контакт: privacy@gentrust-mobility.de
+                            </Text>
+                        </ScrollView>
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setPrivacyModalVisible(false)}
                         >
                             <Text style={styles.closeButtonText}>{t('close')}</Text>
                         </TouchableOpacity>
@@ -296,5 +546,78 @@ const styles = StyleSheet.create({
         color: '#007AFF',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    infoCard: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 16,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    infoLabel: {
+        fontSize: 14,
+        color: '#666',
+        flex: 1,
+    },
+    infoValue: {
+        fontSize: 14,
+        color: '#1a1a1a',
+        fontWeight: '500',
+        flex: 2,
+        textAlign: 'right',
+    },
+    menuItemSubtext: {
+        fontSize: 12,
+        color: '#888',
+        marginTop: 2,
+    },
+    editForm: {
+        maxHeight: 400,
+    },
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#333',
+        marginTop: 12,
+        marginBottom: 6,
+    },
+    input: {
+        backgroundColor: '#f5f5f5',
+        borderRadius: 12,
+        padding: 14,
+        fontSize: 16,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+    },
+    saveButton: {
+        backgroundColor: '#007AFF',
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        marginTop: 20,
+        marginBottom: 10,
+    },
+    saveButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    privacyContent: {
+        maxHeight: 400,
+    },
+    privacyText: {
+        fontSize: 14,
+        lineHeight: 22,
+        color: '#333',
+    },
+    privacyBold: {
+        fontWeight: 'bold',
+        fontSize: 15,
+        color: '#007AFF',
     },
 });
