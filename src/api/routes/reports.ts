@@ -158,10 +158,14 @@ router.get('/', async (req, res, next) => {
 router.post('/:id/approve', async (req, res, next) => {
     try {
         const { id } = req.params;
+        const { department } = req.body;
         
         const report = await (prisma as any).report.update({
             where: { id },
-            data: { status: 'APPROVED' }
+            data: { 
+                status: 'APPROVED',
+                forwardedTo: department || 'general'
+            }
         });
 
         res.json({ success: true, report });
