@@ -16,6 +16,9 @@
     "fallbackPolling": "dynamicPriority"
   },
   "css.validate": false,
+  "css.lint.unknownAtRules": "ignore",
+  "css.lint.important": "ignore",
+  "css.lint.ieHack": "ignore",
   "less.validate": false,
   "scss.validate": false,
   "files.associations": {
@@ -29,5 +32,10 @@
     "javascript": "javascript",
     "css": "css"
   },
-  "tailwindCSS.emmetCompletions": true
+  "tailwindCSS.emmetCompletions": true,
+  "editor.formatOnSave": false,
+  "[css]": {
+    "editor.defaultFormatter": "vscode.css-language-features"
+  },
+  "css.customData": [".vscode/css-custom-data.json"]
 }
