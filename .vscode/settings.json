@@ -1,6 +1,18 @@
 {
-    "chat.tools.terminal.autoApprove": {
-        "npm install": true
-    },
-    "git.ignoreLimitWarning": true
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.validate.enable": true,
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.vite": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.vite/**": true
+  },
+  "typescript.tsserver.watchOptions": {
+    "watchFile": "useFsEvents",
+    "watchDirectory": "useFsEvents",
+    "fallbackPolling": "dynamicPriority"
+  }
 }
