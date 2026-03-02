@@ -1,11 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import fs from 'fs'
 
-// Читаємо порт з environment або аргументів
-const port = parseInt(process.env.VITE_DEPT_PORT || '5176')
+// Отримуємо порт з аргументів командного рядка або environment
+const args = process.argv
+const portArg = args.findIndex(arg => arg === '--port') + 1
+const port = portArg && args[portArg] ? parseInt(args[portArg]) : (parseInt(process.env.VITE_DEPT_PORT || '5176'))
 const deptId = process.env.VITE_DEPT_ID || 'roads'
+
+console.log(`Starting department: ${deptId} on port: ${port}`)
 
 export default defineConfig({
   plugins: [react()],
