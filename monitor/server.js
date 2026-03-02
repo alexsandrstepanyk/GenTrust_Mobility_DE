@@ -20,7 +20,7 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 const PORT = 9000;
-const PROJECT_DIR = '/Users/apple/Desktop/GenTrust_Mobility_DE';
+const PROJECT_DIR = '/Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE';
 
 // Middleware для парсингу JSON
 app.use(express.json());
@@ -56,7 +56,7 @@ const SERVICES = [
         logFile: '/tmp/backend.log',
         processName: 'nodemon',
         commands: {
-            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE',
+            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE',
             start: 'npm run dev',
             kill: 'lsof -ti:3000 | xargs kill -9'
         }
@@ -70,7 +70,7 @@ const SERVICES = [
         logFile: '/tmp/admin-panel.log',
         processName: 'vite',
         commands: {
-            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/admin-panel',
+            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/admin-panel',
             start: 'npm run dev',
             kill: 'lsof -ti:5174 | xargs kill -9'
         }
@@ -84,7 +84,7 @@ const SERVICES = [
         logFile: '/tmp/city-hall.log',
         processName: 'vite',
         commands: {
-            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/city-hall-dashboard',
+            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/city-hall-dashboard',
             start: 'npm run dev',
             kill: 'lsof -ti:5173 | xargs kill -9'
         }
@@ -99,7 +99,7 @@ const SERVICES = [
         processName: 'vite',
         optional: true,
         commands: {
-            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/staff-panel',
+            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/staff-panel',
             start: 'npm run dev',
             kill: 'lsof -ti:5175 | xargs kill -9'
         }
@@ -113,7 +113,7 @@ const SERVICES = [
         logFile: '/tmp/expo-client.log',
         processName: 'expo',
         commands: {
-            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile/gentrustmobility',
+            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/mobile/gentrustmobility',
             start: 'npx expo start --port 8081 --lan',
             kill: 'lsof -ti:8081 | xargs kill -9'
         }
@@ -127,7 +127,7 @@ const SERVICES = [
         logFile: '/tmp/expo-school.log',
         processName: 'expo',
         commands: {
-            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school',
+            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/mobile-school',
             start: 'npx expo start --port 8082 --lan',
             kill: 'lsof -ti:8082 | xargs kill -9'
         }
@@ -141,7 +141,7 @@ const SERVICES = [
         logFile: '/tmp/expo-parent.log',
         processName: 'expo',
         commands: {
-            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-parent',
+            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/mobile-parent',
             start: 'npx expo start --port 8083 --lan',
             kill: 'lsof -ti:8083 | xargs kill -9'
         }
@@ -221,14 +221,14 @@ function checkTelegramBots() {
 
             const results = TELEGRAM_BOTS.map(bot => {
                 const botRunning = data.includes(`${bot.name} started`) ||
-                                   data.includes(`${bot.name} launched`) ||
-                                   data.includes('Bot initialized') ||
-                                   data.includes('[Bot]') ||
-                                   data.includes('[Master Bot]') ||
-                                   data.includes('[Scout Bot]') ||
-                                   data.includes('[City Hall Bot]') ||
-                                   data.includes('[Quest Provider Bot]') ||
-                                   data.includes('[Municipal Bot]');
+                    data.includes(`${bot.name} launched`) ||
+                    data.includes('Bot initialized') ||
+                    data.includes('[Bot]') ||
+                    data.includes('[Master Bot]') ||
+                    data.includes('[Scout Bot]') ||
+                    data.includes('[City Hall Bot]') ||
+                    data.includes('[Quest Provider Bot]') ||
+                    data.includes('[Municipal Bot]');
 
                 return {
                     ...bot,
@@ -254,7 +254,7 @@ function getProcessMetrics(port) {
             }
 
             const pid = stdout.trim();
-            
+
             // Отримання CPU/Memory через ps
             exec(`ps aux | grep "${pid}" | grep -v grep | awk '{print $3, $6}'`, (err, psOut) => {
                 if (err || !psOut.trim()) {
@@ -287,10 +287,10 @@ async function collectServicesStatus() {
 
         // Аналіз логів на помилки
         const hasErrors = logs.includes('ERROR') ||
-                         logs.includes('Error') ||
-                         logs.includes('EADDRINUSE') ||
-                         logs.includes('failed') ||
-                         logs.includes('Failed');
+            logs.includes('Error') ||
+            logs.includes('EADDRINUSE') ||
+            logs.includes('failed') ||
+            logs.includes('Failed');
 
         let status = 'offline';
         let message = 'Не запущено';
@@ -305,7 +305,7 @@ async function collectServicesStatus() {
             status = 'error';
             message = '❌ Помилка запуску';
         }
-        
+
         statuses.push({
             ...service,
             status,
@@ -317,10 +317,10 @@ async function collectServicesStatus() {
             metrics // CPU/Memory usage
         });
     }
-    
+
     // Додаємо статус Telegram ботів
     const botsStatus = await checkTelegramBots();
-    
+
     return {
         services: statuses,
         bots: botsStatus,
@@ -334,18 +334,18 @@ async function collectServicesStatus() {
 async function checkDatabase() {
     return new Promise((resolve) => {
         const dbPath = `${PROJECT_DIR}/prisma/dev.db`;
-        
+
         if (!fs.existsSync(dbPath)) {
             resolve({ status: 'error', message: '❌ База даних не знайдена', users: 0 });
             return;
         }
-        
+
         exec(`sqlite3 "${dbPath}" "SELECT COUNT(*) FROM User;" 2>/dev/null`, (error, stdout) => {
             if (error) {
                 resolve({ status: 'error', message: '❌ Помилка запиту до БД', users: 0 });
                 return;
             }
-            
+
             const userCount = parseInt(stdout.trim()) || 0;
             resolve({
                 status: userCount > 0 ? 'online' : 'warning',
@@ -359,18 +359,18 @@ async function checkDatabase() {
 // Socket.IO для real-time оновлення
 io.on('connection', (socket) => {
     console.log('✅ Клієнт підключився до моніторингу');
-    
+
     // Відправка статусу кожні 3 секунди
     const interval = setInterval(async () => {
         const status = await collectServicesStatus();
         const dbStatus = await checkDatabase();
-        
+
         socket.emit('status-update', {
             ...status,
             database: dbStatus
         });
     }, 3000);
-    
+
     // Відправка першого статусу одразу
     (async () => {
         const status = await collectServicesStatus();
@@ -380,7 +380,7 @@ io.on('connection', (socket) => {
             database: dbStatus
         });
     })();
-    
+
     socket.on('disconnect', () => {
         console.log('❌ Клієнт від\'єднався');
         clearInterval(interval);
@@ -401,22 +401,22 @@ app.get('/api/status', async (req, res) => {
 // API endpoint для зупинки всіх процесів
 app.post('/api/stop-all', (req, res) => {
     const { exec } = require('child_process');
-    
+
     exec('killall -9 node npm vite expo 2>/dev/null || true', (error) => {
         if (error) {
             console.error('Stop all error:', error);
         }
         console.log('✅ Всі процеси зупинено');
     });
-    
+
     res.json({ success: true, message: 'Зупинка всіх процесів...' });
 });
 
 // API endpoint для запуску всіх сервісів
 app.post('/api/start-all', (req, res) => {
     const { exec } = require('child_process');
-    const PROJECT_DIR = '/Users/apple/Desktop/GenTrust_Mobility_DE';
-    
+    const PROJECT_DIR = '/Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE';
+
     const commands = [
         `cd ${PROJECT_DIR} && NODE_OPTIONS=--max-old-space-size=4096 npm run dev > /tmp/backend.log 2>&1 &`,
         `cd ${PROJECT_DIR}/admin-panel && npm run dev > /tmp/admin-panel.log 2>&1 &`,
@@ -424,13 +424,13 @@ app.post('/api/start-all', (req, res) => {
         `cd ${PROJECT_DIR}/mobile/gentrustmobility && npx expo start --port 8081 --lan > /tmp/expo-client.log 2>&1 &`,
         `cd ${PROJECT_DIR}/mobile-school && npx expo start --port 8082 --lan > /tmp/expo-school.log 2>&1 &`
     ];
-    
+
     commands.forEach(cmd => {
         exec(cmd, (error) => {
             if (error) console.error('Start error:', error);
         });
     });
-    
+
     console.log('✅ Запуск всіх сервісів...');
     res.json({ success: true, message: 'Запуск всіх сервісів...' });
 });
@@ -439,7 +439,7 @@ app.post('/api/start-all', (req, res) => {
 app.post('/api/enable-auto-start', (req, res) => {
     const fs = require('fs');
     const path = require('path');
-    
+
     const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -464,17 +464,17 @@ app.post('/api/enable-auto-start', (req, res) => {
     <string>${path.join(__dirname)}</string>
 </dict>
 </plist>`;
-    
+
     const launchAgentsDir = `${process.env.HOME}/Library/LaunchAgents`;
     const plistPath = `${launchAgentsDir}/com.gentrust.monitor.plist`;
-    
+
     try {
         if (!fs.existsSync(launchAgentsDir)) {
             fs.mkdirSync(launchAgentsDir, { recursive: true });
         }
-        
+
         fs.writeFileSync(plistPath, plistContent);
-        
+
         const { exec } = require('child_process');
         exec(`launchctl load ${plistPath}`, (error) => {
             if (error) {
@@ -503,16 +503,16 @@ app.get('/api/logs/:service', (req, res) => {
         'expo-school': '/tmp/expo-school.log',
         'monitor': '/tmp/monitor.log'
     };
-    
+
     const logFile = logFiles[service];
     if (!logFile) {
         return res.status(404).json({ error: 'Log file not found' });
     }
-    
+
     if (!fs.existsSync(logFile)) {
         return res.json({ logs: 'Лог файл ще не створено', service });
     }
-    
+
     try {
         const data = fs.readFileSync(logFile, 'utf8');
         const lines = data.split('\n').slice(-100); // Останні 100 рядків
@@ -533,7 +533,7 @@ app.get('/api/all-logs', (req, res) => {
         'expo-school': '/tmp/expo-school.log',
         'monitor': '/tmp/monitor.log'
     };
-    
+
     const allLogs = {};
     for (const [service, logFile] of Object.entries(logFiles)) {
         if (fs.existsSync(logFile)) {
@@ -543,7 +543,7 @@ app.get('/api/all-logs', (req, res) => {
             allLogs[service] = 'Лог файл ще не створено';
         }
     }
-    
+
     res.json(allLogs);
 });
 

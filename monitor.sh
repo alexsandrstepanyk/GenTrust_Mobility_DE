@@ -11,7 +11,7 @@ NC='\033[0m'
 
 echo -e "${GREEN}🎯 Запуск системи моніторингу...${NC}\n"
 
-cd /Users/apple/Desktop/GenTrust_Mobility_DE/monitor
+cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/monitor
 
 # Перевірка що залежності встановлені
 if [ ! -d "node_modules" ]; then

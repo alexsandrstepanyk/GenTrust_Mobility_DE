@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+*.db
+*.log
+.expo/
+.system_generated/
+.DS_Store

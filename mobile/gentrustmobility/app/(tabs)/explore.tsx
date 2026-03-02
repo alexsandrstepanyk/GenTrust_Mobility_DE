@@ -9,7 +9,7 @@ type Completion = {
   quest?: { title?: string; reward?: number };
 };
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.178.34:3000/api';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.12:3000/api';
 
 export default function ClientApprovalsScreen() {
   const [token, setToken] = useState('');
