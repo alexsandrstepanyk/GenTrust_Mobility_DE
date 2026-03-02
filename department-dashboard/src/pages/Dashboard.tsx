@@ -18,11 +18,12 @@ import { useDepartment } from '../App'; // 2.3.2026 - Додано для отр
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function Dashboard() {
-  const department = useDepartment(); // 2.3.2026 - Отримуємо інформацію про поточний департамент
+  const department = useDepartment();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [pendingReports, setPendingReports] = useState<any[]>([]);
   const [approving, setApproving] = useState<Record<string, boolean>>({});
+  const [selectedDepartment, setSelectedDepartment] = useState<Record<string, string>>({});
   const { socket } = useSocket();
 
   // 2.3.2026 - ЗМІНЕНО: Замість всіх департаментів показуємо тільки поточний
@@ -239,7 +240,7 @@ export default function Dashboard() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {statusDistribution.map((entry: any, index: number) => (
+                  {statusDistribution.map((_: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
