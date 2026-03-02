@@ -21,7 +21,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # 📍 Базова директорія проекту
-PROJECT_DIR="/Users/apple/Desktop/GenTrust_Mobility_DE"
+PROJECT_DIR="/Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE"
 cd "$PROJECT_DIR" || exit 1
 
 # 🎯 Парсинг аргументів
@@ -185,10 +185,10 @@ case $MODE in
         launch_service "City-Hall Dashboard" "5173" "npm run dev" "$PROJECT_DIR/city-hall-dashboard" || exit 1
         
         # EXPO MOBILE SCHOOL
-        launch_service "Expo Mobile-School" "8082" "npm start" "$PROJECT_DIR/mobile-school" || exit 1
+        launch_service "Expo Mobile-School" "8082" "npm start -- --port 8082" "$PROJECT_DIR/mobile-school" || exit 1
         
         # EXPO MOBILE CLIENT
-        launch_service "Expo Mobile-Client" "8081" "npm start" "$PROJECT_DIR/mobile" || exit 1
+        launch_service "Expo Mobile-Client" "8081" "npm start -- --port 8081" "$PROJECT_DIR/mobile/gentrustmobility" || exit 1
         ;;
         
     "staff")
