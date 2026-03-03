@@ -2,6 +2,32 @@
 
 Ukrainian edtech platform connecting students with earning opportunities through AI-powered urban guardianship and logistics quests.
 
+## 🆕 LATEST UPDATES (2026-03-03)
+
+### **NEW: 8 Department Dashboards**
+- 🛣️ Roads | 💡 Lighting | 🗑️ Waste | 🌳 Parks | 🚰 Water | 🚌 Transport | 🌿 Ecology | 🎨 Vandalism
+- Each department has FULL City-Hall Dashboard functionality
+- Departments see ONLY their own reports (filtered by `forwardedTo`)
+- Fixed ports: 5180-5187
+
+### **NEW: Monitor Dashboard with Mass Launch Buttons**
+- 🤖 Launch All Telegram Bots (Backend + 5 bots)
+- 🖥️ Launch All Dashboards (11 total: 3 Core + 8 Departments)
+- 📱 Launch All Expo Apps (3 mobile apps)
+- Real-time status indicators (green/red)
+
+### **NEW: Auto-Start System**
+- LaunchAgent for macOS auto-start
+- Full documentation in `AUTO_START_GUIDE.md`
+- One command installation
+
+### **NEW: Fixed Port Architecture**
+- 21 services with 21 fixed ports
+- No port conflicts
+- Each service owns its port
+
+---
+
 ## 🎯 System Overview
 
 **GenTrust Mobility** is a complete ecosystem featuring:
@@ -10,6 +36,7 @@ Ukrainian edtech platform connecting students with earning opportunities through
 - **Admin Panel**: Manage task approvals, users, and system operations
 - **Staff Panel**: Monitor operations and user activities
 - **City-Hall Dashboard**: Municipal monitoring with AI recommendations
+- **Department Dashboards (8)**: Each municipal department has own dashboard
 - **Monitor Dashboard**: Real-time system health & process control
 - **Telegram Bots**: Notification system and admin commands
 - **Backend API**: Express.js with PostgreSQL (Prisma ORM)
@@ -34,6 +61,33 @@ Ukrainian edtech platform connecting students with earning opportunities through
 - 🔗 Health check endpoints for all services
 
 **Access:** http://localhost:9000
+
+---
+
+### **Department Dashboards (8 Departments)** 🏢 NEW!
+**Each Municipal Department Has Own Dashboard (Full City-Hall Clone)**
+
+| Department | Port | URL | Emoji |
+|------------|------|-----|-------|
+| Roads | 5180 | http://localhost:5180 | 🛣️ |
+| Lighting | 5181 | http://localhost:5181 | 💡 |
+| Waste | 5182 | http://localhost:5182 | 🗑️ |
+| Parks | 5183 | http://localhost:5183 | 🌳 |
+| Water | 5184 | http://localhost:5184 | 🚰 |
+| Transport | 5185 | http://localhost:5185 | 🚌 |
+| Ecology | 5186 | http://localhost:5186 | 🌿 |
+| Vandalism | 5187 | http://localhost:5187 | 🎨 |
+
+**Features (Same as City-Hall):**
+- ✅ **Dashboard Page**: 4 Stats Cards + Charts (Area, Pie, Bar) + Pending Reports
+- ✅ **Reports Page**: List view + Filters + Approve/Reject Modals
+- ✅ **Settings Page**: Notifications + Security + Database + Integrations
+- ✅ **Layout**: Sidebar navigation + Header with user profile
+
+**Logic:**
+- Each department sees **ONLY** reports where `forwardedTo = department_id`
+- City-Hall sees **ALL** reports from all departments
+- API: `GET /api/reports/department/:deptId`
 
 ---
 

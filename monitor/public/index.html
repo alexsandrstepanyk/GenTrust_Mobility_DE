@@ -13,7 +13,7 @@
             <h1>🎯 GenTrust Mobility</h1>
             <h2>Система Моніторингу Процесів</h2>
             <div class="timestamp">Оновлено: <span id="timestamp">--:--:--</span></div>
-            
+
             <!-- Кнопки управління -->
             <div class="control-buttons">
                 <button onclick="stopAllProcesses()" class="control-btn stop-all">
@@ -22,11 +22,20 @@
                 <button onclick="startAllProcesses()" class="control-btn start-all">
                     🚀 Запустити ВСІ сервіси
                 </button>
+                <button onclick="startAllBots()" class="control-btn start-bots">
+                    🤖 Запустити ВСІ Telegram боти
+                </button>
+                <button onclick="startAllDashboards()" class="control-btn start-dashboards">
+                    🖥️ Запустити ВСІ Dashboards
+                </button>
+                <button onclick="startAllExpo()" class="control-btn start-expo">
+                    📱 Запустити ВСІ Expo Apps
+                </button>
                 <button onclick="enableAutoStart()" class="control-btn auto-start">
                     ⚙️ Додати в автозапуск macOS
                 </button>
                 <button onclick="openInBrowser()" class="control-btn open-browser">
-                    🌐 Відкрити Monitor в Safari
+                    🌐 Відкрити Monitor
                 </button>
             </div>
         </header>
@@ -34,25 +43,37 @@
         <!-- База даних -->
         <section class="section">
             <h3>🗄️ База Даних</h3>
-            <div id="database-status" class="service-grid">
-                <!-- Заповнюється динамічно -->
-            </div>
+            <div id="database-status" class="service-grid"></div>
         </section>
 
-        <!-- Основні сервіси -->
+        <!-- 1️⃣ BACKEND API -->
         <section class="section">
-            <h3>🚀 Основні Сервіси</h3>
-            <div id="services-status" class="service-grid">
-                <!-- Заповнюється динамічно -->
-            </div>
+            <h3>🌐 Backend API</h3>
+            <div id="backend-status" class="service-grid"></div>
         </section>
 
-        <!-- Telegram боти -->
+        <!-- 2️⃣ TELEGRAM БОТИ -->
         <section class="section">
-            <h3>🤖 Telegram Боти</h3>
-            <div id="bots-status" class="bot-grid">
-                <!-- Заповнюється динамічно -->
-            </div>
+            <h3>🤖 Telegram Боти (5)</h3>
+            <div id="bots-status" class="bot-grid"></div>
+        </section>
+
+        <!-- 3️⃣ CORE DASHBOARDS -->
+        <section class="section">
+            <h3>🖥️ Core Dashboards (3)</h3>
+            <div id="core-dashboards-status" class="service-grid"></div>
+        </section>
+
+        <!-- 4️⃣ ДЕПАРТАМЕНТИ -->
+        <section class="section">
+            <h3>🏢 Департаменти (8)</h3>
+            <div id="departments-status" class="service-grid"></div>
+        </section>
+
+        <!-- 5️⃣ MOBILE APPS -->
+        <section class="section">
+            <h3>📱 Mobile Apps (Expo)</h3>
+            <div id="mobile-status" class="service-grid"></div>
         </section>
 
         <footer>
@@ -66,12 +87,32 @@
             <div class="terminal-controls">
                 <select id="log-service" onchange="loadLogs()">
                     <option value="all">📊 Всі логи</option>
-                    <option value="backend">🌐 Backend API</option>
-                    <option value="admin">🔐 Admin Panel</option>
-                    <option value="city-hall">🏛️ City-Hall</option>
-                    <option value="expo-client">📱 Expo Client</option>
-                    <option value="expo-school">🎓 Expo School</option>
-                    <option value="monitor">🖥️ Monitor</option>
+                    <optgroup label="Backend">
+                        <option value="backend">🌐 Backend API</option>
+                    </optgroup>
+                    <optgroup label="Dashboards">
+                        <option value="admin">🔐 Admin Panel</option>
+                        <option value="city-hall">🏛️ City-Hall</option>
+                        <option value="staff">👥 Staff Panel</option>
+                    </optgroup>
+                    <optgroup label="Departments">
+                        <option value="roads">🛣️ Roads</option>
+                        <option value="lighting">💡 Lighting</option>
+                        <option value="waste">🗑️ Waste</option>
+                        <option value="parks">🌳 Parks</option>
+                        <option value="water">🚰 Water</option>
+                        <option value="transport">🚌 Transport</option>
+                        <option value="ecology">🌿 Ecology</option>
+                        <option value="vandalism">🎨 Vandalism</option>
+                    </optgroup>
+                    <optgroup label="Mobile">
+                        <option value="expo-school">🎓 Expo School</option>
+                        <option value="expo-parent">👨‍👩‍👧 Expo Parent</option>
+                        <option value="expo-client">👤 Expo Client</option>
+                    </optgroup>
+                    <optgroup label="System">
+                        <option value="monitor">🖥️ Monitor</option>
+                    </optgroup>
                 </select>
                 <button onclick="loadLogs()" class="terminal-btn">🔄 Оновити</button>
                 <button onclick="toggleAutoRefresh()" class="terminal-btn" id="auto-refresh-btn">⏸️ Пауза</button>
@@ -89,7 +130,7 @@
 
     <script>
         const socket = io();
-        
+
         // Підключення до сервера
         socket.on('connect', () => {
             document.getElementById('connection-status').textContent = 'Підключено';
@@ -105,8 +146,11 @@
         socket.on('status-update', (data) => {
             updateTimestamp(data.timestamp);
             updateDatabase(data.database);
-            updateServices(data.services);
-            updateBots(data.bots);
+            updateBackend(data.services);
+            updateBots(data.bots || []);  // ← Боти приходять окремо
+            updateCoreDashboards(data.services);
+            updateDepartments(data.services);
+            updateMobile(data.services);
         });
 
         function updateTimestamp(timestamp) {
@@ -116,10 +160,8 @@
 
         function updateDatabase(db) {
             const container = document.getElementById('database-status');
-            
-            const statusClass = db.status === 'online' ? 'online' : 
-                               db.status === 'error' ? 'offline' : 'warning';
-            
+            const statusClass = db.status === 'online' ? 'online' : db.status === 'error' ? 'offline' : 'warning';
+
             container.innerHTML = `
                 <div class="service-card ${statusClass}">
                     <div class="service-header">
@@ -137,94 +179,183 @@
             `;
         }
 
-        function updateServices(services) {
-            const container = document.getElementById('services-status');
+        function updateBackend(services) {
+            const container = document.getElementById('backend-status');
+            const backend = services.find(s => s.id === 'backend-api');
+            if (!backend) return;
 
-            container.innerHTML = services.map(service => {
-                const statusClass = service.status === 'online' ? 'online' :
-                                   service.status === 'error' ? 'warning' : 'offline';
+            const statusClass = backend.status === 'online' ? 'online' : backend.status === 'error' ? 'warning' : 'offline';
+            const isRunning = backend.status === 'online';
 
-                const hasLogs = service.logs && service.logs.trim() !== '(Лог порожній)';
-                
-                const hasCommands = service.commands ? `
-                    <div class="commands-section">
-                        <details class="commands">
-                            <summary>💻 Команди запуску</summary>
-                            <div class="command-blocks">
-                                <div class="command-item">
-                                    <div class="command-label">📂 Перейти в папку:</div>
-                                    <code class="command-code">${service.commands.cd}</code>
-                                </div>
-                                <div class="command-item">
-                                    <div class="command-label">🚀 Запустити:</div>
-                                    <code class="command-code">${service.commands.start}</code>
-                                </div>
-                                <div class="command-item">
-                                    <div class="command-label">🛑 Зупинити (якщо порт зайнятий):</div>
-                                    <code class="command-code">${service.commands.kill}</code>
-                                </div>
-                                <div class="command-item">
-                                    <div class="command-label">📋 Повна команда (копіювати):</div>
-                                    <code class="command-code full-command">${service.commands.cd} && ${service.commands.start}</code>
-                                </div>
-                            </div>
-                        </details>
+            container.innerHTML = `
+                <div class="service-card ${statusClass}">
+                    <div class="service-header">
+                        <div class="service-icon">${backend.icon}</div>
+                        <div class="service-info">
+                            <h4>${backend.name}</h4>
+                            <p class="service-description">Порт: ${backend.port} | http://localhost:${backend.port}/api</p>
+                        </div>
+                        <div class="status-indicator ${statusClass}"></div>
                     </div>
-                ` : '';
+                    <div class="service-controls">
+                        <button onclick="startService('${backend.id}')" class="service-btn start" ${isRunning ? 'disabled' : ''}>▶️ Запустити</button>
+                        <button onclick="stopService('${backend.id}')" class="service-btn stop" ${!isRunning ? 'disabled' : ''}>⏹️ Зупинити</button>
+                        <button onclick="restartService('${backend.id}')" class="service-btn restart">🔄 Перезапустити</button>
+                        <button onclick="openService('${backend.id}', ${backend.port})" class="service-btn open">🌐 Відкрити</button>
+                    </div>
+                    <div class="service-status">
+                        <p><strong>${backend.message}</strong></p>
+                        <div class="service-details">
+                            <span class="detail-item">Порт: ${backend.portActive ? '✅' : '❌'}</span>
+                            <span class="detail-item">Health: ${backend.healthOk ? '✅' : '❌'}</span>
+                            ${backend.metrics && backend.metrics.pid ? `<span class="detail-item">🧠 CPU: ${backend.metrics.cpu}</span><span class="detail-item">💾 Memory: ${backend.metrics.memory}</span>` : ''}
+                        </div>
+                    </div>
+                    ${backend.logs ? `<details class="logs-section"><summary>📋 Логи</summary><pre class="logs">${escapeHtml(backend.logs)}</pre></details>` : ''}
+                </div>
+            `;
+        }
+
+        function updateBots(bots) {
+            const container = document.getElementById('bots-status');
+
+            container.innerHTML = bots.map(bot => {
+                const statusClass = bot.status ? 'online' : 'offline';
+                const isRunning = bot.status;
 
                 return `
                     <div class="service-card ${statusClass}">
                         <div class="service-header">
-                            <div class="service-icon">${service.icon}</div>
+                            <div class="service-icon">${bot.icon}</div>
                             <div class="service-info">
-                                <h4>${service.name}</h4>
-                                <p class="service-description">Порт: ${service.port}</p>
+                                <h4>${bot.name}</h4>
+                                <p class="service-description">Порт: ${bot.port || 'N/A'}</p>
                             </div>
                             <div class="status-indicator ${statusClass}"></div>
                         </div>
-                        <div class="service-status">
-                            <p><strong>${service.message}</strong></p>
-                            <div class="service-details">
-                                <span class="detail-item">
-                                    Порт активний: ${service.portActive ? '✅' : '❌'}
-                                </span>
-                                <span class="detail-item">
-                                    Health check: ${service.healthOk ? '✅' : '❌'}
-                                </span>
-                                ${service.metrics && service.metrics.pid ? `
-                                <span class="detail-item">
-                                    🧠 CPU: <strong>${service.metrics.cpu}</strong>
-                                </span>
-                                <span class="detail-item">
-                                    💾 Memory: <strong>${service.metrics.memory}</strong>
-                                </span>
-                                ` : ''}
-                            </div>
+                        <div class="service-controls">
+                            <button onclick="startService('${bot.id}')" class="service-btn start" ${isRunning ? 'disabled' : ''}>▶️</button>
+                            <button onclick="stopService('${bot.id}')" class="service-btn stop" ${!isRunning ? 'disabled' : ''}>⏹️</button>
+                            <button onclick="restartService('${bot.id}')" class="service-btn restart">🔄</button>
+                            <button onclick="openService('${bot.id}', ${bot.port || 3000})" class="service-btn open">🌐</button>
                         </div>
-                        ${hasCommands}
-                        ${hasLogs ? `
-                            <details class="logs-section">
-                                <summary>📋 Логи (останні 10 рядків)</summary>
-                                <pre class="logs">${escapeHtml(service.logs)}</pre>
-                            </details>
-                        ` : ''}
+                        <div class="service-status">
+                            <p>${bot.message}</p>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function updateBots(bots) {
-            const container = document.getElementById('bots-status');
-            
-            container.innerHTML = bots.map(bot => {
-                const statusClass = bot.status ? 'online' : 'offline';
-                
+        function updateCoreDashboards(services) {
+            const container = document.getElementById('core-dashboards-status');
+            const dashboards = services.filter(s => ['admin-panel', 'city-hall-dashboard', 'staff-panel'].includes(s.id));
+
+            container.innerHTML = dashboards.map(dash => {
+                const statusClass = dash.status === 'online' ? 'online' : dash.status === 'error' ? 'warning' : 'offline';
+                const isRunning = dash.status === 'online';
+
                 return `
-                    <div class="bot-card ${statusClass}">
-                        <div class="bot-icon">${bot.icon}</div>
-                        <div class="status-indicator ${statusClass}"></div>
-                        <h4>${bot.name}</h4>
-                        <p>${bot.message}</p>
+                    <div class="service-card ${statusClass}">
+                        <div class="service-header">
+                            <div class="service-icon">${dash.icon}</div>
+                            <div class="service-info">
+                                <h4>${dash.name}</h4>
+                                <p class="service-description">Порт: ${dash.port} | http://localhost:${dash.port}</p>
+                            </div>
+                            <div class="status-indicator ${statusClass}"></div>
+                        </div>
+                        <div class="service-controls">
+                            <button onclick="startService('${dash.id}')" class="service-btn start" ${isRunning ? 'disabled' : ''}>▶️ Запустити</button>
+                            <button onclick="stopService('${dash.id}')" class="service-btn stop" ${!isRunning ? 'disabled' : ''}>⏹️ Зупинити</button>
+                            <button onclick="restartService('${dash.id}')" class="service-btn restart">🔄 Перезапустити</button>
+                            <button onclick="openService('${dash.id}', ${dash.port})" class="service-btn open">🌐 Відкрити</button>
+                        </div>
+                        <div class="service-status">
+                            <p><strong>${dash.message}</strong></p>
+                            <div class="service-details">
+                                <span class="detail-item">Порт: ${dash.portActive ? '✅' : '❌'}</span>
+                                <span class="detail-item">Health: ${dash.healthOk ? '✅' : '❌'}</span>
+                                ${dash.metrics && dash.metrics.pid ? `<span class="detail-item">🧠 CPU: ${dash.metrics.cpu}</span><span class="detail-item">💾 Memory: ${dash.metrics.memory}</span>` : ''}
+                            </div>
+                        </div>
+                        ${dash.logs ? `<details class="logs-section"><summary>📋 Логи</summary><pre class="logs">${escapeHtml(dash.logs)}</pre></details>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateDepartments(services) {
+            const container = document.getElementById('departments-status');
+            const departments = services.filter(s => s.id.startsWith('dept-'));
+
+            container.innerHTML = departments.map(dept => {
+                const statusClass = dept.status === 'online' ? 'online' : dept.status === 'error' ? 'warning' : 'offline';
+                const isRunning = dept.status === 'online';
+
+                return `
+                    <div class="service-card ${statusClass}">
+                        <div class="service-header">
+                            <div class="service-icon">${dept.icon}</div>
+                            <div class="service-info">
+                                <h4>${dept.name}</h4>
+                                <p class="service-description">Порт: ${dept.port} | http://localhost:${dept.port}</p>
+                            </div>
+                            <div class="status-indicator ${statusClass}"></div>
+                        </div>
+                        <div class="service-controls">
+                            <button onclick="startService('${dept.id}')" class="service-btn start" ${isRunning ? 'disabled' : ''}>▶️ Запустити</button>
+                            <button onclick="stopService('${dept.id}')" class="service-btn stop" ${!isRunning ? 'disabled' : ''}>⏹️ Зупинити</button>
+                            <button onclick="restartService('${dept.id}')" class="service-btn restart">🔄 Перезапустити</button>
+                            <button onclick="openService('${dept.id}', ${dept.port})" class="service-btn open">🌐 Відкрити</button>
+                        </div>
+                        <div class="service-status">
+                            <p><strong>${dept.message}</strong></p>
+                            <div class="service-details">
+                                <span class="detail-item">Порт: ${dept.portActive ? '✅' : '❌'}</span>
+                                <span class="detail-item">Health: ${dept.healthOk ? '✅' : '❌'}</span>
+                                ${dept.metrics && dept.metrics.pid ? `<span class="detail-item">🧠 CPU: ${dept.metrics.cpu}</span><span class="detail-item">💾 Memory: ${dept.metrics.memory}</span>` : ''}
+                            </div>
+                        </div>
+                        ${dept.logs ? `<details class="logs-section"><summary>📋 Логи</summary><pre class="logs">${escapeHtml(dept.logs)}</pre></details>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateMobile(services) {
+            const container = document.getElementById('mobile-status');
+            const mobile = services.filter(s => s.id.startsWith('expo-'));
+
+            container.innerHTML = mobile.map(app => {
+                const statusClass = app.status === 'online' ? 'online' : app.status === 'error' ? 'warning' : 'offline';
+                const isRunning = app.status === 'online';
+
+                return `
+                    <div class="service-card ${statusClass}">
+                        <div class="service-header">
+                            <div class="service-icon">${app.icon}</div>
+                            <div class="service-info">
+                                <h4>${app.name}</h4>
+                                <p class="service-description">Порт: ${app.port} | exp://localhost:${app.port}</p>
+                            </div>
+                            <div class="status-indicator ${statusClass}"></div>
+                        </div>
+                        <div class="service-controls">
+                            <button onclick="startService('${app.id}')" class="service-btn start" ${isRunning ? 'disabled' : ''}>▶️ Запустити</button>
+                            <button onclick="stopService('${app.id}')" class="service-btn stop" ${!isRunning ? 'disabled' : ''}>⏹️ Зупинити</button>
+                            <button onclick="restartService('${app.id}')" class="service-btn restart">🔄 Перезапустити</button>
+                            <button onclick="openService('${app.id}', ${app.port})" class="service-btn open">🌐 Відкрити</button>
+                        </div>
+                        <div class="service-status">
+                            <p><strong>${app.message}</strong></p>
+                            <div class="service-details">
+                                <span class="detail-item">Порт: ${app.portActive ? '✅' : '❌'}</span>
+                                <span class="detail-item">Health: ${app.healthOk ? '✅' : '❌'}</span>
+                                ${app.metrics && app.metrics.pid ? `<span class="detail-item">🧠 CPU: ${app.metrics.cpu}</span><span class="detail-item">💾 Memory: ${app.metrics.memory}</span>` : ''}
+                            </div>
+                        </div>
+                        ${app.logs ? `<details class="logs-section"><summary>📋 Логи</summary><pre class="logs">${escapeHtml(app.logs)}</pre></details>` : ''}
                     </div>
                 `;
             }).join('');
@@ -243,12 +374,12 @@
         async function loadLogs() {
             const service = document.getElementById('log-service').value;
             const terminalContent = document.getElementById('terminal-content');
-            
+
             try {
                 const url = service === 'all' ? '/api/all-logs' : `/api/logs/${service}`;
                 const response = await fetch(url);
                 const data = await response.json();
-                
+
                 if (service === 'all') {
                     let output = '';
                     for (const [svc, logs] of Object.entries(data)) {
@@ -261,19 +392,18 @@
                 } else {
                     terminalContent.textContent = data.logs || 'Логів немає';
                 }
-                
-                // Автопрокрутка вниз
+
                 const terminalWindow = document.getElementById('terminal-window');
                 terminalWindow.scrollTop = terminalWindow.scrollHeight;
             } catch (error) {
-                terminalContent.textContent = '❌ Помилка завантаження логів: ' + error.message;
+                terminalContent.textContent = '❌ Помилка: ' + error.message;
             }
         }
 
         function toggleAutoRefresh() {
             const btn = document.getElementById('auto-refresh-btn');
             const status = document.getElementById('terminal-status');
-            
+
             if (isAutoRefresh) {
                 clearInterval(autoRefreshInterval);
                 btn.textContent = '▶️ Старт';
@@ -293,22 +423,12 @@
             document.getElementById('terminal-content').textContent = '';
         }
 
-        // Автозавантаження логів при старті
-        document.addEventListener('DOMContentLoaded', () => {
-            loadLogs();
-            autoRefreshInterval = setInterval(loadLogs, 3000);
-        });
-
         // Функції для кнопок управління
         async function stopAllProcesses() {
-            if (!confirm('⚠️ УВАГА! Це зупинить ВСІ процеси (Backend, Admin, City-Hall, Expo). Продовжити?')) {
-                return;
-            }
-            
+            if (!confirm('⚠️ УВАГА! Це зупинить ВСІ процеси. Продовжити?')) return;
             try {
-                const response = await fetch('/api/stop-all', { method: 'POST' });
-                const data = await response.json();
-                alert('🛑 ' + data.message);
+                await fetch('/api/stop-all', { method: 'POST' });
+                alert('🛑 Зупинка всіх процесів...');
                 setTimeout(() => location.reload(), 2000);
             } catch (error) {
                 alert('❌ Помилка: ' + error.message);
@@ -316,42 +436,143 @@
         }
 
         async function startAllProcesses() {
-            if (!confirm('🚀 Запустити ВСІ сервіси? Це може зайняти 30-60 секунд.')) {
-                return;
-            }
-            
+            if (!confirm('🚀 Запустити ВСІ сервіси? Це займе 30-60 секунд.')) return;
             try {
-                const response = await fetch('/api/start-all', { method: 'POST' });
-                const data = await response.json();
-                alert('✅ ' + data.message + '\n\nСервіси запускаються... Відкрийте Monitor Dashboard через 30 секунд для перевірки статусу.');
+                await fetch('/api/start-all', { method: 'POST' });
+                alert('✅ Запуск всіх сервісів...');
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        async function startAllBots() {
+            if (!confirm('🤖 Запустити Backend API з Telegram ботами?\n\nБоти запускаються разом з Backend (npm run dev).')) return;
+            try {
+                // Backend запускає всі боти автоматично
+                await fetch('/api/service/backend-api/start', { method: 'POST' });
+                alert('✅ Backend API + Telegram боти запущені!\n\nБоти: Master, Scout, City Hall, Quest Provider, Municipal');
+                setTimeout(() => location.reload(), 2000);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        async function startAllDashboards() {
+            if (!confirm('🖥️ Запустити ВСІ Dashboards (Core + 8 департаментів)?')) return;
+            const dashboards = [
+                'admin-panel', 'city-hall-dashboard', 'staff-panel',
+                'dept-roads', 'dept-lighting', 'dept-waste', 'dept-parks',
+                'dept-water', 'dept-transport', 'dept-ecology', 'dept-vandalism'
+            ];
+            try {
+                for (const dash of dashboards) {
+                    await fetch(`/api/service/${dash}/start`, { method: 'POST' });
+                }
+                alert('✅ Всі Dashboards запущені!');
+                setTimeout(() => location.reload(), 2000);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        async function startAllExpo() {
+            if (!confirm('📱 Запустити ВСІ Expo Apps (3 штуки)?')) return;
+            const expos = ['expo-school', 'expo-parent', 'expo-client'];
+            try {
+                for (const expo of expos) {
+                    await fetch(`/api/service/${expo}/start`, { method: 'POST' });
+                }
+                alert('✅ Всі Expo Apps запущені!');
+                setTimeout(() => location.reload(), 2000);
             } catch (error) {
                 alert('❌ Помилка: ' + error.message);
             }
         }
 
         async function enableAutoStart() {
-            if (!confirm('⚙️ Додати Monitor Dashboard в автозапуск macOS?\n\nDashboard автоматично запускатиметься при вході в систему.')) {
-                return;
-            }
-            
+            if (!confirm('⚙️ Додати Monitor в автозапуск macOS?')) return;
             try {
-                const response = await fetch('/api/enable-auto-start', { method: 'POST' });
-                const data = await response.json();
-                
-                if (data.success) {
-                    alert('✅ ' + data.message + '\n\nMonitor Dashboard тепер запускається автоматично при вході в macOS!');
-                } else {
-                    alert('❌ ' + data.message);
-                }
+                const res = await fetch('/api/enable-auto-start', { method: 'POST' });
+                const data = await res.json();
+                alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
             } catch (error) {
                 alert('❌ Помилка: ' + error.message);
             }
         }
 
         function openInBrowser() {
-            const url = 'http://localhost:9000';
+            window.open('http://localhost:9000', '_blank');
+        }
+
+        // Функції для управління окремими сервісами
+        async function startService(serviceId) {
+            if (!confirm('🚀 Запустити цей сервіс?')) return;
+            try {
+                const res = await fetch(`/api/service/${serviceId}/start`, { method: 'POST' });
+                const data = await res.json();
+                alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        async function stopService(serviceId) {
+            if (!confirm('⏹️ Зупинити цей сервіс?')) return;
+            try {
+                const res = await fetch(`/api/service/${serviceId}/stop`, { method: 'POST' });
+                const data = await res.json();
+                alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        async function restartService(serviceId) {
+            if (!confirm('🔄 Перезапустити цей сервіс? Це займе ~5 секунд.')) return;
+            try {
+                const res = await fetch(`/api/service/${serviceId}/restart`, { method: 'POST' });
+                const data = await res.json();
+                alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
+                setTimeout(() => location.reload(), 3000);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        function openService(serviceId, port) {
+            const urls = {
+                'backend-api': 'http://localhost:3000/api',
+                'bot-master': 'http://localhost:3001',
+                'bot-scout': 'http://localhost:3002',
+                'bot-cityhall': 'http://localhost:3003',
+                'bot-quest': 'http://localhost:3004',
+                'bot-municipal': 'http://localhost:3005',
+                'admin-panel': 'http://localhost:5174',
+                'city-hall-dashboard': 'http://localhost:5173',
+                'staff-panel': 'http://localhost:5176',
+                'dept-roads': 'http://localhost:5180',
+                'dept-lighting': 'http://localhost:5181',
+                'dept-waste': 'http://localhost:5182',
+                'dept-parks': 'http://localhost:5183',
+                'dept-water': 'http://localhost:5184',
+                'dept-transport': 'http://localhost:5185',
+                'dept-ecology': 'http://localhost:5186',
+                'dept-vandalism': 'http://localhost:5187',
+                'expo-school': 'http://localhost:8082',
+                'expo-parent': 'http://localhost:8083',
+                'expo-client': 'http://localhost:8081'
+            };
+            const url = urls[serviceId] || `http://localhost:${port}`;
             window.open(url, '_blank');
         }
+
+        // Автозавантаження при старті
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLogs();
+            autoRefreshInterval = setInterval(loadLogs, 3000);
+        });
     </script>
 </body>
 </html>

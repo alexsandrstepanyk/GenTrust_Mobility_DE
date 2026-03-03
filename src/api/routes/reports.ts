@@ -100,7 +100,7 @@ router.post('/', authenticateToken, async (req: any, res, next) => {
 router.get('/', async (req, res, next) => {
     try {
         const { status, category, limit = '100' } = req.query;
-        
+
         const where: any = {};
         if (status) where.status = status;
         if (category) where.category = category;
@@ -271,6 +271,94 @@ router.get('/my', authenticateToken, async (req: any, res, next) => {
             orderBy: { createdAt: 'desc' }
         });
         res.json(reports);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// ========================================
+// DEPARTMENT ENDPOINTS
+// ========================================
+// Отримати звіти конкретного департаменту
+router.get('/department/:deptId', async (req, res, next) => {
+    try {
+        const { deptId } = req.params; // roads, lighting, waste, parks, water, transport, ecology, vandalism
+        const { status, limit = '100' } = req.query;
+
+        const where: any = {
+            forwardedTo: deptId
+        };
+        
+        if (status) where.status = status;
+
+        const reports = await prisma.report.findMany({
+            where,
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' },
+            take: parseInt(limit as string)
+        });
+
+        // Transform for frontend
+        const transformed = reports.map((report: any) => ({
+            id: report.id,
+            title: report.category || 'Звіт',
+            description: report.description || 'Без опису',
+            status: report.status || 'PENDING',
+            category: report.category || 'Інше',
+            location: report.latitude && report.longitude ? {
+                lat: report.latitude,
+                lng: report.longitude
+            } : null,
+            photoUrl: report.photoId
+                ? (String(report.photoId).startsWith('data:image')
+                    ? report.photoId
+                    : `/api/photos/${report.photoId}`)
+                : null,
+            createdBy: {
+                name: report.author?.firstName || report.author?.username || 'Анонім',
+                email: report.author?.email || ''
+            },
+            createdAt: report.createdAt,
+            forwardedTo: report.forwardedTo
+        }));
+
+        res.json(transformed);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Отримати статистику департаменту
+router.get('/department/:deptId/stats', async (req, res, next) => {
+    try {
+        const { deptId } = req.params;
+
+        const [total, pending, approved, rejected, inProgress] = await Promise.all([
+            prisma.report.count({ where: { forwardedTo: deptId } }),
+            prisma.report.count({ where: { forwardedTo: deptId, status: 'PENDING' } }),
+            prisma.report.count({ where: { forwardedTo: deptId, status: 'APPROVED' } }),
+            prisma.report.count({ where: { forwardedTo: deptId, status: 'REJECTED' } }),
+            prisma.report.count({ where: { forwardedTo: deptId, status: 'IN_PROGRESS' } })
+        ]);
+
+        res.json({
+            department: deptId,
+            totalReports: total,
+            pendingReports: pending,
+            approvedReports: approved,
+            rejectedReports: rejected,
+            inProgressReports: inProgress
+        });
     } catch (error) {
         next(error);
     }

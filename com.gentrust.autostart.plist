@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.gentrust.autostart</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE &amp;&amp;
+            
+            # Wait for network
+            sleep 10 &amp;&amp;
+            
+            # Kill old processes
+            killall -9 node npm vite expo 2&gt;/dev/null || true &amp;&amp;
+            sleep 2 &amp;&amp;
+            
+            # Start Monitor FIRST
+            cd monitor &amp;&amp; node server.js &gt; /tmp/monitor.log 2&gt;&amp;1 &amp;
+            sleep 3 &amp;&amp;
+            
+            # Start Backend API (includes all Telegram bots)
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE &amp;&amp; npm run dev &gt; /tmp/backend.log 2&gt;&amp;1 &amp;
+            sleep 5 &amp;&amp;
+            
+            # Start Core Dashboards
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/admin-panel &amp;&amp; npm run dev &gt; /tmp/admin-panel.log 2&gt;&amp;1 &amp;
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/city-hall-dashboard &amp;&amp; npm run dev &gt; /tmp/city-hall.log 2&gt;&amp;1 &amp;
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/staff-panel &amp;&amp; npm run dev &gt; /tmp/staff-panel.log 2&gt;&amp;1 &amp;
+            sleep 5 &amp;&amp;
+            
+            # Start Department Dashboards
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/roads &amp;&amp; npm run dev &gt; /tmp/dept-roads.log 2&gt;&amp;1 &amp;
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/lighting &amp;&amp; npm run dev &gt; /tmp/dept-lighting.log 2&gt;&amp;1 &amp;
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/waste &amp;&amp; npm run dev &gt; /tmp/dept-waste.log 2&gt;&amp;1 &amp;
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/parks &amp;&amp; npm run dev &gt; /tmp/dept-parks.log 2&gt;&amp;1 &amp;
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/water &amp;&amp; npm run dev &gt; /tmp/dept-water.log 2&gt;&amp;1 &amp;
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/transport &amp;&amp; npm run dev &gt; /tmp/dept-transport.log 2&gt;&amp;1 &amp;
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/ecology &amp;&amp; npm run dev &gt; /tmp/dept-ecology.log 2&gt;&amp;1 &amp;
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/vandalism &amp;&amp; npm run dev &gt; /tmp/dept-vandalism.log 2&gt;&amp;1 &amp;
+            sleep 5 &amp;&amp;
+            
+            # Start Mobile Apps (Expo)
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school &amp;&amp; npx expo start --port 8082 --lan &gt; /tmp/expo-school.log 2&gt;&amp;1 &amp;
+            cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-parent &amp;&amp; npx expo start --port 8083 --lan &gt; /tmp/expo-parent.log 2&gt;&amp;1 &amp;
+            
+            echo "✅ GenTrust Mobility Auto-Start Complete" &gt;&gt; /tmp/gentrust-autostart.log
+        </string>
+    </array>
+    
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <key>WorkingDirectory</key>
+    <string>/Users/apple/Desktop/GenTrust_Mobility_DE</string>
+    
+    <key>StandardOutPath</key>
+    <string>/tmp/gentrust-autostart.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/tmp/gentrust-autostart-error.log</string>
+    
+    <key>KeepAlive</key>
+    <false/>
+    
+    <key>StartInterval</key>
+    <integer>0</integer>
+</dict>
+</plist>

@@ -2,13 +2,12 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-// Отримуємо порт з аргументів командного рядка або environment
-const args = process.argv
-const portArg = args.findIndex(arg => arg === '--port') + 1
-const port = portArg && args[portArg] ? parseInt(args[portArg]) : (parseInt(process.env.VITE_DEPT_PORT || '5176'))
+// ФІКСОВАНИЙ ПОРТ для Department Dashboard - 5175
+// Ніхто інший не має права займати цей порт!
+const PORT = 5175
 const deptId = process.env.VITE_DEPT_ID || 'roads'
 
-console.log(`Starting department: ${deptId} on port: ${port}`)
+console.log(`Starting Department Dashboard: ${deptId} on FIXED port: ${PORT}`)
 
 export default defineConfig({
   plugins: [react()],
@@ -19,10 +18,11 @@ export default defineConfig({
   },
   define: {
     __DEPT_ID__: JSON.stringify(deptId),
-    __DEPT_PORT__: port,
+    __DEPT_PORT__: PORT,
   },
   server: {
-    port,
+    port: PORT,
+    strictPort: true, // ← ПОМІЛКА якщо порт зайнятий (не змінювати!)
     proxy: {
       '/api': {
         target: 'http://localhost:3000',

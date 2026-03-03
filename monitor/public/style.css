@@ -13,7 +13,7 @@ body {
 }
 
 .container {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     background: white;
     border-radius: 20px;
@@ -72,17 +72,9 @@ header h2 {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
-.control-btn:active {
-    transform: translateY(-1px);
-}
-
 .control-btn.stop-all {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
-}
-
-.control-btn.stop-all:hover {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
 }
 
 .control-btn.start-all {
@@ -90,17 +82,9 @@ header h2 {
     color: white;
 }
 
-.control-btn.start-all:hover {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-}
-
 .control-btn.auto-start {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-}
-
-.control-btn.auto-start:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #5b3a8a 100%);
 }
 
 .control-btn.open-browser {
@@ -108,8 +92,19 @@ header h2 {
     color: white;
 }
 
-.control-btn.open-browser:hover {
-    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+.control-btn.start-bots {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+}
+
+.control-btn.start-dashboards {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    color: white;
+}
+
+.control-btn.start-expo {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    color: white;
 }
 
 .timestamp {
@@ -136,12 +131,21 @@ header h2 {
     font-size: 1.5rem;
     margin-bottom: 20px;
     color: #1f2937;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #667eea;
+    display: inline-block;
 }
 
 .service-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
     gap: 20px;
+}
+
+.bot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
 }
 
 .service-card {
@@ -241,12 +245,85 @@ header h2 {
 }
 
 @keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Кнопки управління сервісами */
+.service-controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+.service-btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.service-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.service-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.service-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.service-btn.start {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.service-btn.start:hover:not(:disabled) {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.service-btn.stop {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.service-btn.stop:hover:not(:disabled) {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.service-btn.restart {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.service-btn.restart:hover:not(:disabled) {
+    background: linear-gradient(135deg, #764ba2 0%, #5b3a8a 100%);
+}
+
+.service-btn.open {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+.service-btn.open:hover:not(:disabled) {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
 }
 
 .service-status {
@@ -262,6 +339,7 @@ header h2 {
     display: flex;
     gap: 15px;
     font-size: 0.85rem;
+    flex-wrap: wrap;
 }
 
 .detail-item {
@@ -269,6 +347,11 @@ header h2 {
     padding: 4px 10px;
     border-radius: 6px;
     color: #6b7280;
+}
+
+.detail-item strong {
+    color: #1f2937;
+    font-weight: 600;
 }
 
 .logs-section {
@@ -303,61 +386,6 @@ header h2 {
     overflow-y: auto;
 }
 
-.bot-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.bot-card {
-    background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.bot-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: #9ca3af;
-}
-
-.bot-card.online::before {
-    background: #10b981;
-}
-
-.bot-card.offline::before {
-    background: #ef4444;
-}
-
-.bot-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-
-.bot-icon {
-    font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-.bot-card h4 {
-    font-size: 0.9rem;
-    color: #1f2937;
-    margin-bottom: 8px;
-}
-
-.bot-card p {
-    font-size: 0.8rem;
-    color: #6b7280;
-}
-
 footer {
     background: #f9fafb;
     padding: 20px 30px;
@@ -377,119 +405,6 @@ footer p {
 
 .status-offline {
     color: #ef4444;
-    font-weight: 600;
-}
-
-/* Адаптивність */
-@media (max-width: 768px) {
-    .service-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .bot-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    header h1 {
-        font-size: 1.8rem;
-    }
-
-    .timestamp {
-        position: static;
-        margin-top: 15px;
-        display: inline-block;
-    }
-}
-
-/* Команди запуску */
-.commands-section {
-    margin-top: 15px;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 15px;
-}
-
-.commands details {
-    cursor: pointer;
-}
-
-.commands summary {
-    font-weight: 600;
-    color: #667eea;
-    font-size: 0.95rem;
-    padding: 8px 0;
-    outline: none;
-}
-
-.commands summary:hover {
-    color: #764ba2;
-}
-
-.command-blocks {
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.command-item {
-    background: #f3f4f6;
-    border-radius: 8px;
-    padding: 12px;
-    border-left: 4px solid #667eea;
-}
-
-.command-label {
-    font-size: 0.85rem;
-    color: #6b7280;
-    margin-bottom: 6px;
-    font-weight: 500;
-}
-
-.command-code {
-    display: block;
-    background: white;
-    padding: 10px 12px;
-    border-radius: 6px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 0.85rem;
-    color: #1f2937;
-    border: 1px solid #e5e7eb;
-    word-break: break-all;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.command-code:hover {
-    background: #f9fafb;
-    border-color: #667eea;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
-}
-
-.command-code.full-command {
-    background: #fef3c7;
-    border-color: #f59e0b;
-    color: #92400e;
-    font-weight: 500;
-}
-
-.command-code.full-command:hover {
-    background: #fde68a;
-    border-color: #d97706;
-}
-
-.command-code:active {
-    transform: scale(0.99);
-}
-
-/* CPU/Memory metrics */
-.detail-item {
-    font-size: 0.85rem;
-    color: #6b7280;
-    margin: 4px 0;
-}
-
-.detail-item strong {
-    color: #1f2937;
     font-weight: 600;
 }
 
@@ -571,11 +486,6 @@ footer p {
     animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
 #terminal-content {
     padding: 20px;
     margin: 0;
@@ -605,4 +515,31 @@ footer p {
 
 #terminal-content::-webkit-scrollbar-thumb:hover {
     background: #6b7280;
+}
+
+/* Адаптивність */
+@media (max-width: 1024px) {
+    .service-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .service-controls {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .service-controls {
+        grid-template-columns: 1fr;
+    }
+    
+    header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .timestamp {
+        position: static;
+        margin-top: 15px;
+        display: inline-block;
+    }
 }

@@ -20,7 +20,7 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 const PORT = 9000;
-const PROJECT_DIR = '/Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE';
+const PROJECT_DIR = '/Users/apple/Desktop/GenTrust_Mobility_DE';
 
 // Middleware для парсингу JSON
 app.use(express.json());
@@ -46,115 +46,333 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Конфігурація сервісів для моніторингу
+// ФІКСОВАНІ ПОРТИ - КОЖЕН СЕРВІС МАЄ СВІЙ ВЛАСНИЙ ПОРТ
+// Ніхто інший не має права займати ці порти!
+
 const SERVICES = [
+    // ========================================
+    // BACKEND API
+    // ========================================
     {
         id: 'backend-api',
         name: 'Backend API',
         icon: '🌐',
-        port: 3000,
+        port: 3000,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:3000/api/health',
         logFile: '/tmp/backend.log',
         processName: 'nodemon',
         commands: {
-            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE',
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE',
             start: 'npm run dev',
-            kill: 'lsof -ti:3000 | xargs kill -9'
+            kill: 'lsof -ti:3000 | xargs kill -9'  // ← Зупиняє ТІЛЬКИ порт 3000
         }
     },
+    
+    // ========================================
+    // TELEGRAM БОТИ (5 ботів)
+    // ========================================
+    {
+        id: 'bot-master',
+        name: 'Master Core Bot',
+        icon: '🤖',
+        port: 3001,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:3001',
+        logFile: '/tmp/bot-master.log',
+        processName: 'node',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE',
+            start: 'npm run dev',  // Запускається з головним backend
+            kill: 'lsof -ti:3001 | xargs kill -9'
+        }
+    },
+    {
+        id: 'bot-scout',
+        name: 'Scout Bot',
+        icon: '🔍',
+        port: 3002,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:3002',
+        logFile: '/tmp/bot-scout.log',
+        processName: 'node',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE',
+            start: 'npm run dev',  // Запускається з головним backend
+            kill: 'lsof -ti:3002 | xargs kill -9'
+        }
+    },
+    {
+        id: 'bot-cityhall',
+        name: 'City Hall Bot',
+        icon: '🏛️',
+        port: 3003,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:3003',
+        logFile: '/tmp/bot-cityhall.log',
+        processName: 'node',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE',
+            start: 'npm run dev',  // Запускається з головним backend
+            kill: 'lsof -ti:3003 | xargs kill -9'
+        }
+    },
+    {
+        id: 'bot-quest',
+        name: 'Quest Provider Bot',
+        icon: '🎯',
+        port: 3004,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:3004',
+        logFile: '/tmp/bot-quest.log',
+        processName: 'node',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE',
+            start: 'npm run dev',  // Запускається з головним backend
+            kill: 'lsof -ti:3004 | xargs kill -9'
+        }
+    },
+    {
+        id: 'bot-municipal',
+        name: 'Municipal Services Bot',
+        icon: '🚧',
+        port: 3005,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:3005',
+        logFile: '/tmp/bot-municipal.log',
+        processName: 'node',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE',
+            start: 'npm run dev',  // Запускається з головним backend
+            kill: 'lsof -ti:3005 | xargs kill -9'
+        }
+    },
+    
+    // ========================================
+    // CORE WEB DASHBOARDS
+    // ========================================
     {
         id: 'admin-panel',
         name: 'Admin Panel (Core Dashboard)',
         icon: '🔐',
-        port: 5174,
+        port: 5174,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5174',
         logFile: '/tmp/admin-panel.log',
         processName: 'vite',
         commands: {
-            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/admin-panel',
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/admin-panel',
             start: 'npm run dev',
-            kill: 'lsof -ti:5174 | xargs kill -9'
+            kill: 'lsof -ti:5174 | xargs kill -9'  // ← Зупиняє ТІЛЬКИ порт 5174
         }
     },
     {
         id: 'city-hall-dashboard',
         name: 'City-Hall Dashboard',
         icon: '🏛️',
-        port: 5173,
+        port: 5173,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5173',
         logFile: '/tmp/city-hall.log',
         processName: 'vite',
         commands: {
-            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/city-hall-dashboard',
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/city-hall-dashboard',
             start: 'npm run dev',
-            kill: 'lsof -ti:5173 | xargs kill -9'
+            kill: 'lsof -ti:5173 | xargs kill -9'  // ← Зупиняє ТІЛЬКИ порт 5173
         }
     },
     {
         id: 'staff-panel',
         name: 'Staff Panel',
         icon: '👥',
-        port: 5175,
-        healthCheck: 'http://localhost:5175',
+        port: 5176,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:5176',
         logFile: '/tmp/staff-panel.log',
         processName: 'vite',
         optional: true,
         commands: {
-            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/staff-panel',
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/staff-panel',
             start: 'npm run dev',
-            kill: 'lsof -ti:5175 | xargs kill -9'
+            kill: 'lsof -ti:5176 | xargs kill -9'  // ← Зупиняє ТІЛЬКИ порт 5176
+        }
+    },
+    
+    // ========================================
+    // ДЕПАРТАМЕНТИ (8 дашбордів)
+    // ========================================
+    {
+        id: 'dept-roads',
+        name: 'Roads Department (Дороги)',
+        icon: '🛣️',
+        port: 5180,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:5180',
+        logFile: '/tmp/dept-roads.log',
+        processName: 'vite',
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE/departments/roads',  // ← Тільки шлях, без 'cd'
+            start: 'npm run dev',
+            kill: 'lsof -ti:5180 | xargs kill -9'
         }
     },
     {
-        id: 'expo-client',
-        name: 'Expo Mobile-Client',
-        icon: '📱',
-        port: 8081,
-        healthCheck: 'http://localhost:8081',
-        logFile: '/tmp/expo-client.log',
-        processName: 'expo',
+        id: 'dept-lighting',
+        name: 'Lighting Department (Освітлення)',
+        icon: '💡',
+        port: 5181,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:5181',
+        logFile: '/tmp/dept-lighting.log',
+        processName: 'vite',
+        optional: true,
         commands: {
-            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/mobile/gentrustmobility',
-            start: 'npx expo start --port 8081 --lan',
-            kill: 'lsof -ti:8081 | xargs kill -9'
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE/departments/lighting',
+            start: 'npm run dev',
+            kill: 'lsof -ti:5181 | xargs kill -9'
         }
     },
+    {
+        id: 'dept-waste',
+        name: 'Waste Department (Сміття)',
+        icon: '🗑️',
+        port: 5182,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:5182',
+        logFile: '/tmp/dept-waste.log',
+        processName: 'vite',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE/departments/waste',
+            start: 'npm run dev',
+            kill: 'lsof -ti:5182 | xargs kill -9'
+        }
+    },
+    {
+        id: 'dept-parks',
+        name: 'Parks Department (Парки)',
+        icon: '🌳',
+        port: 5183,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:5183',
+        logFile: '/tmp/dept-parks.log',
+        processName: 'vite',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE/departments/parks',
+            start: 'npm run dev',
+            kill: 'lsof -ti:5183 | xargs kill -9'
+        }
+    },
+    {
+        id: 'dept-water',
+        name: 'Water Department (Вода)',
+        icon: '🚰',
+        port: 5184,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:5184',
+        logFile: '/tmp/dept-water.log',
+        processName: 'vite',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE/departments/water',
+            start: 'npm run dev',
+            kill: 'lsof -ti:5184 | xargs kill -9'
+        }
+    },
+    {
+        id: 'dept-transport',
+        name: 'Transport Department (Транспорт)',
+        icon: '🚌',
+        port: 5185,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:5185',
+        logFile: '/tmp/dept-transport.log',
+        processName: 'vite',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE/departments/transport',
+            start: 'npm run dev',
+            kill: 'lsof -ti:5185 | xargs kill -9'
+        }
+    },
+    {
+        id: 'dept-ecology',
+        name: 'Ecology Department (Екологія)',
+        icon: '🌿',
+        port: 5186,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:5186',
+        logFile: '/tmp/dept-ecology.log',
+        processName: 'vite',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE/departments/ecology',
+            start: 'npm run dev',
+            kill: 'lsof -ti:5186 | xargs kill -9'
+        }
+    },
+    {
+        id: 'dept-vandalism',
+        name: 'Vandalism Department (Вандалізм)',
+        icon: '🎨',
+        port: 5187,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:5187',
+        logFile: '/tmp/dept-vandalism.log',
+        processName: 'vite',
+        optional: true,
+        commands: {
+            cd: '/Users/apple/Desktop/GenTrust_Mobility_DE/departments/vandalism',
+            start: 'npm run dev',
+            kill: 'lsof -ti:5187 | xargs kill -9'
+        }
+    },
+    
+    // ========================================
+    // MOBILE APPS (Expo)
+    // ========================================
     {
         id: 'expo-school',
         name: 'Expo Mobile-School',
         icon: '🎓',
-        port: 8082,
+        port: 8082,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:8082',
         logFile: '/tmp/expo-school.log',
         processName: 'expo',
         commands: {
-            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/mobile-school',
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school',
             start: 'npx expo start --port 8082 --lan',
-            kill: 'lsof -ti:8082 | xargs kill -9'
+            kill: 'lsof -ti:8082 | xargs kill -9'  // ← Зупиняє ТІЛЬКИ порт 8082
         }
     },
     {
         id: 'expo-parent',
         name: 'Expo Mobile-Parent (Батьки)',
         icon: '👨‍👩‍👧',
-        port: 8083,
+        port: 8083,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:8083',
         logFile: '/tmp/expo-parent.log',
         processName: 'expo',
+        optional: true,
         commands: {
-            cd: 'cd /Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE/mobile-parent',
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-parent',
             start: 'npx expo start --port 8083 --lan',
-            kill: 'lsof -ti:8083 | xargs kill -9'
+            kill: 'lsof -ti:8083 | xargs kill -9'  // ← Зупиняє ТІЛЬКИ порт 8083
+        }
+    },
+    {
+        id: 'expo-client',
+        name: 'Expo Mobile-Client (Клієнти)',
+        icon: '👤',
+        port: 8081,  // ✅ ФІКСОВАНИЙ
+        healthCheck: 'http://localhost:8081',
+        logFile: '/tmp/expo-client.log',
+        processName: 'expo',
+        optional: true,
+        commands: {
+            cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-client',
+            start: 'npx expo start --port 8081 --lan',
+            kill: 'lsof -ti:8081 | xargs kill -9'
         }
     }
 ];
 
-// Telegram боти (перевіряємо чи вони запущені через логи backend)
+// Telegram боти (перевіряємо чи вони запущені через порти)
 const TELEGRAM_BOTS = [
-    { id: 'master-bot', name: 'Master Core Bot', icon: '🤖' },
-    { id: 'scout-bot', name: 'Scout Bot', icon: '🔍' },
-    { id: 'city-hall-bot', name: 'City Hall Bot', icon: '🏛️' },
-    { id: 'quest-provider-bot', name: 'Quest Provider Bot', icon: '🎯' },
-    { id: 'municipal-services-bot', name: 'Municipal Services Bot', icon: '🚧' }
+    { id: 'master-bot', name: 'Master Core Bot', icon: '🤖', port: 3001 },
+    { id: 'scout-bot', name: 'Scout Bot', icon: '🔍', port: 3002 },
+    { id: 'city-hall-bot', name: 'City Hall Bot', icon: '🏛️', port: 3003 },
+    { id: 'quest-provider-bot', name: 'Quest Provider Bot', icon: '🎯', port: 3004 },
+    { id: 'municipal-services-bot', name: 'Municipal Services Bot', icon: '🚧', port: 3005 }
 ];
 
 /**
@@ -202,44 +420,25 @@ function getLastLogLines(logFile, lines = 20) {
 }
 
 /**
- * Перевірка чи Telegram боти запущені (через логи backend)
+ * Перевірка чи Telegram боти запущені
+ * Боти інтегровані в Backend, тому перевіряємо Backend (порт 3000)
  */
-function checkTelegramBots() {
-    return new Promise((resolve) => {
-        const backendLog = '/tmp/backend.log';
-
-        if (!fs.existsSync(backendLog)) {
-            resolve(TELEGRAM_BOTS.map(bot => ({ ...bot, status: false, message: 'Backend не запущено' })));
-            return;
-        }
-
-        fs.readFile(backendLog, 'utf8', (err, data) => {
-            if (err) {
-                resolve(TELEGRAM_BOTS.map(bot => ({ ...bot, status: false, message: 'Помилка читання логу' })));
-                return;
-            }
-
-            const results = TELEGRAM_BOTS.map(bot => {
-                const botRunning = data.includes(`${bot.name} started`) ||
-                    data.includes(`${bot.name} launched`) ||
-                    data.includes('Bot initialized') ||
-                    data.includes('[Bot]') ||
-                    data.includes('[Master Bot]') ||
-                    data.includes('[Scout Bot]') ||
-                    data.includes('[City Hall Bot]') ||
-                    data.includes('[Quest Provider Bot]') ||
-                    data.includes('[Municipal Bot]');
-
-                return {
-                    ...bot,
-                    status: botRunning,
-                    message: botRunning ? '✅ Запущено і працює' : '⚠️ Не знайдено в логах'
-                };
-            });
-
-            resolve(results);
+async function checkTelegramBots() {
+    const results = [];
+    
+    // Перевіряємо чи Backend запущений (порт 3000)
+    const backendActive = await checkPort(3000);
+    
+    for (const bot of TELEGRAM_BOTS) {
+        results.push({
+            ...bot,
+            status: backendActive,  // Боти працюють якщо Backend запущений
+            message: backendActive ? '✅ Запущено і працює' : '⚠️ Не запущено',
+            port: bot.port
         });
-    });
+    }
+    
+    return results;
 }
 
 /**
@@ -415,13 +614,13 @@ app.post('/api/stop-all', (req, res) => {
 // API endpoint для запуску всіх сервісів
 app.post('/api/start-all', (req, res) => {
     const { exec } = require('child_process');
-    const PROJECT_DIR = '/Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE';
+    const PROJECT_DIR = '/Users/apple/Desktop/GenTrust_Mobility_DE';
 
     const commands = [
         `cd ${PROJECT_DIR} && NODE_OPTIONS=--max-old-space-size=4096 npm run dev > /tmp/backend.log 2>&1 &`,
         `cd ${PROJECT_DIR}/admin-panel && npm run dev > /tmp/admin-panel.log 2>&1 &`,
         `cd ${PROJECT_DIR}/city-hall-dashboard && npm run dev > /tmp/city-hall.log 2>&1 &`,
-        `cd ${PROJECT_DIR}/mobile/gentrustmobility && npx expo start --port 8081 --lan > /tmp/expo-client.log 2>&1 &`,
+        `cd ${PROJECT_DIR}/department-dashboard && npm run dev > /tmp/department.log 2>&1 &`,
         `cd ${PROJECT_DIR}/mobile-school && npx expo start --port 8082 --lan > /tmp/expo-school.log 2>&1 &`
     ];
 
@@ -433,6 +632,96 @@ app.post('/api/start-all', (req, res) => {
 
     console.log('✅ Запуск всіх сервісів...');
     res.json({ success: true, message: 'Запуск всіх сервісів...' });
+});
+
+// API endpoint для запуску окремого сервісу
+app.post('/api/service/:id/start', (req, res) => {
+    const { exec } = require('child_process');
+    const serviceId = req.params.id;
+
+    const service = SERVICES.find(s => s.id === serviceId);
+    if (!service) {
+        return res.status(404).json({ success: false, message: 'Сервіс не знайдено' });
+    }
+
+    // Створюємо пустий лог файл якщо не існує
+    const fs = require('fs');
+    if (!fs.existsSync(service.logFile)) {
+        fs.writeFileSync(service.logFile, '');
+    }
+
+    // Використовуємо nohup для фонового запуску
+    const command = `nohup bash -c "cd '${service.commands.cd}' && ${service.commands.start}" >> ${service.logFile} 2>&1 &`;
+    
+    exec(command, (error) => {
+        if (error) {
+            console.error(`Start ${serviceId} error:`, error);
+            res.status(500).json({ success: false, message: `Помилка запуску: ${error.message}` });
+        } else {
+            console.log(`✅ Запущено: ${service.name}`);
+            res.json({ success: true, message: `${service.name} запущено!` });
+        }
+    });
+});
+
+// API endpoint для зупинки окремого сервісу
+app.post('/api/service/:id/stop', (req, res) => {
+    const { exec } = require('child_process');
+    const serviceId = req.params.id;
+
+    const service = SERVICES.find(s => s.id === serviceId);
+    if (!service) {
+        return res.status(404).json({ success: false, message: 'Сервіс не знайдено' });
+    }
+
+    exec(service.commands.kill, (error) => {
+        if (error) {
+            console.error(`Stop ${serviceId} error:`, error);
+        }
+        console.log(`✅ Зупинено: ${service.name}`);
+        res.json({ success: true, message: `${service.name} зупинено!` });
+    });
+});
+
+// API endpoint для перезапуску окремого сервісу
+app.post('/api/service/:id/restart', (req, res) => {
+    const { exec } = require('child_process');
+    const serviceId = req.params.id;
+    const PROJECT_DIR = '/Users/apple/Desktop/GenTrust_Mobility_DE';
+
+    const service = SERVICES.find(s => s.id === serviceId);
+    if (!service) {
+        return res.status(404).json({ success: false, message: 'Сервіс не знайдено' });
+    }
+
+    // Створюємо пустий лог файл якщо не існує
+    const fs = require('fs');
+    if (!fs.existsSync(service.logFile)) {
+        fs.writeFileSync(service.logFile, '');
+    }
+
+    // Спочатку зупиняємо
+    exec(service.commands.kill, (error) => {
+        if (error) {
+            console.error(`Restart ${serviceId} stop error:`, error);
+        }
+        
+        // Чекаємо 2 секунди і запускаємо знову
+        setTimeout(() => {
+            // Використовуємо nohup для фонового запуску
+            const command = `nohup bash -c "cd '${service.commands.cd}' && ${service.commands.start}" >> ${service.logFile} 2>&1 &`;
+            
+            exec(command, (restartError) => {
+                if (restartError) {
+                    console.error(`Restart ${serviceId} start error:`, restartError);
+                    res.status(500).json({ success: false, message: `Помилка перезапуску: ${restartError.message}` });
+                } else {
+                    console.log(`✅ Перезапущено: ${service.name}`);
+                    res.json({ success: true, message: `${service.name} перезапущено!` });
+                }
+            });
+        }, 2000);
+    });
 });
 
 // API endpoint для додавання в автозапуск macOS
@@ -499,8 +788,18 @@ app.get('/api/logs/:service', (req, res) => {
         'backend': '/tmp/backend.log',
         'admin': '/tmp/admin-panel.log',
         'city-hall': '/tmp/city-hall.log',
-        'expo-client': '/tmp/expo-client.log',
+        'staff': '/tmp/staff-panel.log',
+        'roads': '/tmp/dept-roads.log',
+        'lighting': '/tmp/dept-lighting.log',
+        'waste': '/tmp/dept-waste.log',
+        'parks': '/tmp/dept-parks.log',
+        'water': '/tmp/dept-water.log',
+        'transport': '/tmp/dept-transport.log',
+        'ecology': '/tmp/dept-ecology.log',
+        'vandalism': '/tmp/dept-vandalism.log',
         'expo-school': '/tmp/expo-school.log',
+        'expo-parent': '/tmp/expo-parent.log',
+        'expo-client': '/tmp/expo-client.log',
         'monitor': '/tmp/monitor.log'
     };
 
@@ -515,7 +814,7 @@ app.get('/api/logs/:service', (req, res) => {
 
     try {
         const data = fs.readFileSync(logFile, 'utf8');
-        const lines = data.split('\n').slice(-100); // Останні 100 рядків
+        const lines = data.split('\n').slice(-100);
         res.json({ logs: lines.join('\n'), service });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -529,8 +828,18 @@ app.get('/api/all-logs', (req, res) => {
         'backend': '/tmp/backend.log',
         'admin': '/tmp/admin-panel.log',
         'city-hall': '/tmp/city-hall.log',
-        'expo-client': '/tmp/expo-client.log',
+        'staff': '/tmp/staff-panel.log',
+        'roads': '/tmp/dept-roads.log',
+        'lighting': '/tmp/dept-lighting.log',
+        'waste': '/tmp/dept-waste.log',
+        'parks': '/tmp/dept-parks.log',
+        'water': '/tmp/dept-water.log',
+        'transport': '/tmp/dept-transport.log',
+        'ecology': '/tmp/dept-ecology.log',
+        'vandalism': '/tmp/dept-vandalism.log',
         'expo-school': '/tmp/expo-school.log',
+        'expo-parent': '/tmp/expo-parent.log',
+        'expo-client': '/tmp/expo-client.log',
         'monitor': '/tmp/monitor.log'
     };
 
