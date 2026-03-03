@@ -9,6 +9,7 @@
 #   ./start.sh --staff-only     - тільки staff panel (5173)                   #
 #   ./start.sh --admin-only     - тільки admin panel (5174)                   #
 #   ./start.sh --api-only       - тільки backend без ботів (API mode)         #
+#   ./start.sh --dept-only      - тільки department dashboard (5175)          #
 #                                                                              #
 ################################################################################
 
@@ -21,7 +22,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # 📍 Базова директорія проекту
-PROJECT_DIR="/Users/oleksandrstepaniuk/Desktop/GenTrust_Mobility_DE"
+PROJECT_DIR="/Users/apple/Desktop/GenTrust_Mobility_DE"
 cd "$PROJECT_DIR" || exit 1
 
 # 🎯 Парсинг аргументів
@@ -34,6 +35,8 @@ elif [ "$1" == "--admin-only" ]; then
     MODE="admin"
 elif [ "$1" == "--api-only" ]; then
     MODE="api"
+elif [ "$1" == "--dept-only" ]; then
+    MODE="dept"
 fi
 
 ################################################################################
@@ -159,10 +162,13 @@ case $MODE in
         
         # CITY-HALL DASHBOARD
         launch_service "City-Hall Dashboard" "5173" "npm run dev" "$PROJECT_DIR/city-hall-dashboard" || exit 1
-        
+
+        # DEPARTMENT DASHBOARD
+        launch_service "Department Dashboard" "5175" "npm run dev" "$PROJECT_DIR/department-dashboard" || exit 1
+
         # EXPO MOBILE SCHOOL
         launch_service "Expo Mobile-School" "8082" "npm start" "$PROJECT_DIR/mobile-school" || exit 1
-        
+
         # EXPO MOBILE PARENT (закоментовано - запускай окремо якщо потрібно)
         # launch_service "Expo Mobile-Parent (Батьки)" "8083" "npm start" "$PROJECT_DIR/mobile-parent" || exit 1
         ;;
@@ -177,16 +183,19 @@ case $MODE in
         print_success "Система моніторингу запущена (PID: $MONITOR_PID)"
         echo "  🌐 Відкрийте: http://localhost:9000"
         echo ""
-        
+
         # BACKEND (з ботами)
         launch_service "Backend API (з ботами)" "3000" "npm run dev" "$PROJECT_DIR" || exit 1
-        
+
         # CITY-HALL DASHBOARD
         launch_service "City-Hall Dashboard" "5173" "npm run dev" "$PROJECT_DIR/city-hall-dashboard" || exit 1
-        
+
+        # DEPARTMENT DASHBOARD
+        launch_service "Department Dashboard" "5175" "npm run dev" "$PROJECT_DIR/department-dashboard" || exit 1
+
         # EXPO MOBILE SCHOOL
         launch_service "Expo Mobile-School" "8082" "npm start -- --port 8082" "$PROJECT_DIR/mobile-school" || exit 1
-        
+
         # EXPO MOBILE CLIENT
         launch_service "Expo Mobile-Client" "8081" "npm start -- --port 8081" "$PROJECT_DIR/mobile/gentrustmobility" || exit 1
         ;;
@@ -201,6 +210,10 @@ case $MODE in
         
     "api")
         launch_service "Backend API (API-only, без ботів)" "3000" "npm run api" "$PROJECT_DIR" || exit 1
+        ;;
+
+    "dept")
+        launch_service "Department Dashboard" "5175" "npm run dev" "$PROJECT_DIR/department-dashboard" || exit 1
         ;;
 esac
 
@@ -234,6 +247,11 @@ if [ "$MODE" == "default" ] || [ "$MODE" == "all-apps" ]; then
     curl -s -I http://localhost:5173 2>/dev/null | head -n 1 || echo "⚠️ Не відповідає"
 fi
 
+if [ "$MODE" == "default" ] || [ "$MODE" == "all-apps" ]; then
+    echo -e "${CYAN}🏢 Department Dashboard:${NC}"
+    curl -s -I http://localhost:5175 2>/dev/null | head -n 1 || echo "⚠️ Не відповідає"
+fi
+
 if [ "$MODE" == "staff" ]; then
     echo -e "${CYAN}👥 Staff Panel:${NC}"
     curl -s -I http://localhost:5173 2>/dev/null | head -n 1 || echo "⚠️ Не відповідає"
@@ -242,6 +260,11 @@ fi
 if [ "$MODE" == "admin" ]; then
     echo -e "${CYAN}🔐 Admin Panel:${NC}"
     curl -s -I http://localhost:5174 2>/dev/null | head -n 1 || echo "⚠️ Не відповідає"
+fi
+
+if [ "$MODE" == "dept" ]; then
+    echo -e "${CYAN}🏢 Department Dashboard:${NC}"
+    curl -s -I http://localhost:5175 2>/dev/null | head -n 1 || echo "⚠️ Не відповідає"
 fi
 
 ################################################################################
@@ -260,6 +283,7 @@ case $MODE in
         echo -e "   Backend API: ${CYAN}http://localhost:3000/api${NC}"
         echo -e "   Admin Panel: ${CYAN}http://localhost:5174${NC}"
         echo -e "   City-Hall: ${CYAN}http://localhost:5173${NC}"
+        echo -e "   Department: ${CYAN}http://localhost:5175${NC}"
         echo -e "   Expo School: ${CYAN}exp://${IP_ADDRESS}:8082${NC}"
         echo ""
         echo -e "${GREEN}ТЕЛЕФОН:${NC}"
@@ -280,7 +304,8 @@ case $MODE in
     "all-apps")
         echo -e "${GREEN}📍 ПОСИЛАННЯ:${NC}"
         echo -e "   🌐 Backend API:         ${CYAN}http://localhost:3000/api${NC}"
-        echo -e "   🎛️  Dashboard:           ${CYAN}http://localhost:5173${NC}"
+        echo -e "   🏛️ City-Hall:           ${CYAN}http://localhost:5173${NC}"
+        echo -e "   🏢 Department:          ${CYAN}http://localhost:5175${NC}"
         echo -e "   📱 Expo School:         ${CYAN}exp://${IP_ADDRESS}:8082${NC}"
         echo -e "   📱 Expo Client:         ${CYAN}exp://${IP_ADDRESS}:8081${NC}"
         ;;
@@ -301,6 +326,12 @@ case $MODE in
         echo -e "${GREEN}📍 ПОСИЛАННЯ:${NC}"
         echo -e "   🌐 Backend API:        ${CYAN}http://localhost:3000/api${NC}"
         echo -e "   (API-only mode, без телеграм ботів)"
+        ;;
+
+    "dept")
+        echo -e "${GREEN}📍 ПОСИЛАННЯ:${NC}"
+        echo -e "   🏢 Department Dashboard: ${CYAN}http://localhost:5175${NC}"
+        echo -e "   Логін: ${YELLOW}admin${NC} / Пароль: ${YELLOW}admin${NC}"
         ;;
 esac
 
