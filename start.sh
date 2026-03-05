@@ -169,78 +169,121 @@ launch_service() {
     local command=$3
     local dir=$4
     local log_file="/tmp/${service_name//[ ()]/}.log"
+    local max_retries=2
+    local retry=0
 
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    print_step "Запускаю $service_name на порту $port..."
-
-    # 🔒 ПЕРЕВІРКА: Чи зайнятий порт кимось?
-    print_step "Перевірка порту $port..."
-    local existing_pid=$(lsof -ti:$port 2>/dev/null)
-
-    if [ -n "$existing_pid" ]; then
-        print_error "⚠️  Порт $port ЗАЙНЯТИЙ (PID: $existing_pid)!"
-        print_step "ВБИВАЄМО порушника на порту $port..."
-        lsof -ti:$port | xargs kill -9 2>/dev/null
-        sleep 1
-
-        # Перевіряємо чи вдалося звільнити порт
-        if lsof -ti:$port 2>/dev/null | grep -q .; then
-            print_error "❌ НЕ ВДАЛОСЯ звільнити порт $port! Процес $existing_pid не вбивається."
-            print_error "   Причина: Можливо процес запущено від root або це системний процес."
-            print_error "   Рішення: Вбийте вручну: sudo lsof -ti:$port | xargs sudo kill -9"
-            return 1
+    while [ $retry -lt $max_retries ]; do
+        echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        
+        if [ $retry -gt 0 ]; then
+            print_step "🔄 СПРОБА $retry: Запускаю $service_name на порту $port..."
         else
-            print_success "Порт $port звільнено (вбито PID: $existing_pid)"
+            print_step "Запускаю $service_name на порту $port..."
         fi
-    fi
 
-    # Запускаємо сервіс
-    cd "$dir" || return 1
-    eval "$command" > "$log_file" 2>&1 &
-    local pid=$!
+        # 🔒 ПЕРЕВІРКА: Чи зайнятий порт кимось?
+        print_step "Перевірка порту $port..."
+        local existing_pid=$(lsof -ti:$port 2>/dev/null)
 
-    # 🆕 ОПТИМІЗАЦІЯ: Різний час для різних типів сервісів
-    if [[ "$service_name" == *"Backend"* ]]; then
-        sleep 10  # Backend з ботами потребує більше часу
-    elif [[ "$dir" == *"dashboard"* ]] || [[ "$dir" == *"panel"* ]]; then
-        sleep 5   # Vite dashboards
-    else
-        sleep 5   # решта
-    fi
+        if [ -n "$existing_pid" ]; then
+            print_error "⚠️  Порт $port ЗАЙНЯТИЙ (PID: $existing_pid)!"
+            print_step "ВБИВАЄМО порушника на порту $port..."
+            lsof -ti:$port | xargs kill -9 2>/dev/null
+            sleep 2
 
-    # Перевіряю що процес живий
-    if ! kill -0 $pid 2>/dev/null; then
-        print_error "$service_name не запустився (PID: $pid)"
-        echo "Логи:"
-        tail -n 10 "$log_file"
-        return 1
-    fi
+            # Перевіряємо чи вдалося звільнити порт
+            if lsof -ti:$port 2>/dev/null | grep -q .; then
+                print_error "❌ НЕ ВДАЛОСЯ звільнити порт $port! Процес $existing_pid не вбивається."
+                print_error "   Причина: Можливо процес запущено від root або це системний процес."
+                print_error "   Рішення: Вбийте вручну: sudo lsof -ti:$port | xargs sudo kill -9"
+                return 1
+            else
+                print_success "Порт $port звільнено (вбито PID: $existing_pid)"
+            fi
+        fi
 
-    # 🔒 ПЕРЕВІРКА: Чи дійсно наш процес зайняв правильний порт?
-    # Даємо ще 3 секунди на стабілізацію
-    sleep 3
-    local actual_pid=$(lsof -ti:$port 2>/dev/null | head -1)
+        # Запускаємо сервіс
+        cd "$dir" || return 1
+        eval "$command" > "$log_file" 2>&1 &
+        local pid=$!
 
-    # Для Vite процесів - перевіряємо що хоча б один процес на порту
-    if [ -z "$actual_pid" ]; then
-        print_error "❌ ПОМИЛКА! Порт $port ніким не зайнятий!"
-        print_error "   $service_name не зміг зайняти свій порт"
-        print_error "   Причина: Помилка запуску або порт заблоковано"
-        print_error "   Логи:"
-        tail -n 20 "$log_file"
-        return 1
-    fi
+        # 🆕 ОПТИМІЗАЦІЯ: Різний час для різних типів сервісів
+        if [[ "$service_name" == *"Backend"* ]]; then
+            sleep 10  # Backend з ботами потребує більше часу
+        elif [[ "$dir" == *"dashboard"* ]] || [[ "$dir" == *"panel"* ]]; then
+            sleep 5   # Vite dashboards
+        else
+            sleep 5   # решта
+        fi
 
-    # Перевіряємо що процес активний
-    if ! kill -0 $actual_pid 2>/dev/null; then
-        print_error "❌ ПОМИЛКА! Процес на порту $port (PID: $actual_pid) не активний"
-        return 1
-    fi
+        # Перевіряю що процес живий
+        if ! kill -0 $pid 2>/dev/null; then
+            print_error "$service_name не запустився (PID: $pid)"
+            echo "Логи:"
+            tail -n 10 "$log_file"
+            
+            # 🆕 СПРОБА ЗАНОВО
+            retry=$((retry + 1))
+            if [ $retry -lt $max_retries ]; then
+                print_step "🔄 Спроба $retry: Очищення порту $port..."
+                lsof -ti:$port | xargs kill -9 2>/dev/null
+                sleep 2
+                continue
+            fi
+            
+            return 1
+        fi
 
-    print_success "$service_name запущено (PID: $pid, порт: $port)"
-    echo "  📝 Логи: tail -f $log_file"
+        # 🔒 ПЕРЕВІРКА: Чи дійсно наш процес зайняв правильний порт?
+        # Даємо ще 3 секунди на стабілізацію
+        sleep 3
+        local actual_pid=$(lsof -ti:$port 2>/dev/null | head -1)
 
-    return 0
+        # Для Vite процесів - перевіряємо що хоча б один процес на порту
+        if [ -z "$actual_pid" ]; then
+            print_error "❌ ПОМИЛКА! Порт $port ніким не зайнятий!"
+            print_error "   $service_name не зміг зайняти свій порт"
+            print_error "   Причина: Помилка запуску або порт заблоковано"
+            print_error "   Логи:"
+            tail -n 20 "$log_file"
+            
+            # 🆕 СПРОБА ЗАНОВО - ЗУПИНИТИ І ЗАПУСТИТИ
+            retry=$((retry + 1))
+            if [ $retry -lt $max_retries ]; then
+                print_step "🔄 Спроба $retry: Зупинка всього на порту $port..."
+                lsof -ti:$port | xargs kill -9 2>/dev/null
+                sleep 2
+                print_step "🔄 Спроба $retry: Повторний запуск..."
+                continue
+            fi
+            
+            return 1
+        fi
+
+        # Перевіряємо що процес активний
+        if ! kill -0 $actual_pid 2>/dev/null; then
+            print_error "❌ ПОМИЛКА! Процес на порту $port (PID: $actual_pid) не активний"
+            
+            # 🆕 СПРОБА ЗАНОВО
+            retry=$((retry + 1))
+            if [ $retry -lt $max_retries ]; then
+                print_step "🔄 Спроба $retry: Зупинка всього на порту $port..."
+                lsof -ti:$port | xargs kill -9 2>/dev/null
+                sleep 2
+                print_step "🔄 Спроба $retry: Повторний запуск..."
+                continue
+            fi
+            
+            return 1
+        fi
+
+        print_success "$service_name запущено (PID: $pid, порт: $port)"
+        echo "  📝 Логи: tail -f $log_file"
+
+        return 0  # Успіх!
+    done
+
+    return 1  # Всі спроби вичерпано
 }
 
 case $MODE in
