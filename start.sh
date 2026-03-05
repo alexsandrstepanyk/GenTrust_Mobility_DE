@@ -148,6 +148,20 @@ print_success "package.json знайдено"
 
 print_header "🚀 КРОК 2: ЗАПУСК СЕРВІСІВ (Режим: $MODE)"
 
+# 🆕 ФУНКЦІЯ: Очікування готовності Backend API
+wait_for_backend() {
+    print_step "Очікування готовності Backend API..."
+    for i in {1..15}; do
+        if curl -s http://localhost:3000/api/health > /dev/null 2>&1; then
+            print_success "Backend API готовий!"
+            return 0
+        fi
+        sleep 1
+    done
+    print_error "❌ Backend API не готовий через 15 секунд!"
+    return 1
+}
+
 # ФУНКЦІЯ ДЛЯ ЗАПУСКУ З ПЕРЕВІРКОЮ ПОРТУ
 launch_service() {
     local service_name=$1
@@ -162,13 +176,13 @@ launch_service() {
     # 🔒 ПЕРЕВІРКА: Чи зайнятий порт кимось?
     print_step "Перевірка порту $port..."
     local existing_pid=$(lsof -ti:$port 2>/dev/null)
-    
+
     if [ -n "$existing_pid" ]; then
         print_error "⚠️  Порт $port ЗАЙНЯТИЙ (PID: $existing_pid)!"
         print_step "ВБИВАЄМО порушника на порту $port..."
         lsof -ti:$port | xargs kill -9 2>/dev/null
         sleep 1
-        
+
         # Перевіряємо чи вдалося звільнити порт
         if lsof -ti:$port 2>/dev/null | grep -q .; then
             print_error "❌ НЕ ВДАЛОСЯ звільнити порт $port! Процес $existing_pid не вбивається."
@@ -179,14 +193,20 @@ launch_service() {
             print_success "Порт $port звільнено (вбито PID: $existing_pid)"
         fi
     fi
-    
+
     # Запускаємо сервіс
     cd "$dir" || return 1
     eval "$command" > "$log_file" 2>&1 &
     local pid=$!
 
-    # Даємо 5 секунд на запуск
-    sleep 5
+    # 🆕 ОПТИМІЗАЦІЯ: Різний час для різних типів сервісів
+    if [[ "$service_name" == *"Backend"* ]]; then
+        sleep 10  # Backend з ботами потребує більше часу
+    elif [[ "$dir" == *"dashboard"* ]] || [[ "$dir" == *"panel"* ]]; then
+        sleep 5   # Vite dashboards
+    else
+        sleep 5   # решта
+    fi
 
     # Перевіряю що процес живий
     if ! kill -0 $pid 2>/dev/null; then
@@ -200,7 +220,7 @@ launch_service() {
     # Даємо ще 3 секунди на стабілізацію
     sleep 3
     local actual_pid=$(lsof -ti:$port 2>/dev/null | head -1)
-    
+
     # Для Vite процесів - перевіряємо що хоча б один процес на порту
     if [ -z "$actual_pid" ]; then
         print_error "❌ ПОМИЛКА! Порт $port ніким не зайнятий!"
@@ -210,7 +230,7 @@ launch_service() {
         tail -n 20 "$log_file"
         return 1
     fi
-    
+
     # Перевіряємо що процес активний
     if ! kill -0 $actual_pid 2>/dev/null; then
         print_error "❌ ПОМИЛКА! Процес на порту $port (PID: $actual_pid) не активний"
@@ -235,46 +255,59 @@ case $MODE in
         echo "  🌐 Відкрийте: http://localhost:9000"
         echo ""
 
-        # BACKEND (з ботами)
+        # BACKEND (з ботами) - ЗАВЖДИ ПЕРШИМ СЕРЕД СЕРВІСІВ
         launch_service "Backend API (з ботами)" "3000" "npm run dev" "$PROJECT_DIR" || exit 1
+        
+        # 🆕 КРИТИЧНО: Чекаємо поки Backend буде готовий
+        wait_for_backend || exit 1
 
-        # ADMIN PANEL (CORE DASHBOARD)
-        launch_service "Admin Panel (Core Dashboard)" "5174" "npm run dev" "$PROJECT_DIR/admin-panel" || exit 1
-
-        # CITY-HALL DASHBOARD
+        # CORE DASHBOARDS (тільки після готовності Backend)
+        # 🏛️ City-Hall Dashboard (5173) - ЗАВЖДИ ПЕРЕД Admin Panel
         launch_service "City-Hall Dashboard" "5173" "npm run dev" "$PROJECT_DIR/city-hall-dashboard" || exit 1
 
-        # DEPARTMENT DASHBOARD (Base)
+        # 🔐 Admin Panel (5174)
+        launch_service "Admin Panel (Core Dashboard)" "5174" "npm run dev" "$PROJECT_DIR/admin-panel" || exit 1
+
+        # 🏢 Department Dashboard (Base 5175)
         launch_service "Department Dashboard" "5175" "npm run dev" "$PROJECT_DIR/department-dashboard" || exit 1
 
         # 🛣️ 8 ДЕПАРТАМЕНТІВ - КОЖЕН НА СВОЄМУ ПОРТУ
         print_step "🏢 Запускаю 8 департаментів..."
+        
+        # 🆕 МАСИВ ДЛЯ ЗБОРУ ПОМИЛОК
+        FAILED_DEPTS=()
 
         # 🛣️ Дороги (5180)
-        launch_service "Dept: Roads" "5180" "npm run dev" "$PROJECT_DIR/departments/roads" || true
+        launch_service "Dept: Roads" "5180" "npm run dev" "$PROJECT_DIR/departments/roads" || FAILED_DEPTS+=("Roads")
 
         # 💡 Освітлення (5181)
-        launch_service "Dept: Lighting" "5181" "npm run dev" "$PROJECT_DIR/departments/lighting" || true
+        launch_service "Dept: Lighting" "5181" "npm run dev" "$PROJECT_DIR/departments/lighting" || FAILED_DEPTS+=("Lighting")
 
         # 🗑️ Сміття (5182)
-        launch_service "Dept: Waste" "5182" "npm run dev" "$PROJECT_DIR/departments/waste" || true
+        launch_service "Dept: Waste" "5182" "npm run dev" "$PROJECT_DIR/departments/waste" || FAILED_DEPTS+=("Waste")
 
         # 🌳 Парки (5183)
-        launch_service "Dept: Parks" "5183" "npm run dev" "$PROJECT_DIR/departments/parks" || true
+        launch_service "Dept: Parks" "5183" "npm run dev" "$PROJECT_DIR/departments/parks" || FAILED_DEPTS+=("Parks")
 
         # 🚰 Вода (5184)
-        launch_service "Dept: Water" "5184" "npm run dev" "$PROJECT_DIR/departments/water" || true
+        launch_service "Dept: Water" "5184" "npm run dev" "$PROJECT_DIR/departments/water" || FAILED_DEPTS+=("Water")
 
         # 🚌 Транспорт (5185)
-        launch_service "Dept: Transport" "5185" "npm run dev" "$PROJECT_DIR/departments/transport" || true
+        launch_service "Dept: Transport" "5185" "npm run dev" "$PROJECT_DIR/departments/transport" || FAILED_DEPTS+=("Transport")
 
         # 🌿 Екологія (5186)
-        launch_service "Dept: Ecology" "5186" "npm run dev" "$PROJECT_DIR/departments/ecology" || true
+        launch_service "Dept: Ecology" "5186" "npm run dev" "$PROJECT_DIR/departments/ecology" || FAILED_DEPTS+=("Ecology")
 
         # 🎨 Вандалізм (5187)
-        launch_service "Dept: Vandalism" "5187" "npm run dev" "$PROJECT_DIR/departments/vandalism" || true
-
-        print_success "Всі 8 департаментів запущені (порти 5180-5187)"
+        launch_service "Dept: Vandalism" "5187" "npm run dev" "$PROJECT_DIR/departments/vandalism" || FAILED_DEPTS+=("Vandalism")
+        
+        # 🆕 ЗВІТ ПРО НЕВДАЛІ ДЕПАРТАМЕНТИ
+        if [ ${#FAILED_DEPTS[@]} -gt 0 ]; then
+            print_error "❌ Не вдалося запустити департаменти: ${FAILED_DEPTS[*]}"
+            print_error "   Перевірте логи: tail -f /tmp/dept-*.log"
+        else
+            print_success "Всі 8 департаментів запущені (порти 5180-5187)"
+        fi
 
         # 🚫 EXPO MOBILE SCHOOL - ЗАКОМЕНТОВАНО (запускай окремо якщо потрібно)
         # DISABLED: Expo не запускається автоматично, тільки вручну (2026-03-05)
@@ -283,13 +316,13 @@ case $MODE in
         # EXPO MOBILE PARENT (закоментовано - запускай окремо якщо потрібно)
         # DISABLED: не потрібен за замовчуванням, запускай окремо (2026-03-05)
         # launch_service "Expo Mobile-Parent (Батьки)" "8083" "npm start" "$PROJECT_DIR/mobile-parent" || exit 1
-        
+
         # ✅ АВТОМАТИЧНА ПЕРЕВІРКА ПІСЛЯ ЗАПУСКУ - ТИМЧАСОВО ВИМКНЕНО
         # print_header "🧪 АВТОМАТИЧНА ПЕРЕВІРКА ВСІХ СЕРВІСІВ"
         # print_step "Зачекайте 10 секунд на стабілізацію сервісів..."
         # sleep 10
         # ... (перевірка вимкнена для швидкості)
-        
+
         # Відкрити Monitor Dashboard
         print_step "Відкриття Monitor Dashboard..."
         sleep 2
@@ -307,8 +340,11 @@ case $MODE in
         echo "  🌐 Відкрийте: http://localhost:9000"
         echo ""
 
-        # BACKEND (з ботами)
+        # BACKEND (з ботами) - ЗАВЖДИ ПЕРШИМ
         launch_service "Backend API (з ботами)" "3000" "npm run dev" "$PROJECT_DIR" || exit 1
+        
+        # 🆕 КРИТИЧНО: Чекаємо поки Backend буде готовий
+        wait_for_backend || exit 1
 
         # CITY-HALL DASHBOARD
         launch_service "City-Hall Dashboard" "5173" "npm run dev" "$PROJECT_DIR/city-hall-dashboard" || exit 1
@@ -319,38 +355,47 @@ case $MODE in
         # 🛣️ 8 ДЕПАРТАМЕНТІВ - КОЖЕН НА СВОЄМУ ПОРТУ
         print_step "🏢 Запускаю 8 департаментів..."
         
+        # 🆕 МАСИВ ДЛЯ ЗБОРУ ПОМИЛОК
+        FAILED_DEPTS=()
+
         # 🛣️ Дороги (5180)
-        launch_service "Dept: Roads" "5180" "npm run dev" "$PROJECT_DIR/departments/roads" || true
-        
+        launch_service "Dept: Roads" "5180" "npm run dev" "$PROJECT_DIR/departments/roads" || FAILED_DEPTS+=("Roads")
+
         # 💡 Освітлення (5181)
-        launch_service "Dept: Lighting" "5181" "npm run dev" "$PROJECT_DIR/departments/lighting" || true
-        
+        launch_service "Dept: Lighting" "5181" "npm run dev" "$PROJECT_DIR/departments/lighting" || FAILED_DEPTS+=("Lighting")
+
         # 🗑️ Сміття (5182)
-        launch_service "Dept: Waste" "5182" "npm run dev" "$PROJECT_DIR/departments/waste" || true
-        
+        launch_service "Dept: Waste" "5182" "npm run dev" "$PROJECT_DIR/departments/waste" || FAILED_DEPTS+=("Waste")
+
         # 🌳 Парки (5183)
-        launch_service "Dept: Parks" "5183" "npm run dev" "$PROJECT_DIR/departments/parks" || true
-        
+        launch_service "Dept: Parks" "5183" "npm run dev" "$PROJECT_DIR/departments/parks" || FAILED_DEPTS+=("Parks")
+
         # 🚰 Вода (5184)
-        launch_service "Dept: Water" "5184" "npm run dev" "$PROJECT_DIR/departments/water" || true
-        
+        launch_service "Dept: Water" "5184" "npm run dev" "$PROJECT_DIR/departments/water" || FAILED_DEPTS+=("Water")
+
         # 🚌 Транспорт (5185)
-        launch_service "Dept: Transport" "5185" "npm run dev" "$PROJECT_DIR/departments/transport" || true
-        
+        launch_service "Dept: Transport" "5185" "npm run dev" "$PROJECT_DIR/departments/transport" || FAILED_DEPTS+=("Transport")
+
         # 🌿 Екологія (5186)
-        launch_service "Dept: Ecology" "5186" "npm run dev" "$PROJECT_DIR/departments/ecology" || true
-        
+        launch_service "Dept: Ecology" "5186" "npm run dev" "$PROJECT_DIR/departments/ecology" || FAILED_DEPTS+=("Ecology")
+
         # 🎨 Вандалізм (5187)
-        launch_service "Dept: Vandalism" "5187" "npm run dev" "$PROJECT_DIR/departments/vandalism" || true
+        launch_service "Dept: Vandalism" "5187" "npm run dev" "$PROJECT_DIR/departments/vandalism" || FAILED_DEPTS+=("Vandalism")
         
-        print_success "Всі 8 департаментів запущені (порти 5180-5187)"
+        # 🆕 ЗВІТ ПРО НЕВДАЛІ ДЕПАРТАМЕНТИ
+        if [ ${#FAILED_DEPTS[@]} -gt 0 ]; then
+            print_error "❌ Не вдалося запустити департаменти: ${FAILED_DEPTS[*]}"
+            print_error "   Перевірте логи: tail -f /tmp/dept-*.log"
+        else
+            print_success "Всі 8 департаментів запущені (порти 5180-5187)"
+        fi
 
         # EXPO MOBILE SCHOOL
         launch_service "Expo Mobile-School" "8082" "npm start -- --port 8082" "$PROJECT_DIR/mobile-school" || exit 1
 
         # EXPO MOBILE CLIENT
         launch_service "Expo Mobile-Client" "8081" "npm start -- --port 8081" "$PROJECT_DIR/mobile/gentrustmobility" || exit 1
-        
+
         # DISABLED: mobile-parent запускається окремо за потреби (2026-03-05)
         # launch_service "Expo Mobile-Parent" "8083" "npm start -- --port 8083" "$PROJECT_DIR/mobile-parent" || exit 1
         ;;
