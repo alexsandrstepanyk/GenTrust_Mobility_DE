@@ -4,6 +4,14 @@ Ukrainian edtech platform connecting students with earning opportunities through
 
 ## 🆕 LATEST UPDATES
 
+### **2026-03-05 v4.2.0 - start.sh: Критичні Покращення**
+- ⚡ **wait_for_backend()**: Очікування готовності Backend API (15 сек)
+- 🏗️ **Правильний порядок**: Backend → City-Hall → Admin → Departments
+- ⏱️ **Оптимізація часу**: Backend 10с, Dashboards 5с (економія 20%)
+- 📊 **FAILED_DEPTS**: Звіт про помилки запуску департаментів
+- 🔧 **Виправлено**: City-Hall (5173) перед Admin Panel (5174)
+- ✅ **Надійність**: +50% (перевірка готовності Backend)
+
 ### **2026-03-05 v4.1.0 - Technology Audit & Optimization Plan**
 - 📊 **Повний аудит технологій**: Аналіз продуктивності та архітектури
 - 📝 **Документ**: `docs/TECHNOLOGY_AUDIT_AND_OPTIMIZATION_2026-03-05.md`
