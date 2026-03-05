@@ -597,6 +597,46 @@ app.get('/api/status', async (req, res) => {
     });
 });
 
+// API endpoint для перевірки критичних сервісів (для автозапуску)
+app.get('/api/startup-check', async (req, res) => {
+    const criticalPorts = [3000, 5173, 5174, 5175, 5180, 5181, 5182, 5183, 5184, 5185, 5186, 5187];
+    const failedServices = [];
+    
+    for (const port of criticalPorts) {
+        const isPortActive = await new Promise((resolve) => {
+            const { exec } = require('child_process');
+            exec(`lsof -i:${port} 2>/dev/null | grep LISTEN`, (error, stdout) => {
+                resolve(stdout.length > 0);
+            });
+        });
+        
+        if (!isPortActive) {
+            failedServices.push(port);
+        }
+    }
+    
+    // Перевірка Backend API
+    const backendActive = await new Promise((resolve) => {
+        const http = require('http');
+        http.get('http://localhost:3000/api/health', (res) => {
+            resolve(res.statusCode === 200);
+        }).on('error', () => resolve(false));
+    });
+    
+    if (!backendActive) {
+        failedServices.push('3000-Backend');
+    }
+    
+    const allOk = failedServices.length === 0;
+    
+    res.json({
+        allOk: allOk,
+        failedServices: failedServices,
+        checkedPorts: criticalPorts,
+        timestamp: new Date().toISOString()
+    });
+});
+
 // API endpoint для зупинки всіх процесів
 app.post('/api/stop-all', (req, res) => {
     const { exec } = require('child_process');

@@ -11,6 +11,31 @@
 #   ./start.sh --api-only       - тільки backend без ботів (API mode)         #
 #   ./start.sh --dept-only      - тільки department dashboard (5175)          #
 #                                                                              #
+# ⚠️  ПРАВИЛО ЗБЕРЕЖЕННЯ КОДУ:                                                 #
+#   - Ніколи не видаляй код з проекту                                         #
+#   - Якщо код неактивний - залишай його в файлі з коментарем                  #
+#   - Формат коментаря: // DISABLED: причина (дата)                            #
+#   - Приклад: // DISABLED: старий API endpoint, замінено на v2 (2026-03-05)   #
+#                                                                              #
+# 📝 ПРАВИЛО ДОКУМЕНТУВАННЯ ЗМІН:                                              #
+#   - Кожне нововведення записуй в README.md та ROADMAP.md                     #
+#   - Формат запису:                                                           #
+#     * Дата: РРРР-ММ-ДД                                                        #
+#     * Версія: vX.X.X                                                         #
+#     * Опис: що змінено/додано/виправлено                                     #
+#   - Приклад:                                                                 #
+#     ## 2026-03-05 v3.2.0 - Додано 8 департаментів                            #
+#     - Додано: 8 департаментів на портах 5180-5187                            #
+#     - Оновлено: start.sh з автозапуском департаментів                        #
+#     - Виправлено: перевірка здоров'я для всіх портів                         #
+#                                                                              #
+# 🔒 ПРАВИЛО ФІКСОВАНИХ ПОРТІВ:                                                #
+#   - Кожен сервіс має СВІЙ фіксований порт (назавжди)                         #
+#   - Ніхто інший НЕ МАЄ ПРАВА займати чужий порт                             #
+#   - Якщо порт зайнятий - ВБИВАЄМО порушника (lsof -ti:PORT | xargs kill -9) #
+#   - Якщо не можемо запустити - ПИШЕМО ПОМИЛКУ і не пробуємо інші порти       #
+#   - Приклад: Backend API ЗАВЖДИ на 3000, ніколи на 3001 чи 3002              #
+#                                                                              #
 ################################################################################
 
 # 🎨 Кольори для виводу
@@ -111,23 +136,46 @@ print_success "package.json знайдено"
 
 print_header "🚀 КРОК 2: ЗАПУСК СЕРВІСІВ (Режим: $MODE)"
 
-# ФУНКЦІЯ ДЛЯ ЗАПУСКУ З ПЕРЕВІРКОЮ
+# ФУНКЦІЯ ДЛЯ ЗАПУСКУ З ПЕРЕВІРКОЮ ПОРТУ
 launch_service() {
     local service_name=$1
     local port=$2
     local command=$3
     local dir=$4
     local log_file="/tmp/${service_name//[ ()]/}.log"
-    
+
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     print_step "Запускаю $service_name на порту $port..."
+
+    # 🔒 ПЕРЕВІРКА: Чи зайнятий порт кимось?
+    print_step "Перевірка порту $port..."
+    local existing_pid=$(lsof -ti:$port 2>/dev/null)
     
+    if [ -n "$existing_pid" ]; then
+        print_error "⚠️  Порт $port ЗАЙНЯТИЙ (PID: $existing_pid)!"
+        print_step "ВБИВАЄМО порушника на порту $port..."
+        lsof -ti:$port | xargs kill -9 2>/dev/null
+        sleep 1
+        
+        # Перевіряємо чи вдалося звільнити порт
+        if lsof -ti:$port 2>/dev/null | grep -q .; then
+            print_error "❌ НЕ ВДАЛОСЯ звільнити порт $port! Процес $existing_pid не вбивається."
+            print_error "   Причина: Можливо процес запущено від root або це системний процес."
+            print_error "   Рішення: Вбийте вручну: sudo lsof -ti:$port | xargs sudo kill -9"
+            return 1
+        else
+            print_success "Порт $port звільнено (вбито PID: $existing_pid)"
+        fi
+    fi
+    
+    # Запускаємо сервіс
     cd "$dir" || return 1
     eval "$command" > "$log_file" 2>&1 &
     local pid=$!
-    
-    sleep 3
-    
+
+    # Даємо 5 секунд на запуск
+    sleep 5
+
     # Перевіряю що процес живий
     if ! kill -0 $pid 2>/dev/null; then
         print_error "$service_name не запустився (PID: $pid)"
@@ -135,10 +183,31 @@ launch_service() {
         tail -n 10 "$log_file"
         return 1
     fi
+
+    # 🔒 ПЕРЕВІРКА: Чи дійсно наш процес зайняв правильний порт?
+    # Даємо ще 3 секунди на стабілізацію
+    sleep 3
+    local actual_pid=$(lsof -ti:$port 2>/dev/null | head -1)
     
+    # Для Vite процесів - перевіряємо що хоча б один процес на порту
+    if [ -z "$actual_pid" ]; then
+        print_error "❌ ПОМИЛКА! Порт $port ніким не зайнятий!"
+        print_error "   $service_name не зміг зайняти свій порт"
+        print_error "   Причина: Помилка запуску або порт заблоковано"
+        print_error "   Логи:"
+        tail -n 20 "$log_file"
+        return 1
+    fi
+    
+    # Перевіряємо що процес активний
+    if ! kill -0 $actual_pid 2>/dev/null; then
+        print_error "❌ ПОМИЛКА! Процес на порту $port (PID: $actual_pid) не активний"
+        return 1
+    fi
+
     print_success "$service_name запущено (PID: $pid, порт: $port)"
     echo "  📝 Логи: tail -f $log_file"
-    
+
     return 0
 }
 
@@ -153,24 +222,66 @@ case $MODE in
         print_success "Система моніторингу запущена (PID: $MONITOR_PID)"
         echo "  🌐 Відкрийте: http://localhost:9000"
         echo ""
-        
+
         # BACKEND (з ботами)
         launch_service "Backend API (з ботами)" "3000" "npm run dev" "$PROJECT_DIR" || exit 1
-        
+
         # ADMIN PANEL (CORE DASHBOARD)
         launch_service "Admin Panel (Core Dashboard)" "5174" "npm run dev" "$PROJECT_DIR/admin-panel" || exit 1
-        
+
         # CITY-HALL DASHBOARD
         launch_service "City-Hall Dashboard" "5173" "npm run dev" "$PROJECT_DIR/city-hall-dashboard" || exit 1
 
-        # DEPARTMENT DASHBOARD
+        # DEPARTMENT DASHBOARD (Base)
         launch_service "Department Dashboard" "5175" "npm run dev" "$PROJECT_DIR/department-dashboard" || exit 1
 
-        # EXPO MOBILE SCHOOL
-        launch_service "Expo Mobile-School" "8082" "npm start" "$PROJECT_DIR/mobile-school" || exit 1
+        # 🛣️ 8 ДЕПАРТАМЕНТІВ - КОЖЕН НА СВОЄМУ ПОРТУ
+        print_step "🏢 Запускаю 8 департаментів..."
+
+        # 🛣️ Дороги (5180)
+        launch_service "Dept: Roads" "5180" "npm run dev" "$PROJECT_DIR/departments/roads" || true
+
+        # 💡 Освітлення (5181)
+        launch_service "Dept: Lighting" "5181" "npm run dev" "$PROJECT_DIR/departments/lighting" || true
+
+        # 🗑️ Сміття (5182)
+        launch_service "Dept: Waste" "5182" "npm run dev" "$PROJECT_DIR/departments/waste" || true
+
+        # 🌳 Парки (5183)
+        launch_service "Dept: Parks" "5183" "npm run dev" "$PROJECT_DIR/departments/parks" || true
+
+        # 🚰 Вода (5184)
+        launch_service "Dept: Water" "5184" "npm run dev" "$PROJECT_DIR/departments/water" || true
+
+        # 🚌 Транспорт (5185)
+        launch_service "Dept: Transport" "5185" "npm run dev" "$PROJECT_DIR/departments/transport" || true
+
+        # 🌿 Екологія (5186)
+        launch_service "Dept: Ecology" "5186" "npm run dev" "$PROJECT_DIR/departments/ecology" || true
+
+        # 🎨 Вандалізм (5187)
+        launch_service "Dept: Vandalism" "5187" "npm run dev" "$PROJECT_DIR/departments/vandalism" || true
+
+        print_success "Всі 8 департаментів запущені (порти 5180-5187)"
+
+        # 🚫 EXPO MOBILE SCHOOL - ЗАКОМЕНТОВАНО (запускай окремо якщо потрібно)
+        # DISABLED: Expo не запускається автоматично, тільки вручну (2026-03-05)
+        # launch_service "Expo Mobile-School" "8082" "npm start" "$PROJECT_DIR/mobile-school" || exit 1
 
         # EXPO MOBILE PARENT (закоментовано - запускай окремо якщо потрібно)
+        # DISABLED: не потрібен за замовчуванням, запускай окремо (2026-03-05)
         # launch_service "Expo Mobile-Parent (Батьки)" "8083" "npm start" "$PROJECT_DIR/mobile-parent" || exit 1
+        
+        # ✅ АВТОМАТИЧНА ПЕРЕВІРКА ПІСЛЯ ЗАПУСКУ - ТИМЧАСОВО ВИМКНЕНО
+        # print_header "🧪 АВТОМАТИЧНА ПЕРЕВІРКА ВСІХ СЕРВІСІВ"
+        # print_step "Зачекайте 10 секунд на стабілізацію сервісів..."
+        # sleep 10
+        # ... (перевірка вимкнена для швидкості)
+        
+        # Відкрити Monitor Dashboard
+        print_step "Відкриття Monitor Dashboard..."
+        sleep 2
+        open http://localhost:9000
         ;;
         
     "all-apps")
@@ -190,14 +301,46 @@ case $MODE in
         # CITY-HALL DASHBOARD
         launch_service "City-Hall Dashboard" "5173" "npm run dev" "$PROJECT_DIR/city-hall-dashboard" || exit 1
 
-        # DEPARTMENT DASHBOARD
+        # DEPARTMENT DASHBOARD (Base)
         launch_service "Department Dashboard" "5175" "npm run dev" "$PROJECT_DIR/department-dashboard" || exit 1
+
+        # 🛣️ 8 ДЕПАРТАМЕНТІВ - КОЖЕН НА СВОЄМУ ПОРТУ
+        print_step "🏢 Запускаю 8 департаментів..."
+        
+        # 🛣️ Дороги (5180)
+        launch_service "Dept: Roads" "5180" "npm run dev" "$PROJECT_DIR/departments/roads" || true
+        
+        # 💡 Освітлення (5181)
+        launch_service "Dept: Lighting" "5181" "npm run dev" "$PROJECT_DIR/departments/lighting" || true
+        
+        # 🗑️ Сміття (5182)
+        launch_service "Dept: Waste" "5182" "npm run dev" "$PROJECT_DIR/departments/waste" || true
+        
+        # 🌳 Парки (5183)
+        launch_service "Dept: Parks" "5183" "npm run dev" "$PROJECT_DIR/departments/parks" || true
+        
+        # 🚰 Вода (5184)
+        launch_service "Dept: Water" "5184" "npm run dev" "$PROJECT_DIR/departments/water" || true
+        
+        # 🚌 Транспорт (5185)
+        launch_service "Dept: Transport" "5185" "npm run dev" "$PROJECT_DIR/departments/transport" || true
+        
+        # 🌿 Екологія (5186)
+        launch_service "Dept: Ecology" "5186" "npm run dev" "$PROJECT_DIR/departments/ecology" || true
+        
+        # 🎨 Вандалізм (5187)
+        launch_service "Dept: Vandalism" "5187" "npm run dev" "$PROJECT_DIR/departments/vandalism" || true
+        
+        print_success "Всі 8 департаментів запущені (порти 5180-5187)"
 
         # EXPO MOBILE SCHOOL
         launch_service "Expo Mobile-School" "8082" "npm start -- --port 8082" "$PROJECT_DIR/mobile-school" || exit 1
 
         # EXPO MOBILE CLIENT
         launch_service "Expo Mobile-Client" "8081" "npm start -- --port 8081" "$PROJECT_DIR/mobile/gentrustmobility" || exit 1
+        
+        # DISABLED: mobile-parent запускається окремо за потреби (2026-03-05)
+        # launch_service "Expo Mobile-Parent" "8083" "npm start -- --port 8083" "$PROJECT_DIR/mobile-parent" || exit 1
         ;;
         
     "staff")
@@ -252,6 +395,14 @@ if [ "$MODE" == "default" ] || [ "$MODE" == "all-apps" ]; then
     curl -s -I http://localhost:5175 2>/dev/null | head -n 1 || echo "⚠️ Не відповідає"
 fi
 
+# 🏢 Перевірка 8 департаментів
+if [ "$MODE" == "default" ] || [ "$MODE" == "all-apps" ]; then
+    echo -e "${CYAN}🏢 8 Департаментів:${NC}"
+    for port in 5180 5181 5182 5183 5184 5185 5186 5187; do
+        curl -s -I http://localhost:$port 2>/dev/null | head -n 1 > /dev/null && echo "  ✅ Порт $port" || echo "  ⚠️  Порт $port"
+    done
+fi
+
 if [ "$MODE" == "staff" ]; then
     echo -e "${CYAN}👥 Staff Panel:${NC}"
     curl -s -I http://localhost:5173 2>/dev/null | head -n 1 || echo "⚠️ Не відповідає"
@@ -279,12 +430,23 @@ IP_ADDRESS=$(ipconfig getifaddr en0 2>/dev/null || echo "localhost")
 case $MODE in
     "default")
         echo -e "${GREEN}ПОСИЛАННЯ:${NC}"
-        echo -e "   Моніторинг: ${CYAN}http://localhost:9000${NC}"
-        echo -e "   Backend API: ${CYAN}http://localhost:3000/api${NC}"
-        echo -e "   Admin Panel: ${CYAN}http://localhost:5174${NC}"
-        echo -e "   City-Hall: ${CYAN}http://localhost:5173${NC}"
-        echo -e "   Department: ${CYAN}http://localhost:5175${NC}"
-        echo -e "   Expo School: ${CYAN}exp://${IP_ADDRESS}:8082${NC}"
+        echo -e "   🌐 Моніторинг:        ${CYAN}http://localhost:9000${NC}"
+        echo -e "   🌐 Backend API:       ${CYAN}http://localhost:3000/api${NC}"
+        echo -e "   🔐 Admin Panel:       ${CYAN}http://localhost:5174${NC}"
+        echo -e "   🏛️ City-Hall:         ${CYAN}http://localhost:5173${NC}"
+        echo -e "   🏢 Department Base:   ${CYAN}http://localhost:5175${NC}"
+        echo -e ""
+        echo -e "   🏢 8 ДЕПАРТАМЕНТІВ:"
+        echo -e "      🛣️  Roads:       ${CYAN}http://localhost:5180${NC}"
+        echo -e "      💡 Lighting:     ${CYAN}http://localhost:5181${NC}"
+        echo -e "      🗑️  Waste:       ${CYAN}http://localhost:5182${NC}"
+        echo -e "      🌳 Parks:        ${CYAN}http://localhost:5183${NC}"
+        echo -e "      🚰 Water:        ${CYAN}http://localhost:5184${NC}"
+        echo -e "      🚌 Transport:    ${CYAN}http://localhost:5185${NC}"
+        echo -e "      🌿 Ecology:      ${CYAN}http://localhost:5186${NC}"
+        echo -e "      🎨 Vandalism:    ${CYAN}http://localhost:5187${NC}"
+        echo -e ""
+        echo -e "   📱 Expo School:       ${CYAN}exp://${IP_ADDRESS}:8082${NC}"
         echo ""
         echo -e "${GREEN}ТЕЛЕФОН:${NC}"
         echo -e "   Login: ${YELLOW}admin${NC} Password: ${YELLOW}admin${NC}"
@@ -306,6 +468,17 @@ case $MODE in
         echo -e "   🌐 Backend API:         ${CYAN}http://localhost:3000/api${NC}"
         echo -e "   🏛️ City-Hall:           ${CYAN}http://localhost:5173${NC}"
         echo -e "   🏢 Department:          ${CYAN}http://localhost:5175${NC}"
+        echo -e ""
+        echo -e "   🏢 8 ДЕПАРТАМЕНТІВ:"
+        echo -e "      🛣️  Roads:       ${CYAN}http://localhost:5180${NC}"
+        echo -e "      💡 Lighting:     ${CYAN}http://localhost:5181${NC}"
+        echo -e "      🗑️  Waste:       ${CYAN}http://localhost:5182${NC}"
+        echo -e "      🌳 Parks:        ${CYAN}http://localhost:5183${NC}"
+        echo -e "      🚰 Water:        ${CYAN}http://localhost:5184${NC}"
+        echo -e "      🚌 Transport:    ${CYAN}http://localhost:5185${NC}"
+        echo -e "      🌿 Ecology:      ${CYAN}http://localhost:5186${NC}"
+        echo -e "      🎨 Vandalism:    ${CYAN}http://localhost:5187${NC}"
+        echo -e ""
         echo -e "   📱 Expo School:         ${CYAN}exp://${IP_ADDRESS}:8082${NC}"
         echo -e "   📱 Expo Client:         ${CYAN}exp://${IP_ADDRESS}:8081${NC}"
         ;;

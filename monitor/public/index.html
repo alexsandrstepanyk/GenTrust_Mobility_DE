@@ -8,6 +8,16 @@
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
+    <!-- Startup Status Overlay -->
+    <div id="startup-overlay" class="startup-overlay">
+        <div class="startup-content">
+            <div id="startup-spinner" class="spinner"></div>
+            <h1 id="startup-title">🔄 Перевірка запуску сервісів...</h1>
+            <p id="startup-message">Зачекайте, триває перевірка всіх портів...</p>
+            <div id="startup-details" class="startup-details"></div>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <h1>🎯 GenTrust Mobility</h1>
@@ -54,26 +64,132 @@
 
         <!-- 2️⃣ TELEGRAM БОТИ -->
         <section class="section">
-            <h3>🤖 Telegram Боти (5)</h3>
+            <div class="section-header-with-controls">
+                <h3>🤖 Telegram Боти (5)</h3>
+                <div class="category-controls">
+                    <button onclick="startAllBots()" class="category-btn start">▶️ Запустити ВСІ боти</button>
+                    <button onclick="stopAllBots()" class="category-btn stop">⏹️ Зупинити ВСІ боти</button>
+                    <button onclick="toggleCategory('bots')" class="category-btn toggle">👁️ Сервіси</button>
+                    <button onclick="toggleInstructions('bots-instructions')" class="category-btn toggle">📖 Інструкції</button>
+                </div>
+            </div>
             <div id="bots-status" class="bot-grid"></div>
+            <div id="bots-instructions" class="how-to-run">
+                <strong>📖 Як запустити самостійно:</strong>
+                <pre>cd /Users/apple/Desktop/GenTrust_Mobility_DE
+npm run dev  # Запускає Backend + ВСІ боти автоматично
+
+# Або окремі команди для ботів:
+npm run bot:master   # Master Core Bot (3001)
+npm run bot:scout    # Scout Bot (3002)
+npm run bot:cityhall # City Hall Bot (3003)
+npm run bot:quest    # Quest Provider Bot (3004)
+npm run bot:municipal # Municipal Services Bot (3005)</pre>
+            </div>
         </section>
 
         <!-- 3️⃣ CORE DASHBOARDS -->
         <section class="section">
-            <h3>🖥️ Core Dashboards (3)</h3>
+            <div class="section-header-with-controls">
+                <h3>🖥️ Core Dashboards (3)</h3>
+                <div class="category-controls">
+                    <button onclick="startAllDashboards()" class="category-btn start">▶️ Запустити ВСІ Core</button>
+                    <button onclick="stopAllDashboards()" class="category-btn stop">⏹️ Зупинити ВСІ Core</button>
+                    <button onclick="toggleCategory('core')" class="category-btn toggle">👁️ Сервіси</button>
+                    <button onclick="toggleInstructions('core-instructions')" class="category-btn toggle">📖 Інструкції</button>
+                </div>
+            </div>
             <div id="core-dashboards-status" class="service-grid"></div>
+            <div id="core-instructions" class="how-to-run">
+                <strong>📖 Як запустити самостійно:</strong>
+                <pre># Admin Panel (5174)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/admin-panel
+npm run dev
+
+# City-Hall Dashboard (5173)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/city-hall-dashboard
+npm run dev
+
+# Staff Panel (5176)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/staff-panel
+npm run dev</pre>
+            </div>
         </section>
 
         <!-- 4️⃣ ДЕПАРТАМЕНТИ -->
         <section class="section">
-            <h3>🏢 Департаменти (8)</h3>
+            <div class="section-header-with-controls">
+                <h3>🏢 Департаменти (8)</h3>
+                <div class="category-controls">
+                    <button onclick="startAllDepartments()" class="category-btn start">▶️ Запустити ВСІ 8 департаментів</button>
+                    <button onclick="stopAllDepartments()" class="category-btn stop">⏹️ Зупинити ВСІ 8 департаментів</button>
+                    <button onclick="toggleCategory('departments')" class="category-btn toggle">👁️ Сервіси</button>
+                    <button onclick="toggleInstructions('departments-instructions')" class="category-btn toggle">📖 Інструкції</button>
+                </div>
+            </div>
             <div id="departments-status" class="service-grid"></div>
+            <div id="departments-instructions" class="how-to-run">
+                <strong>📖 Як запустити самостійно:</strong>
+                <pre># 🛣️ Roads (5180)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/roads
+npm run dev
+
+# 💡 Lighting (5181)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/lighting
+npm run dev
+
+# 🗑️ Waste (5182)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/waste
+npm run dev
+
+# 🌳 Parks (5183)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/parks
+npm run dev
+
+# 🚰 Water (5184)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/water
+npm run dev
+
+# 🚌 Transport (5185)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/transport
+npm run dev
+
+# 🌿 Ecology (5186)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/ecology
+npm run dev
+
+# 🎨 Vandalism (5187)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/departments/vandalism
+npm run dev</pre>
+            </div>
         </section>
 
         <!-- 5️⃣ MOBILE APPS -->
         <section class="section">
-            <h3>📱 Mobile Apps (Expo)</h3>
+            <div class="section-header-with-controls">
+                <h3>📱 Mobile Apps (Expo)</h3>
+                <div class="category-controls">
+                    <button onclick="startAllExpo()" class="category-btn start">▶️ Запустити ВСІ Expo Apps</button>
+                    <button onclick="stopAllExpo()" class="category-btn stop">⏹️ Зупинити ВСІ Expo Apps</button>
+                    <button onclick="toggleCategory('mobile')" class="category-btn toggle">👁️ Сервіси</button>
+                    <button onclick="toggleInstructions('mobile-instructions')" class="category-btn toggle">📖 Інструкції</button>
+                </div>
+            </div>
             <div id="mobile-status" class="service-grid"></div>
+            <div id="mobile-instructions" class="how-to-run">
+                <strong>📖 Як запустити самостійно:</strong>
+                <pre># 🎓 Expo School (8082)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-school
+npx expo start --port 8082 --lan
+
+# 👨‍👩‍👧 Expo Parent (8083)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile-parent
+npx expo start --port 8083 --lan
+
+# 👤 Expo Client (8081)
+cd /Users/apple/Desktop/GenTrust_Mobility_DE/mobile
+npx expo start --port 8081 --lan</pre>
+            </div>
         </section>
 
         <footer>
@@ -457,6 +573,17 @@
             }
         }
 
+        async function stopAllBots() {
+            if (!confirm('⏹️ Зупинити ВСІ Telegram боти?\n\nЦе зупинить Backend API (боти інтегровані).')) return;
+            try {
+                await fetch('/api/service/backend-api/stop', { method: 'POST' });
+                alert('✅ Всі боти зупинені!');
+                setTimeout(() => location.reload(), 2000);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
         async function startAllDashboards() {
             if (!confirm('🖥️ Запустити ВСІ Dashboards (Core + 8 департаментів)?')) return;
             const dashboards = [
@@ -475,6 +602,58 @@
             }
         }
 
+        async function stopAllDashboards() {
+            if (!confirm('⏹️ Зупинити ВСІ Dashboards (Core + 8 департаментів)?')) return;
+            const dashboards = [
+                'admin-panel', 'city-hall-dashboard', 'staff-panel',
+                'dept-roads', 'dept-lighting', 'dept-waste', 'dept-parks',
+                'dept-water', 'dept-transport', 'dept-ecology', 'dept-vandalism'
+            ];
+            try {
+                for (const dash of dashboards) {
+                    await fetch(`/api/service/${dash}/stop`, { method: 'POST' });
+                }
+                alert('✅ Всі Dashboards зупинені!');
+                setTimeout(() => location.reload(), 2000);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        async function startAllDepartments() {
+            if (!confirm('🏢 Запустити ВСІ 8 департаментів?\n\nПорти: 5180-5187')) return;
+            const departments = [
+                'dept-roads', 'dept-lighting', 'dept-waste', 'dept-parks',
+                'dept-water', 'dept-transport', 'dept-ecology', 'dept-vandalism'
+            ];
+            try {
+                for (const dept of departments) {
+                    await fetch(`/api/service/${dept}/start`, { method: 'POST' });
+                }
+                alert('✅ Всі 8 департаментів запущені!');
+                setTimeout(() => location.reload(), 2000);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        async function stopAllDepartments() {
+            if (!confirm('⏹️ Зупинити ВСІ 8 департаментів?')) return;
+            const departments = [
+                'dept-roads', 'dept-lighting', 'dept-waste', 'dept-parks',
+                'dept-water', 'dept-transport', 'dept-ecology', 'dept-vandalism'
+            ];
+            try {
+                for (const dept of departments) {
+                    await fetch(`/api/service/${dept}/stop`, { method: 'POST' });
+                }
+                alert('✅ Всі 8 департаментів зупинені!');
+                setTimeout(() => location.reload(), 2000);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
         async function startAllExpo() {
             if (!confirm('📱 Запустити ВСІ Expo Apps (3 штуки)?')) return;
             const expos = ['expo-school', 'expo-parent', 'expo-client'];
@@ -486,6 +665,44 @@
                 setTimeout(() => location.reload(), 2000);
             } catch (error) {
                 alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        async function stopAllExpo() {
+            if (!confirm('⏹️ Зупинити ВСІ Expo Apps (3 штуки)?')) return;
+            const expos = ['expo-school', 'expo-parent', 'expo-client'];
+            try {
+                for (const expo of expos) {
+                    await fetch(`/api/service/${expo}/stop`, { method: 'POST' });
+                }
+                alert('✅ Всі Expo Apps зупинені!');
+                setTimeout(() => location.reload(), 2000);
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        }
+
+        function toggleCategory(category) {
+            const containers = {
+                'bots': 'bots-status',
+                'core': 'core-dashboards-status',
+                'departments': 'departments-status',
+                'mobile': 'mobile-status'
+            };
+            const container = document.getElementById(containers[category]);
+            if (container.style.display === 'none') {
+                container.style.display = 'grid';
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function toggleInstructions(instructionId) {
+            const instruction = document.getElementById(instructionId);
+            if (instruction.style.display === 'none') {
+                instruction.style.display = 'block';
+            } else {
+                instruction.style.display = 'none';
             }
         }
 
@@ -570,9 +787,177 @@
 
         // Автозавантаження при старті
         document.addEventListener('DOMContentLoaded', () => {
+            // Перевірка запуску сервісів
+            checkStartupStatus();
+            
             loadLogs();
             autoRefreshInterval = setInterval(loadLogs, 3000);
         });
+
+        // 🔥 Перевірка запуску сервісів з феєрверком або попередженням
+        // Показуємо ТІЛЬКИ при першому запуску (не при кожному оновленні сторінки)
+        async function checkStartupStatus() {
+            // Перевіряємо чи це перше завантаження після запуску сервера
+            const hasShownStartup = sessionStorage.getItem('startupShown');
+            
+            // Якщо вже показували - одразу ховаємо overlay і не перевіряємо
+            if (hasShownStartup === 'true') {
+                const overlay = document.getElementById('startup-overlay');
+                overlay.style.display = 'none';
+                return;
+            }
+
+            const overlay = document.getElementById('startup-overlay');
+            const title = document.getElementById('startup-title');
+            const message = document.getElementById('startup-message');
+            const details = document.getElementById('startup-details');
+            const spinner = document.getElementById('startup-spinner');
+
+            try {
+                const response = await fetch('/api/startup-check');
+                const data = await response.json();
+
+                // Позначаємо що показали startup
+                sessionStorage.setItem('startupShown', 'true');
+
+                if (data.allOk) {
+                    // ✅ ВСЕ ПРАЦЮЄ - ФЕЄРВЕРК!
+                    overlay.className = 'startup-overlay startup-success';
+                    title.textContent = '🎉 ВСІ СЕРВІСИ ЗАПУЩЕНІ УСПІШНО!';
+                    message.textContent = '✅ Всі критичні сервіси працюють коректно';
+                    spinner.innerHTML = '🎆';
+                    spinner.className = 'fireworks-emoji';
+                    
+                    // Запуск феєрверку
+                    startFireworks();
+                    
+                    // Деталі
+                    details.innerHTML = `
+                        <div class="success-details">
+                            <p>✅ Перевірено портів: ${data.checkedPorts.length}</p>
+                            <p>✅ Час перевірки: ${new Date(data.timestamp).toLocaleTimeString('uk-UA')}</p>
+                            <p class="auto-close">🕒 Автоматичне закриття через 5 секунд...</p>
+                        </div>
+                    `;
+
+                    // Автоматичне закриття через 5 секунд
+                    setTimeout(() => {
+                        overlay.style.opacity = '0';
+                        setTimeout(() => {
+                            overlay.style.display = 'none';
+                        }, 500);
+                    }, 5000);
+                } else {
+                    // ❌ ЩОСЬ НЕ ПРАЦЮЄ - ЧЕРВОНЕ МИГАННЯ
+                    overlay.className = 'startup-overlay startup-error';
+                    title.textContent = '⚠️ УВАГА! ДЕЯКІ СЕРВІСИ НЕ ЗАПУСТИЛИСЯ';
+                    message.textContent = '❌ Критичні помилки запуску';
+                    spinner.innerHTML = '🚨';
+                    spinner.className = 'error-emoji';
+                    
+                    // Деталі помилок
+                    const failedList = data.failedServices.map(s => `<div class="error-item">❌ Порт/Сервіс: ${s}</div>`).join('');
+                    details.innerHTML = `
+                        <div class="error-details">
+                            <p>❌ Не вдалося запустити:</p>
+                            ${failedList}
+                            <p class="error-hint">💡 Перевірте логи: tail -f /tmp/*.log</p>
+                        </div>
+                    `;
+
+                    // Анімація мигання
+                    startBlinkAnimation();
+                }
+            } catch (error) {
+                // ❌ ПОМИЛКА ПЕРЕВІРКИ
+                overlay.className = 'startup-overlay startup-error';
+                title.textContent = '❌ ПОМИЛКА ПЕРЕВІРКИ';
+                message.textContent = error.message;
+                spinner.innerHTML = '💥';
+                spinner.className = 'error-emoji';
+                startBlinkAnimation();
+            }
+        }
+
+        // 🎆 Феєрверк анімація
+        function startFireworks() {
+            const overlay = document.getElementById('startup-overlay');
+            
+            // Додаємо канвас для феєрверку
+            const canvas = document.createElement('canvas');
+            canvas.id = 'fireworks-canvas';
+            overlay.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#ff69b4'];
+
+            function createParticle(x, y) {
+                const particleCount = 30;
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (Math.PI * 2 * i) / particleCount;
+                    const speed = Math.random() * 3 + 2;
+                    particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        alpha: 1,
+                        color: colors[Math.floor(Math.random() * colors.length)]
+                    });
+                }
+            }
+
+            function updateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.05; // gravity
+                    p.alpha -= 0.02;
+
+                    if (p.alpha <= 0) {
+                        particles.splice(i, 1);
+                    } else {
+                        ctx.globalAlpha = p.alpha;
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                requestAnimationFrame(updateParticles);
+            }
+
+            // Запуск феєрверку кожні 500ms
+            setInterval(() => {
+                createParticle(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height / 2
+                );
+            }, 500);
+
+            updateParticles();
+        }
+
+        // 🚨 Анімація червоного мигання
+        function startBlinkAnimation() {
+            const overlay = document.getElementById('startup-overlay');
+            let visible = true;
+
+            setInterval(() => {
+                overlay.style.backgroundColor = visible 
+                    ? 'rgba(255, 0, 0, 0.9)' 
+                    : 'rgba(139, 0, 0, 0.9)';
+                visible = !visible;
+            }, 500);
+        }
     </script>
 </body>
 </html>
