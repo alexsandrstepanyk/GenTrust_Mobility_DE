@@ -6,6 +6,7 @@ import { awardDignity } from '../../services/reputation';
 import { recordActivity } from '../../services/life_recorder';
 import { cityHallBot } from '../../city_hall_bot';
 import { Markup } from 'telegraf';
+import { getDepartmentPrisma, DepartmentId } from '../../utils/departmentDatabaseManager';
 
 const router = Router();
 
@@ -30,7 +31,7 @@ router.post('/analyze', authenticateToken, async (req: any, res, next) => {
     }
 });
 
-// Submit a report
+// Submit a report (ПОДВІЙНИЙ ЗАПИС)
 router.post('/', authenticateToken, async (req: any, res, next) => {
     try {
         const { photoBase64, latitude, longitude, description, category: userCategory, aiVerdict } = req.body;
@@ -53,26 +54,66 @@ router.post('/', authenticateToken, async (req: any, res, next) => {
         } else {
             analysis = await analyzeImage(buffer, description);
         }
-        
+
         const category = userCategory;
 
+        // Мапа категорій в департаменти
+        // const departmentMap: Record<string, DepartmentId> = {
+        const departmentMap: any = {
+            'roads': 'roads',
+            'lighting': 'lighting',
+            'waste': 'waste',
+            'parks': 'parks',
+            'water': 'water',
+            'transport': 'transport',
+            'ecology': 'ecology',
+            'vandalism': 'vandalism',
+        };
+
+        const departmentId: DepartmentId = (departmentMap[category] as DepartmentId) || 'roads';
+
+        // ========================================
+        // 1️⃣ ЗАПИС В ГОЛОВНУ БД (для City-Hall)
+        // ========================================
         const report = await (prisma as any).report.create({
             data: {
                 authorId: userId,
-            // Store inline image for dashboard preview (quick fix for missing photo route)
-            photoId: `data:image/jpeg;base64,${photoBase64}`,
+                photoId: `data:image/jpeg;base64,${photoBase64}`,
                 aiVerdict: JSON.stringify(analysis),
                 category,
                 description,
                 latitude,
                 longitude,
+                forwardedTo: departmentId,
+                status: 'PENDING',
             }
         });
+
+        // ========================================
+        // 2️⃣ ЗАПИС В БД ДЕПАРТАМЕНТУ (для обробки)
+        // ========================================
+        try {
+            const deptPrisma = getDepartmentPrisma(departmentId);
+            await deptPrisma.departmentReport.create({
+                data: {
+                    userId,
+                    photoId: `data:image/jpeg;base64,${photoBase64}`,
+                    latitude,
+                    longitude,
+                    aiCategory: category,
+                    status: 'PENDING',
+                },
+            });
+            console.log(`✅ Report ${report.id} duplicated to ${departmentId} department DB`);
+        } catch (deptError) {
+            console.error(`⚠️ Failed to write to department DB (${departmentId}):`, deptError);
+            // ГОЛОВНА БД працює - City-Hall бачить всі звіти ✅
+        }
 
         await awardDignity(userId, 2);
         await recordActivity(userId, 'REPORT_SUBMITTED', { reportId: report.id, category });
 
-        // Notify City Hall (Logic from urban_guardian.ts)
+        // Notify City Hall
         const adminChatId = process.env.ADMIN_CHAT_ID;
         if (cityHallBot && adminChatId && adminChatId !== '0') {
             const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -90,7 +131,12 @@ router.post('/', authenticateToken, async (req: any, res, next) => {
             });
         }
 
-        res.status(201).json({ report, beautyResult: analysis });
+        res.status(201).json({ 
+            success: true,
+            report, 
+            beautyResult: analysis,
+            department: departmentId,
+        });
     } catch (error) {
         next(error);
     }

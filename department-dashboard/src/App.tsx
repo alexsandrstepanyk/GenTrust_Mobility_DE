@@ -44,33 +44,39 @@ function App() {
   useEffect(() => {
     const loadDepartment = async () => {
       try {
-        // Читаємо VITE_DEPT_ID з env (встановлюється при запуску)
-        const deptId = import.meta.env.VITE_DEPT_ID || 'roads'
-        
-        // Завантажуємо конфіг департаментів
-        const response = await fetch('../../departments.config.json')
-        const config = await response.json()
-        const dept = config.departments.find((d: Department) => d.id === deptId)
-        
-        if (dept) {
-          setDepartment(dept)
-        } else {
-          // Fallback
-          setDepartment({
-            id: deptId,
-            name: 'Департамент',
-            emoji: '🏢',
-            port: 5176,
-            color: '#3B82F6',
-          })
+        // Використовуємо глобальні змінні з vite.config.ts
+        const deptId = __DEPT_ID__ || 'roads'
+        const deptName = __DEPT_NAME__ || 'Департамент'
+        const deptEmoji = __DEPT_EMOJI__ || '🏢'
+        const deptPort = __DEPT_PORT__ || 5176
+
+        // Отримуємо колір з departments.config.json або використовуємо дефолтний
+        let deptColor = '#3B82F6' // Default blue
+        try {
+          const response = await fetch('/departments.config.json')
+          const config = await response.json()
+          const dept = config.departments.find((d: any) => d.id === deptId)
+          if (dept && dept.color) {
+            deptColor = dept.color
+          }
+        } catch (e) {
+          console.warn('Could not load departments.config.json, using default color')
         }
+
+        setDepartment({
+          id: deptId,
+          name: deptName,
+          emoji: deptEmoji,
+          port: deptPort,
+          color: deptColor,
+        })
       } catch (error) {
         console.error('Error loading department config:', error)
         setDepartment({
           id: 'roads',
           name: 'Дороги',
           emoji: '🛣️',
-          port: 5176,
+          port: 5180,
           color: '#3B82F6',
         })
       } finally {

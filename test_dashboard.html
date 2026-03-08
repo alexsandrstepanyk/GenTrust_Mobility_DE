@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест API - Roads Dashboard</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #28a745; }
+        .error { background: #f8d7da; border-color: #dc3545; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест API - Roads Dashboard</h1>
+    
+    <div class="test">
+        <h3>Тест 1: Отримати всі roads звіти</h3>
+        <button onclick="testAll()">Запустити</button>
+        <div id="test1-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Тест 2: Отримати PENDING звіти</h3>
+        <button onclick="testPending()">Запустити</button>
+        <div id="test2-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Тест 3: Отримати APPROVED звіти</h3>
+        <button onclick="testApproved()">Запустити</button>
+        <div id="test3-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Тест 4: Перевірити Vite код</h3>
+        <button onclick="testVite()">Запустити</button>
+        <div id="test4-result"></div>
+    </div>
+
+    <script>
+        // Використовуємо проксі через Vite для уникнення CORS проблем
+        const API_BASE = '/api';
+        const VITE_BASE = 'http://localhost:5180';
+        
+        async function testAll() {
+            const result = document.getElementById('test1-result');
+            result.innerHTML = 'Завантаження...';
+            try {
+                // Спочатку перевіримо через проксі Vite
+                const response = await fetch(`${VITE_BASE}/api/reports/department/roads?limit=50`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                result.className = 'test success';
+                result.innerHTML = `<strong>✅ УСПІХ:</strong> ${data.length} звітів<br>
+                    <pre>${JSON.stringify(data.slice(0,3), null, 2)}</pre>`;
+            } catch (error) {
+                // Якщо не працює, спробуємо напряму
+                try {
+                    const response2 = await fetch(`http://localhost:3000/api/reports/department/roads?limit=50`);
+                    const data = await response2.json();
+                    result.className = 'test success';
+                    result.innerHTML = `<strong>✅ УСПІХ (через API):</strong> ${data.length} звітів`;
+                } catch (error2) {
+                    result.className = 'test error';
+                    result.innerHTML = `<strong>❌ ПОМИЛКА:</strong> ${error2.message}<br>
+                        <small>Перевірте чи працює Backend API (порт 3000)</small>`;
+                }
+            }
+        }
+        
+        async function testPending() {
+            const result = document.getElementById('test2-result');
+            result.innerHTML = 'Завантаження...';
+            try {
+                const response = await fetch(`${VITE_BASE}/api/reports/department/roads?status=PENDING&limit=50`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                result.className = 'test success';
+                result.innerHTML = `<strong>✅ УСПІХ:</strong> ${data.length} PENDING звітів<br>
+                    Статуси: ${[...new Set(data.map(r => r.status))].join(', ')}`;
+            } catch (error) {
+                try {
+                    const response2 = await fetch(`http://localhost:3000/api/reports/department/roads?status=PENDING&limit=50`);
+                    const data = await response2.json();
+                    result.className = 'test success';
+                    result.innerHTML = `<strong>✅ УСПІХ:</strong> ${data.length} PENDING звітів`;
+                } catch (error2) {
+                    result.className = 'test error';
+                    result.innerHTML = `<strong>❌ ПОМИЛКА:</strong> ${error2.message}`;
+                }
+            }
+        }
+        
+        async function testApproved() {
+            const result = document.getElementById('test3-result');
+            result.innerHTML = 'Завантаження...';
+            try {
+                const response = await fetch(`${VITE_BASE}/api/reports/department/roads?status=APPROVED&limit=50`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                result.className = 'test success';
+                result.innerHTML = `<strong>✅ УСПІХ:</strong> ${data.length} APPROVED звітів`;
+            } catch (error) {
+                try {
+                    const response2 = await fetch(`http://localhost:3000/api/reports/department/roads?status=APPROVED&limit=50`);
+                    const data = await response2.json();
+                    result.className = 'test success';
+                    result.innerHTML = `<strong>✅ УСПІХ:</strong> ${data.length} APPROVED звітів`;
+                } catch (error2) {
+                    result.className = 'test error';
+                    result.innerHTML = `<strong>❌ ПОМИЛКА:</strong> ${error2.message}`;
+                }
+            }
+        }
+        
+        async function testVite() {
+            const result = document.getElementById('test4-result');
+            result.innerHTML = 'Завантаження...';
+            try {
+                const response = await fetch('http://localhost:5180/src/lib/api.ts');
+                const code = await response.text();
+                const hasFix = code.includes('params?.status && params.status !== "ALL"');
+                result.className = `test ${hasFix ? 'success' : 'error'}`;
+                result.innerHTML = hasFix 
+                    ? `<strong>✅ УСПІХ:</strong> Виправлення застосовано в Vite`
+                    : `<strong>❌ ПОМИЛКА:</strong> Виправлення НЕ застосовано`;
+            } catch (error) {
+                result.className = 'test error';
+                result.innerHTML = `<strong>❌ ПОМИЛКА:</strong> ${error.message}`;
+            }
+        }
+        
+        // Автозапуск тестів
+        window.onload = () => {
+            testAll();
+            setTimeout(testPending, 500);
+            setTimeout(testApproved, 1000);
+            setTimeout(testVite, 1500);
+        };
+    </script>
+</body>
+</html>

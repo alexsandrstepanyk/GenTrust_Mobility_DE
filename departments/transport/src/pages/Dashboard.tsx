@@ -1,45 +1,59 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { 
+import { Button } from '@/components/ui/Button';
+import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { 
-  TrendingUp, Users, FileText, CheckCircle, XCircle, 
-  Clock, AlertCircle, ThumbsUp, Trash2
+import {
+  TrendingUp, Users, FileText, CheckCircle, XCircle,
+  Clock, AlertCircle, ThumbsUp, Trash2, RefreshCw
 } from 'lucide-react';
-import { reportsAPI } from '@/lib/api';
+import { statsAPI, departmentAPI, DEPARTMENT_ID } from '@/lib/api';
 import { useSocket, useSocketEvent } from '@/lib/socket';
 import { api } from '@/lib/api';
+import { useDepartment } from '../App';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function Dashboard() {
+  const department = useDepartment();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [pendingReports, setPendingReports] = useState<any[]>([]);
-  const [selectedDepartment, setSelectedDepartment] = useState<Record<string, string>>({});
   const [approving, setApproving] = useState<Record<string, boolean>>({});
+  const [selectedDepartment, setSelectedDepartment] = useState<Record<string, string>>({});
+  const [refreshing, setRefreshing] = useState(false);
   const { socket } = useSocket();
 
-  // Департамент фіксований для Roads
-  const currentDept = 'roads';
+  // 2.3.2026 - ЗМІНЕНО: Замість всіх департаментів показуємо тільки поточний
+  // ПРИЧИНА: Департамент дашборд має фільтруватися за своїм департаментом
+  const departments = [
+    { id: department.id, name: department.emoji + ' ' + department.name }
+  ];
 
   useEffect(() => {
     loadStats();
-  }, []);
+  }, [department.id]); // 2.3.2026 - Перезавантажити коли змінюється департамент
 
   const loadStats = async () => {
     try {
-      // ← Використовуємо department API
-      const statsRes = await reportsAPI.getDepartmentStats();
-      setStats(statsRes.data);
+      // Спочатку пробуємо новий API для розділених БД
+      try {
+        const { data } = await departmentAPI.getStats();
+        setStats(data.data || data);
+      } catch (deptError) {
+        // Fallback на старий API
+        const { data } = await statsAPI.getDashboard();
+        setStats(data);
+      }
 
-      // Load pending reports for this department
-      const reportsRes = await reportsAPI.getDepartmentReports('PENDING');
-      const reports = Array.isArray(reportsRes.data) ? reportsRes.data : [];
+      // 2.3.2026 - ЗМІНЕНО: Завантажуємо тільки звіти для цього департаменту
+      const reportsRes = await departmentAPI.getReports({ status: 'PENDING', limit: 20 });
+      // FIX: API повертає масив напряму, а не { data: [...] }
+      const reports = Array.isArray(reportsRes) ? reportsRes : (Array.isArray(reportsRes?.data) ? reportsRes.data : []);
       setPendingReports(reports);
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -48,22 +62,23 @@ export default function Dashboard() {
     }
   };
 
+  const handleRefresh = () => {
+    setRefreshing(true);
+    loadStats().finally(() => setRefreshing(false));
+  };
+
+  // Динамічні кольори на основі департаменту
+  const primaryColor = department?.color || '#3B82F6';
+
   const handleApprove = async (reportId: string) => {
     setApproving(prev => ({ ...prev, [reportId]: true }));
     try {
-      const department = selectedDepartment[reportId];
-      if (!department) {
-        alert('Виберіть відділ');
-        return;
-      }
-      
-      await api.post(`/reports/${reportId}/approve`, { department });
-      setPendingReports(prev => prev.filter(r => r.id !== reportId));
-      setSelectedDepartment(prev => {
-        const updated = { ...prev };
-        delete updated[reportId];
-        return updated;
+      // Використовуємо новий API для департаментів
+      await departmentAPI.updateStatus(reportId, { 
+        status: 'APPROVED',
+        moderatedBy: 'current-user' // TODO: Get from auth context
       });
+      setPendingReports(prev => prev.filter(r => r.id !== reportId));
       loadStats();
     } catch (error) {
       console.error('Failed to approve report:', error);
@@ -73,10 +88,14 @@ export default function Dashboard() {
     }
   };
 
-  const handleReject = async (reportId: string) => {
+  const handleReject = async (reportId: string, reason?: string) => {
     setApproving(prev => ({ ...prev, [reportId]: true }));
     try {
-      await api.post(`/reports/${reportId}/reject`, {});
+      await departmentAPI.updateStatus(reportId, { 
+        status: 'REJECTED',
+        rejectionReason: reason || 'No reason provided',
+        moderatedBy: 'current-user'
+      });
       setPendingReports(prev => prev.filter(r => r.id !== reportId));
       loadStats();
     } catch (error) {
@@ -150,13 +169,19 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Dashboard
-        </h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Огляд системи GenTrust City Hall
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ color: primaryColor }}>
+            {department.emoji} {department.name}
+          </h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Dashboard департаменту
+          </p>
+        </div>
+        <Button onClick={handleRefresh} disabled={refreshing} variant="outline">
+          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          Оновити
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -204,20 +229,20 @@ export default function Dashboard() {
               <AreaChart data={reportsData}>
                 <defs>
                   <linearGradient id="colorReports" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor={primaryColor} stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor={primaryColor} stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="date" stroke="#6b7280" />
                 <YAxis stroke="#6b7280" />
                 <Tooltip />
-                <Area 
-                  type="monotone" 
-                  dataKey="count" 
-                  stroke="#3b82f6" 
-                  fillOpacity={1} 
-                  fill="url(#colorReports)" 
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  stroke={primaryColor}
+                  fillOpacity={1}
+                  fill="url(#colorReports)"
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -267,8 +292,8 @@ export default function Dashboard() {
                 <YAxis stroke="#6b7280" />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-                <Bar dataKey="resolved" fill="#10b981" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="count" fill={primaryColor} radius={[8, 8, 0, 0]} name="Всього" />
+                <Bar dataKey="resolved" fill="#10b981" radius={[8, 8, 0, 0]} name="Вирішено" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

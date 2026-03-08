@@ -1,12 +1,34 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+// Визначаємо департамент на основі порту
+const getDepartmentFromPort = (): string => {
+  const port = window.location.port;
+  const portToDept: Record<string, string> = {
+    '5180': 'roads',
+    '5181': 'lighting',
+    '5182': 'waste',
+    '5183': 'parks',
+    '5184': 'water',
+    '5185': 'transport',
+    '5186': 'ecology',
+    '5187': 'vandalism',
+    '5175': 'roads', // Default for base department dashboard
+  };
+  return portToDept[port] || 'roads';
+};
 
-const api = axios.create({
+const DEPARTMENT_ID = getDepartmentFromPort();
+// Використовуємо відносний шлях для Vite проксі (НЕ повний URL!)
+const API_BASE_URL = '/api';
+
+export const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
+// Add auth token to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token');
   if (token) {
@@ -15,38 +37,43 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Визначаємо департамент з URL
-const getDeptId = () => {
-  const path = window.location.pathname;
-  if (path.includes('roads')) return 'parks';
-  if (path.includes('lighting')) return 'lighting';
-  if (path.includes('waste')) return 'waste';
-  if (path.includes('parks')) return 'parks';
-  if (path.includes('water')) return 'water';
-  if (path.includes('transport')) return 'transport';
-  if (path.includes('ecology')) return 'ecology';
-  if (path.includes('vandalism')) return 'vandalism';
-  return 'parks'; // default
+// Department-specific API
+export const departmentAPI = {
+  // Get department info
+  getInfo: () => api.get(`/reports/department/${DEPARTMENT_ID}`),
+
+  // Get department reports - ФІЛЬТРУЄМО ПО category через /department/:id
+  getReports: (params?: { status?: string; page?: number; limit?: number }) => {
+    const statusValue = params?.status && params.status !== 'ALL' ? params.status : null;
+    const limitValue = params?.limit || 50;
+    // Формуємо query parameters правильно
+    const queryParams = new URLSearchParams();
+    if (statusValue) queryParams.append('status', statusValue);
+    queryParams.append('limit', limitValue.toString());
+    return api.get(`/reports/department/${DEPARTMENT_ID}?${queryParams.toString()}`);
+  },
+  
+  // Get single report
+  getReport: (reportId: string) => 
+    api.get(`/reports/${reportId}`),
+  
+  // Update report status
+  updateStatus: (reportId: string, data: { status: string; rejectionReason?: string; moderatedBy?: string }) =>
+    api.post(`/reports/${reportId}/approve`, data),
+  
+  // Get department stats
+  getStats: () => api.get('/stats/dashboard'),
+  
+  // Get department settings
+  getSettings: () => api.get('/stats/dashboard'),
+  
+  // Update department settings
+  updateSettings: (data: any) => 
+    api.patch('/stats/dashboard', data),
 };
 
-// API methods для ДЕПАРТАМЕНТІВ
+// Legacy API (for backward compatibility with main backend)
 export const reportsAPI = {
-  // Отримати звіти ТОЛЬКИ цього департаменту
-  getDepartmentReports: (status?: string) => {
-    const deptId = getDeptId();
-    const url = status 
-      ? `/reports/department/${deptId}?status=${status}`
-      : `/reports/department/${deptId}`;
-    return api.get(url);
-  },
-  
-  // Отримати статистику департаменту
-  getDepartmentStats: () => {
-    const deptId = getDeptId();
-    return api.get(`/reports/department/${deptId}/stats`);
-  },
-  
-  // Старі методи (для сумісності)
   getAll: () => api.get('/reports'),
   getById: (id: string) => api.get(`/reports/${id}`),
   approve: (id: string) => api.post(`/reports/${id}/approve`),
@@ -64,4 +91,8 @@ export const usersAPI = {
 export const statsAPI = {
   getDashboard: () => api.get('/stats/dashboard'),
   getReports: (period: string) => api.get(`/stats/reports?period=${period}`),
+  getDepartment: () => departmentAPI.getStats(),
 };
+
+// Export department info
+export { DEPARTMENT_ID };

@@ -1,0 +1,95 @@
+{
+  "departments": [
+    {
+      "id": "roads",
+      "name": "Дороги",
+      "nameUa": "🛣️ Дороги",
+      "emoji": "🛣️",
+      "color": "#3B82F6",
+      "colorName": "Blue",
+      "port": 5180,
+      "description": "Управління дорогами та шляхами"
+    },
+    {
+      "id": "lighting",
+      "name": "Освітлення",
+      "nameUa": "💡 Освітлення",
+      "emoji": "💡",
+      "color": "#F59E0B",
+      "colorName": "Amber",
+      "port": 5181,
+      "description": "Міське освітлення та електромережі"
+    },
+    {
+      "id": "waste",
+      "name": "Сміття",
+      "nameUa": "🗑️ Сміття",
+      "emoji": "🗑️",
+      "color": "#10B981",
+      "colorName": "Emerald",
+      "port": 5182,
+      "description": "Управління відходами та сміття"
+    },
+    {
+      "id": "parks",
+      "name": "Парки",
+      "nameUa": "🌳 Парки",
+      "emoji": "🌳",
+      "color": "#22C55E",
+      "colorName": "Green",
+      "port": 5183,
+      "description": "Парки, сквери та зелені зони"
+    },
+    {
+      "id": "water",
+      "name": "Водопостачання",
+      "nameUa": "🚰 Водопостачання",
+      "emoji": "🚰",
+      "color": "#06B6D4",
+      "colorName": "Cyan",
+      "port": 5184,
+      "description": "Водопостачання та каналізація"
+    },
+    {
+      "id": "transport",
+      "name": "Транспорт",
+      "nameUa": "🚌 Транспорт",
+      "emoji": "🚌",
+      "color": "#EC4899",
+      "colorName": "Pink",
+      "port": 5185,
+      "description": "Громадський транспорт та логістика"
+    },
+    {
+      "id": "ecology",
+      "name": "Екологія",
+      "nameUa": "🌿 Екологія",
+      "emoji": "🌿",
+      "color": "#84CC16",
+      "colorName": "Lime",
+      "port": 5186,
+      "description": "Екологія та навколишнє середовище"
+    },
+    {
+      "id": "vandalism",
+      "name": "Вандалізм",
+      "nameUa": "🎨 Вандалізм",
+      "emoji": "🎨",
+      "color": "#A855F7",
+      "colorName": "Purple",
+      "port": 5187,
+      "description": "Боротьба з вандалізмом та графіті"
+    }
+  ],
+  "colors": {
+    "roads": "#3B82F6",
+    "lighting": "#F59E0B",
+    "waste": "#10B981",
+    "parks": "#22C55E",
+    "water": "#06B6D4",
+    "transport": "#EC4899",
+    "ecology": "#84CC16",
+    "vandalism": "#A855F7"
+  },
+  "defaultColor": "#3B82F6"
+}

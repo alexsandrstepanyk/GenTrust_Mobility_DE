@@ -13,6 +13,7 @@ import adminRoutes from './routes/admin';
 import parentRoutes from './routes/parents';
 import completionRoutes from './routes/completions';
 import statsRoutes from './routes/stats';
+// import departmentRoutes from './routes/departments'; // DISABLED: 2026-03-06
 // import germanComplianceRoutes from './german/compliance';
 // import germanSmsRoutes from './german/sms';
 import morgan from 'morgan';
@@ -54,6 +55,7 @@ app.use('/api/task-orders', taskOrderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/completions', completionRoutes);
 app.use('/api/stats', statsRoutes);
+// app.use('/api/departments', departmentRoutes); // DISABLED: 2026-03-06
 // app.use('/api/german', germanComplianceRoutes);
 // app.use('/api/german', germanSmsRoutes);
 

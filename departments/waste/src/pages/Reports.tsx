@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../lib/api';
+import { api, departmentAPI, DEPARTMENT_ID } from '../lib/api';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { MapPin, X, ZoomIn, CheckCircle, XCircle, BrainCircuit } from 'lucide-react';
+// 02.03.2025: Змінено з динамічного на статичний імпорт leaflet для фіксу Vite помилки
+import * as L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface Report {
   id: string;
@@ -44,17 +47,30 @@ function Reports() {
   const [selectedDepartment, setSelectedDepartment] = useState('general');
   const [rejectionReason, setRejectionReason] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [triageLoading, setTriageLoading] = useState(false);
+  const [triageResult, setTriageResult] = useState<any>(null);
+
+  const canModerateReport = (status?: string) => {
+    const normalized = (status || '').toUpperCase().trim();
+    return ['PENDING', 'NEW', 'IN_REVIEW'].includes(normalized);
+  };
   useEffect(() => {
     fetchReports();
   }, []);
 
+  useEffect(() => {
+    setTriageResult(null);
+  }, [selectedReport?.id]);
+
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/reports');
+      // Використовуємо department-specific API для фільтрації по департаменту
+      const response = await departmentAPI.getReports();
       const data = Array.isArray(response) ? response : response.data || [];
       setReports(data || []);
       filterReports(data, 'ALL');
+      console.log(`📂 ${DEPARTMENT_ID.toUpperCase()}: Завантажено ${data.length} звітів`);
     } catch (error) {
       console.error('Error fetching reports:', error);
     } finally {
@@ -72,7 +88,24 @@ function Reports() {
 
   const handleStatusFilter = (status: string) => {
     setStatusFilter(status);
-    filterReports(reports, status);
+    // Перезавантажуємо дані з сервера з фільтром по статусу
+    fetchReportsWithStatus(status);
+  };
+
+  const fetchReportsWithStatus = async (status?: string) => {
+    try {
+      setLoading(true);
+      // Використовуємо department-specific API для фільтрації по департаменту
+      const response = await departmentAPI.getReports({ status: status !== 'ALL' ? status : undefined });
+      const data = Array.isArray(response) ? response : response.data || [];
+      setReports(data || []);
+      filterReports(data, status || 'ALL');
+      console.log(`📂 ${DEPARTMENT_ID.toUpperCase()}: Завантажено ${data.length} звітів (фільтр: ${status || 'ALL'})`);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleApprove = async () => {
@@ -137,6 +170,14 @@ function Reports() {
 
   const applyAIRecommendation = () => {
     if (!selectedReport?.aiVerdict) return;
+    const aiCategory = selectedReport.aiVerdict.category;
+    const aiConfidence = Number(selectedReport.aiVerdict.confidence || 0);
+    const invalidCategories = ['error', 'invalid_ai_response', 'missing_api_key'];
+    if (invalidCategories.includes(aiCategory) || aiConfidence <= 0) {
+      alert('Рекомендація ШІ недоступна або невалідна. Оберіть департамент вручну.');
+      return;
+    }
+
     // Автоматично вибрати департамент на основі AI категорії
     const categoryToDepartment: Record<string, string> = {
       'Roads': 'roads',
@@ -150,6 +191,33 @@ function Reports() {
     };
     const dept = categoryToDepartment[selectedReport.aiVerdict.category] || 'general';
     setSelectedDepartment(dept);
+  };
+
+  const runCityHallTriage = async () => {
+    if (!selectedReport) return;
+    try {
+      setTriageLoading(true);
+      const { data } = await api.post(`/reports/${selectedReport.id}/triage`, {});
+      setTriageResult(data?.recommendation || null);
+    } catch (e) {
+      console.error('Triage error:', e);
+      alert('Не вдалося виконати повторний AI-аналіз мерії');
+    } finally {
+      setTriageLoading(false);
+    }
+  };
+
+  const applyCityHallTriage = () => {
+    if (!triageResult) return;
+    if (triageResult.action === 'REJECT') {
+      setRejectionReason(triageResult.reason || 'Відхилено за рекомендацією AI мерії');
+      setRejectModalOpen(true);
+      return;
+    }
+    if (triageResult.recommendedDepartment) {
+      setSelectedDepartment(triageResult.recommendedDepartment);
+      setApproveModalOpen(true);
+    }
   };
 
   const getMarkers = (): MapMarker[] => {
@@ -416,6 +484,10 @@ function Reports() {
                     </div>
                     <Button
                       onClick={applyAIRecommendation}
+                      disabled={
+                        ['error', 'invalid_ai_response', 'missing_api_key'].includes(selectedReport.aiVerdict.category) ||
+                        Number(selectedReport.aiVerdict.confidence || 0) <= 0
+                      }
                       className="w-full mt-2 bg-purple-600 hover:bg-purple-700"
                       size="sm"
                     >
@@ -424,6 +496,30 @@ function Reports() {
                   </div>
                 </Card>
               )}
+
+              {/* City-Hall AI second pass */}
+              <Card className="border-2 border-blue-200 bg-blue-50">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <h3 className="font-bold text-blue-900">🏛️ Другий AI-аналіз мерії</h3>
+                  <Button size="sm" onClick={runCityHallTriage} disabled={triageLoading}>
+                    {triageLoading ? '⏳ Аналіз...' : 'Запустити AI triage'}
+                  </Button>
+                </div>
+                {triageResult ? (
+                  <div className="space-y-2 text-sm">
+                    <div><b>Рішення:</b> {triageResult.action === 'REJECT' ? '❌ Відхилити' : '✅ Відправити у відділ'}</div>
+                    <div><b>Відділ:</b> {triageResult.recommendedDepartment || '—'}</div>
+                    <div><b>Категорія:</b> {triageResult.category || '—'}</div>
+                    <div><b>Впевненість:</b> {Math.round((Number(triageResult.confidence || 0)) * 100)}%</div>
+                    <div><b>Пояснення:</b> {triageResult.reason || '—'}</div>
+                    <Button size="sm" className="mt-2" onClick={applyCityHallTriage}>
+                      Застосувати рекомендацію мерії
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-blue-800">AI triage враховує фото, текст і історію автора (частку відхилених звітів).</p>
+                )}
+              </Card>
 
               {selectedReport.description && (
                 <div>
@@ -437,10 +533,27 @@ function Reports() {
               {selectedReport.location && (
                 <div>
                   <h3 className="font-bold text-gray-900 mb-2">Локація</h3>
-                  <div className="bg-gray-100 p-3 rounded-lg font-mono text-sm">
-                    Широта: {selectedReport.location.lat.toFixed(6)}
-                    <br />
-                    Довгота: {selectedReport.location.lng.toFixed(6)}
+                  <div className="space-y-3">
+                    <iframe
+                      title="Локація проблеми на Google Maps"
+                      src={`https://www.google.com/maps?q=${selectedReport.location.lat},${selectedReport.location.lng}&z=17&output=embed`}
+                      className="w-full h-56 rounded-lg border"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                    <div className="flex items-center justify-between bg-gray-100 p-3 rounded-lg text-sm">
+                      <span className="font-mono">
+                        {selectedReport.location.lat.toFixed(6)}, {selectedReport.location.lng.toFixed(6)}
+                      </span>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${selectedReport.location.lat},${selectedReport.location.lng}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 hover:text-blue-800 font-semibold"
+                      >
+                        Відкрити в Google Maps
+                      </a>
+                    </div>
                   </div>
                 </div>
               )}
@@ -476,10 +589,10 @@ function Reports() {
                 </div>
               </div>
 
-              {/* Action Buttons - тільки для PENDING звітів */}
-              {selectedReport.status === 'PENDING' && (
-                <div className="pt-4 border-t space-y-3">
-                  <h3 className="font-bold text-gray-900">Дії модератора</h3>
+              {/* Action Buttons */}
+              <div className="pt-4 border-t space-y-3">
+                <h3 className="font-bold text-gray-900">Дії модератора</h3>
+                {canModerateReport(selectedReport.status) ? (
                   <div className="grid grid-cols-2 gap-3">
                     <Button
                       onClick={() => setApproveModalOpen(true)}
@@ -497,8 +610,13 @@ function Reports() {
                       ❌ Відхилити
                     </Button>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="rounded-lg bg-gray-100 text-gray-700 text-sm p-3">
+                    Для цього статусу ({selectedReport.status}) кнопки модерації недоступні.
+                    Вони доступні для звітів у статусі PENDING/NEW/IN_REVIEW.
+                  </div>
+                )}
+              </div>
             </div>
           </Card>
         </div>
@@ -618,93 +736,92 @@ function GoogleMap({ markers }: { markers: MapMarker[] }) {
   React.useEffect(() => {
     if (!mapRef.current) return;
 
-    // Динамічне завантаження Leaflet
-    import('leaflet').then(L => {
-      // Очистка попередньої карти
-      const existingMap = (window as any)._leafletMap;
-      if (existingMap) {
-        existingMap.remove();
-      }
+    // 02.03.2025: Змінено з динамічного на статичне використання Leaflet
+    // БУЛО: import('leaflet').then(L => { ... })
+    // Очистка попередньої карти
+    const existingMap = (window as any)._leafletMap;
+    if (existingMap) {
+      existingMap.remove();
+    }
 
-      // Центр Вюрцбурга за дефолтом
-      const wurzburgCenter: [number, number] = [49.7913, 9.9534];
-      
-      // Якщо маркери є, центруємо на них, інакше на Вюрцбург
-      const center = markers.length > 0
-        ? [
-            markers.reduce((sum, m) => sum + m.lat, 0) / markers.length,
-            markers.reduce((sum, m) => sum + m.lng, 0) / markers.length
-          ] as [number, number]
-        : wurzburgCenter;
+    // Центр Вюрцбурга за дефолтом
+    const wurzburgCenter: [number, number] = [49.7913, 9.9534];
+    
+    // Якщо маркери є, центруємо на них, інакше на Вюрцбург
+    const center = markers.length > 0
+      ? [
+          markers.reduce((sum, m) => sum + m.lat, 0) / markers.length,
+          markers.reduce((sum, m) => sum + m.lng, 0) / markers.length
+        ] as [number, number]
+      : wurzburgCenter;
 
-      if (!mapRef.current) return;
-      const map = L.map(mapRef.current).setView(center, markers.length > 0 ? 13 : 12);
+    if (!mapRef.current) return;
+    const map = L.map(mapRef.current).setView(center, markers.length > 0 ? 13 : 12);
 
-      // OpenStreetMap tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-      }).addTo(map);
+    // OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
 
-      // Додати маркери
-      markers.forEach(marker => {
-        const isResolved = marker.status === 'RESOLVED';
-        const color = isResolved ? '#22c55e' : '#ef4444'; // green : red
+    // Додати маркери
+    markers.forEach(marker => {
+      const isResolved = marker.status === 'RESOLVED';
+      const color = isResolved ? '#22c55e' : '#ef4444'; // green : red
 
-        const customIcon = L.divIcon({
-          html: `
-            <div style="
-              width: 30px;
-              height: 30px;
-              background: ${color};
-              border: 3px solid white;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-              cursor: pointer;
-              transition: transform 0.2s;
-            " class="marker-icon">
-              <span style="color: white; font-size: 16px; font-weight: bold;">
-                ${isResolved ? '✓' : '!'}
-              </span>
-            </div>
-          `,
-          className: 'custom-div-icon',
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
-          popupAnchor: [0, -15]
-        });
-
-        const popup = L.popup()
-          .setContent(`
-            <div style="font-family: Arial, sans-serif; min-width: 200px;">
-              <h3 style="margin: 0 0 8px 0; font-size: 14px;">${marker.title}</h3>
-              <p style="margin: 0 0 8px 0; font-size: 12px; color: #666;">
-                <strong>Статус:</strong> ${isResolved ? '✓ Вирішено' : '⏳ Активна'}
-              </p>
-              <p style="margin: 0; font-size: 12px; color: #999;">
-                ${marker.lat.toFixed(4)}, ${marker.lng.toFixed(4)}
-              </p>
-            </div>
-          `);
-
-        L.marker([marker.lat, marker.lng], { icon: customIcon })
-          .bindPopup(popup)
-          .addTo(map);
+      const customIcon = L.divIcon({
+        html: `
+          <div style="
+            width: 30px;
+            height: 30px;
+            background: ${color};
+            border: 3px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+          " class="marker-icon">
+            <span style="color: white; font-size: 16px; font-weight: bold;">
+              ${isResolved ? '✓' : '!'}
+            </span>
+          </div>
+        `,
+        className: 'custom-div-icon',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+        popupAnchor: [0, -15]
       });
 
-      // Автоматично вписати все на екран
-      if (markers.length > 1) {
-        const group = L.featureGroup(
-          markers.map(m => L.marker([m.lat, m.lng]))
-        );
-        map.fitBounds(group.getBounds().pad(0.1));
-      }
+      const popup = L.popup()
+        .setContent(`
+          <div style="font-family: Arial, sans-serif; min-width: 200px;">
+            <h3 style="margin: 0 0 8px 0; font-size: 14px;">${marker.title}</h3>
+            <p style="margin: 0 0 8px 0; font-size: 12px; color: #666;">
+              <strong>Статус:</strong> ${isResolved ? '✓ Вирішено' : '⏳ Активна'}
+            </p>
+            <p style="margin: 0; font-size: 12px; color: #999;">
+              ${marker.lat.toFixed(4)}, ${marker.lng.toFixed(4)}
+            </p>
+          </div>
+        `);
 
-      (window as any)._leafletMap = map;
+      L.marker([marker.lat, marker.lng], { icon: customIcon })
+        .bindPopup(popup)
+        .addTo(map);
     });
+
+    // Автоматично вписати все на екран
+    if (markers.length > 1) {
+      const group = L.featureGroup(
+        markers.map(m => L.marker([m.lat, m.lng]))
+      );
+      map.fitBounds(group.getBounds().pad(0.1));
+    }
+
+    (window as any)._leafletMap = map;
 
     return () => {
       const existingMap = (window as any)._leafletMap;

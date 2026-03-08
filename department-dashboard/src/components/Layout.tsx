@@ -1,10 +1,9 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Users, 
+import {
+  LayoutDashboard,
+  FileText,
+  Users,
   Settings,
-  Building2,
   Bell,
   LogOut,
   Menu
@@ -12,22 +11,28 @@ import {
 import { useState, useEffect } from 'react';
 import { useSocket, useSocketEvent } from '@/lib/socket';
 import { cn } from '@/lib/utils';
+import { useDepartment } from '../App';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Звіти', href: '/reports', icon: FileText },
-  { name: 'Департаменти', href: '/departments', icon: Building2 },
   { name: 'Користувачі', href: '/users', icon: Users },
   { name: 'Налаштування', href: '/settings', icon: Settings },
 ];
 
 export default function Layout() {
+  const department = useDepartment();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const { socket, connected } = useSocket();
+
+  // Колір департаменту для стилізації
+  const deptColor = department?.color || '#3B82F6';
+  const deptName = department?.name || 'Department';
+  const deptEmoji = department?.emoji || '🏢';
 
   // Слухаємо нові повідомлення через Socket.IO
   useSocketEvent(socket, 'report:new', (data) => {
@@ -73,8 +78,8 @@ export default function Layout() {
         )}
       >
         <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
-          <h1 className="text-xl font-bold text-primary">
-            🏛️ City Hall
+          <h1 className="text-xl font-bold" style={{ color: deptColor }}>
+            {deptEmoji} {deptName}
           </h1>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -95,9 +100,10 @@ export default function Layout() {
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 mb-1 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'text-white'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 )}
+                style={isActive ? { backgroundColor: deptColor } : {}}
               >
                 <Icon className="h-5 w-5" />
                 {item.name}

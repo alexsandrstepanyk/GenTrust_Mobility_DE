@@ -1,0 +1,133 @@
+// Prisma Schema для департаментів (schema_departments.prisma)
+// Кожен департамент має власну SQLite базу даних
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../databases/TEMPLATE_dept.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client-department"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+// Звіти департаменту
+model DepartmentReport {
+  id              String   @id @default(uuid())
+  
+  // Автор звіту (посилання на головну БД)
+  userId          String   // ID користувача з головної БД
+  userName        String?  // Кешоване ім'я для швидкості
+  userEmail       String?  // Кешований email
+  
+  // Контент звіту
+  photoId         String   // ID файлу в Telegram
+  photoUrl        String?  // URL фото
+  description     String?  // Опис від користувача
+  
+  // Геолокація
+  latitude        Float
+  longitude       Float
+  
+  // AI аналіз
+  aiVerdict       String?  // JSON від Gemini
+  aiConfidence    Float?   // 0.0-1.0
+  aiCategory      String?  // Категорія від AI
+  
+  // Статус та обробка
+  status          String   @default("PENDING") // PENDING, APPROVED, REJECTED, IN_PROGRESS, COMPLETED
+  priority        String   @default("MEDIUM")  // LOW, MEDIUM, HIGH, URGENT
+  
+  // Модерація
+  moderatedBy     String?  // ID модератора
+  moderatedAt     DateTime?
+  rejectionReason String?
+  
+  // Виконання
+  assignedTo      String?  // ID працівника
+  startedAt       DateTime?
+  completedAt     DateTime?
+  completionNote  String?
+  completionPhotoId String? // Фото виконання
+  
+  // Аудит
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  approvedAt      DateTime?
+  
+  @@index([status])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([status, createdAt])
+}
+
+// Статистика департаменту
+model DepartmentStats {
+  id                String   @id @default(uuid())
+  date              String   @unique // YYYY-MM-DD
+  
+  // Загальна кількість
+  totalReports      Int      @default(0)
+  
+  // По статусах
+  pendingReports    Int      @default(0)
+  approvedReports   Int      @default(0)
+  rejectedReports   Int      @default(0)
+  inProgressReports Int      @default(0)
+  completedReports  Int      @default(0)
+  
+  // Метрики
+  avgResponseTime   Float    @default(0.0) // години
+  avgCompletionTime Float    @default(0.0) // години
+  avgAiConfidence   Float    @default(0.0)
+  
+  // Пріоритети
+  urgentReports     Int      @default(0)
+  highPriorityReports Int    @default(0)
+  
+  // Оновлення
+  lastUpdated       DateTime @updatedAt
+  
+  @@index([date])
+}
+
+// Налаштування департаменту
+model DepartmentSettings {
+  id                  String   @id @default("settings")
+  
+  // Контакти
+  notificationEmail   String?
+  notificationPhone   String?
+  responsiblePerson   String?
+  
+  // Робочі налаштування
+  autoApproveThreshold Float   @default(0.85) // AI confidence для авто-схвалення
+  maxReportsPerDay     Int     @default(100)
+  workingHoursStart    Int     @default(8)   // 8:00
+  workingHoursEnd      Int     @default(18)  // 18:00
+  workingDays          String  @default("1,2,3,4,5") // Пн-Пт
+  
+  // Сповіщення
+  enableEmailNotify    Boolean @default(true)
+  enableTelegramNotify Boolean @default(true)
+  enableSmsNotify      Boolean @default(false)
+  
+  // Оновлення
+  updatedAt           DateTime @default(now()) @updatedAt
+}
+
+// Активність (лог дій)
+model DepartmentActivity {
+  id          String   @id @default(uuid())
+  reportId    String
+  action      String   // APPROVED, REJECTED, ASSIGNED, COMPLETED, etc.
+  userId      String
+  userName    String?
+  metadata    String?  // JSON
+  createdAt   DateTime @default(now())
+  
+  @@index([reportId])
+  @@index([createdAt])
+  @@index([action])
+}

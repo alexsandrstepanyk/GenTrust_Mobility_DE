@@ -1,224 +1,227 @@
 # 🧪 GenTrust Mobility - Testing Framework
 
-## 📁 Структура Папки Test
+## 📋 Огляд
+
+Ця папка містить тести для перевірки всієї системи GenTrust Mobility.
+
+## 📁 Структура
 
 ```
 tests/
-├── monitor/                    # Тести для Monitor Dashboard (9000)
-│   ├── test_monitor_dashboard.sh    # Головний тест Monitor Dashboard
-│   └── results/                      # Результати тестування
-│       └── test_results_YYYY-MM-DD_HH-MM-SS.txt
-│
-├── backend/                    # Тести для Backend API (3000)
-├── mobile/                     # Тести для Mobile Apps
-└── integration/                # Інтеграційні тести
+├── system/                    # Системні тести
+│   ├── test_all_services.sh   # Повний тест всіх сервісів
+│   └── results/               # Результати тестів
+├── monitor/                   # Тести моніторингу
+│   └── test_monitor_dashboard.sh
+└── README.md                  # Цей файл
 ```
 
-## 🚀 Як Запускати Тести
+## 🚀 Використання
 
-### Monitor Dashboard Test
+### Повний системний тест
 
 ```bash
-# Запустити тест Monitor Dashboard
-./tests/monitor/test_monitor_dashboard.sh
+# Запустити всі тести
+bash tests/system/test_all_services.sh
 
 # Результати зберігаються в:
-tests/monitor/results/test_results_YYYY-MM-DD_HH-MM-SS.txt
+# tests/system/results/test_results_YYYY-MM-DD_HH-MM-SS.txt
 ```
 
-## 📋 Що Перевіряє Monitor Dashboard Test
+### Тест моніторингу
 
-### ✅ TEST 1: Доступність Monitor Dashboard
-- Порт 9000 активний
-- HTTP відповідь працює
-- HTML інтерфейс завантажується
+```bash
+# Запустити тест моніторингу
+bash tests/monitor/test_monitor_dashboard.sh
+```
 
-### ✅ TEST 2: API Endpoints
-- `GET /api/status` - статус всіх сервісів
-- `GET /api/health` - перевірка здоров'я
-- WebSocket (Socket.IO) підключення
+## 📊 Що тестується
 
-### ✅ TEST 3: Log Файли
-Перевіряє наявність 21 log файлу:
-- `/tmp/backend.log`
-- `/tmp/bot-master.log` ... `/tmp/bot-municipal.log`
-- `/tmp/admin-panel.log`, `/tmp/city-hall.log`, `/tmp/staff-panel.log`
-- `/tmp/dept-roads.log` ... `/tmp/dept-vandalism.log`
-- `/tmp/expo-school.log`, `/tmp/expo-parent.log`, `/tmp/expo-client.log`
-- `/tmp/monitor.log`
+### 1️⃣ Тестування портів
 
-### ✅ TEST 4: Порти Всіх Сервісів
-- Backend API: 3000
-- Telegram Botи: 3001-3005
-- Core Dashboards: 5173, 5174, 5176
-- Departments: 5180-5187 (8 департаментів)
-- Mobile Apps: 8081-8083 (3 Expo apps)
+Перевіряє чи всі порти зайняті правильними сервісами:
 
-### ✅ TEST 5: Кнопки Категорій (HTML)
-Перевіряє наявність кнопок:
-- 🤖 Telegram Боти: Запустити/Зупинити/Показати/Інструкції
-- 🖥️ Core Dashboards: Запустити/Зупинити/Показати/Інструкції
-- 🏢 Департаменти: Запустити/Зупинити/Показати/Інструкції
-- 📱 Mobile Apps: Запустити/Зупинити/Показати/Інструкції
+| Порт | Сервіс | Очікуваний статус |
+|------|--------|-------------------|
+| 3000 | Backend API | ✅ ЗАЙНЯТИЙ |
+| 9000 | Monitor Dashboard | ✅ ЗАЙНЯТИЙ |
+| 5173 | City-Hall Dashboard | ✅ ЗАЙНЯТИЙ |
+| 5174 | Admin Panel | ✅ ЗАЙНЯТИЙ |
+| 5175 | Department Dashboard (Base) | ✅ ЗАЙНЯТИЙ |
+| 5180 | Dept: Roads (🛣️) | ✅ ЗАЙНЯТИЙ |
+| 5181 | Dept: Lighting (💡) | ✅ ЗАЙНЯТИЙ |
+| 5182 | Dept: Waste (🗑️) | ✅ ЗАЙНЯТИЙ |
+| 5183 | Dept: Parks (🌳) | ✅ ЗАЙНЯТИЙ |
+| 5184 | Dept: Water (🚰) | ✅ ЗАЙНЯТИЙ |
+| 5185 | Dept: Transport (🚌) | ✅ ЗАЙНЯТИЙ |
+| 5186 | Dept: Ecology (🌿) | ✅ ЗАЙНЯТИЙ |
+| 5187 | Dept: Vandalism (🎨) | ✅ ЗАЙНЯТИЙ |
 
-### ✅ TEST 6: Інструкції Запуску (HTML)
-Перевіряє наявність інструкцій для:
-- Botи (npm run dev, npm run bot:*)
-- Dashboards (cd + npm run dev)
-- Departments (cd departments/* + npm run dev)
-- Expo (npx expo start)
+### 2️⃣ Тестування API Endpoints
 
-### ✅ TEST 7: CSS Стилі
-Перевіряє наявність нових стилів:
-- `.section-header-with-controls`
-- `.category-btn`
-- `.how-to-run`
+Перевіряє доступність API endpoint'ів:
 
-### ✅ TEST 8: Database
-- SQLite файл існує
-- Таблиці створено
-- Користувачі в базі
+- `GET /api/health` - Health check (очікується 200)
+- `GET /api/reports` - Reports API (очікується 200)
+- `GET /api/users` - Users API (очікується 200)
+- `GET /api/stats/dashboard` - Stats API (очікується 401 - потребує auth)
 
-## 📊 Результати Тестування
+### 3️⃣ Тестування лог файлів
 
-### Формат Виводу
+Перевіряє наявність та валідність лог файлів:
+
+- `/tmp/BackendAPIзботами.log`
+- `/tmp/Monitor.log`
+- `/tmp/City-HallDashboard.log`
+- `/tmp/AdminPanelCoreDashboard.log`
+- `/tmp/DepartmentDashboard.log`
+- `/tmp/Dept:Roads.log`
+- `/tmp/Dept:Lighting.log`
+- `/tmp/Dept:Waste.log`
+- `/tmp/Dept:Parks.log`
+- `/tmp/Dept:Water.log`
+- `/tmp/Dept:Transport.log`
+- `/tmp/Dept:Ecology.log`
+- `/tmp/Dept:Vandalism.log`
+
+### 4️⃣ Тестування бази даних
+
+Перевіряє наявність та цілісність головної бази даних:
+
+- `prisma/dev.db` - Головна SQLite база
+
+### 5️⃣ Перевірка процесів
+
+Перевіряє що запущено достатньо процесів Node.js (> 10)
+
+## 📈 Результати тестів
+
+### Приклад успішного результку:
 
 ```
 ╔════════════════════════════════════════════════════════╗
-║  🧪 TEST: Monitor Dashboard (Port 9000) - Full Validation
+║  ПІДСУМКИ ТЕСТУВАННЯ
 ╚════════════════════════════════════════════════════════╝
 
-📅 Дата: 2026-03-05 15:30:45
-📍 Проект: /Users/apple/Desktop/GenTrust_Mobility_DE
+Всього тестів: 25
+✅ Пройдено: 25
+❌ Не пройдено: 0
 
+Успішність: 100%
+
+🎉 ВСІ ТЕСТИ ПРОЙДЕНО УСПІШНО!
+
+Доступні посилання:
+  🌐 Monitor:        http://localhost:9000
+  🔧 Backend API:    http://localhost:3000/api
+  🏛️ City-Hall:      http://localhost:5173
+  🔐 Admin Panel:    http://localhost:5174
+  🏢 Departments:    http://localhost:5180-5187
+```
+
+### Приклад невдалого результату:
+
+```
 ╔════════════════════════════════════════════════════════╗
-║  TEST 1: Доступність Monitor Dashboard
+║  ПІДСУМКИ ТЕСТУВАННЯ
 ╚════════════════════════════════════════════════════════╝
 
-→ Перевірка порту 9000...
-✅ Monitor Dashboard (порт 9000): ✅ Активний
+Всього тестів: 25
+✅ Пройдено: 23
+❌ Не пройдено: 2
 
-→ Перевірка HTTP відповіді...
-✅ Monitor Dashboard відповідає на HTTP запити
+Успішність: 92%
 
-...
+⚠️  ДЕЯКІ ТЕСТИ НЕ ПРОЙДЕНО
 
-╔════════════════════════════════════════════════════════╗
-║  📊 ФІНАЛЬНІ РЕЗУЛЬТАТИ
-╚════════════════════════════════════════════════════════╝
-
-📈 Статистика тестування:
-   Всього тестів: 47
-   ✅ Пройдено: 45
-   ❌ Провалено: 2
-
-⚠️  УВАГА: ДЕЯКІ ТЕСТИ НЕ ПРОЙДЕНО
-
-📄 Повний звіт збережено: tests/monitor/results/test_results_2026-03-05_15-30-45.txt
+Рекомендації:
+  1. Перевірте логи невдалих сервісів
+  2. Спробуйте перезапустити: bash start.sh
+  3. Перевірте конфігурацію портів
 ```
 
-### Кольори Виводу
+## 🔧 Виправлення проблем
 
-- 🟢 **Зелений** (`✅`) - Тест пройдено
-- 🔴 **Червоний** (`❌`) - Тест провалено
-- 🟡 **Жовтий** (`⚠️`) - Попередження
-- 🔵 **Синій** (`ℹ️`) - Інформація
+### Проблема: Порт не зайнятий
 
-## 🔧 Створення Нових Тестів
-
-### Шаблон Тесту
-
+**Рішення:**
 ```bash
-#!/bin/bash
-
-################################################################################
-# 🧪 TEST: [Назва Тесту]
-# 
-# 📋 ОПИС ТЕСТУВАННЯ:
-#   [Опис що тестується]
-#
-# ✅ ЩО ПЕРЕВІРЯЄТЬСЯ:
-#   1. [Перевірка 1]
-#   2. [Перевірка 2]
-#
-# 🚀 ВИКОРИСТАННЯ:
-#   ./tests/[category]/[test_name].sh
-#
-################################################################################
-
-# 🎨 Кольори
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
-# 📍 Змінні
-PROJECT_DIR="/Users/apple/Desktop/GenTrust_Mobility_DE"
-RESULTS_DIR="$PROJECT_DIR/tests/[category]/results"
-TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-RESULT_FILE="$RESULTS_DIR/test_results_$TIMESTAMP.txt"
-
-# 📊 Лічильники
-TOTAL_TESTS=0
-PASSED_TESTS=0
-FAILED_TESTS=0
-
-mkdir -p "$RESULTS_DIR"
-
-# 📝 Функції (див. вище)
-log_result() { echo -e "$1" | tee -a "$RESULT_FILE"; }
-print_header() { ... }
-print_success() { ... }
-print_error() { ... }
-
-# 🧪 Тестування
-print_header "🧪 TEST: [Назва]"
-# ... ваші тести ...
-
-# 📊 Фінальні результати
-print_header "📊 ФІНАЛЬНІ РЕЗУЛЬТАТИ"
-# ... статистика ...
+# Перезапустити систему
+bash stop.sh
+bash start.sh
 ```
 
-## 📄 Приклади Використання
+### Проблема: Лог файл не знайдено
 
-### Запустити всі тести Monitor Dashboard
-
+**Рішення:**
 ```bash
-./tests/monitor/test_monitor_dashboard.sh
+# Перевірити чи сервіс запущено
+ps aux | grep vite | grep <port>
+
+# Перевірити лог напряму
+tail -f /tmp/<service>.log
 ```
 
-### Переглянути останні результати
+### Проблема: API повертає помилку
 
+**Рішення:**
 ```bash
-ls -lt tests/monitor/results/ | head -5
-cat tests/monitor/results/test_results_2026-03-05_15-30-45.txt
+# Перевірити Backend
+curl http://localhost:3000/api/health
+
+# Перевірити логи Backend
+tail -f /tmp/BackendAPIзботами.log
 ```
 
-### Відкрити папку з результатами
+## 📝 Автоматизація в CI/CD
 
-```bash
-open tests/monitor/results/
+Для використання в CI/CD:
+
+```yaml
+# .github/workflows/test.yml
+name: System Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Start system
+        run: bash start.sh &
+        sleep 60
+      
+      - name: Run tests
+        run: bash tests/system/test_all_services.sh
 ```
 
 ## 🎯 Best Practices
 
-1. **Кожен тест зберігає результати** - автоматичне збереження в `results/`
-2. **Використовуй кольори** - зелений/червоний для статусу
-3. **Додавай лічильники** - TOTAL/PASSED/FAILED
-4. **Створюй timestamp** - унікальні імена файлів
-5. **Документуй тести** - опис в шапці скрипта
+1. **Запускайте тести після кожного деплою**
+2. **Зберігайте результати тестів** в `tests/system/results/`
+3. **Перевіряйте логи** при невдачі тестів
+4. **Автоматизуйте** запуск тестів в CI/CD
 
-## 📚 Додаткова Документація
+## 📞 Підтримка
 
-- [Monitor Dashboard](../../monitor/README.md)
-- [API Documentation](../../docs/API.md)
-- [System Architecture](../../ARCHITECTURE.md)
+Якщо тести не працюють:
+
+1. Перевірте що система запущена: `bash start.sh`
+2. Перевірте що всі порти вільні перед запуском
+3. Перегляньте логи в `tests/system/results/`
 
 ---
 
-**Last Updated:** 2026-03-05  
-**Version:** v1.0.0  
-**Maintained by:** GenTrust Mobility Team
+**Last Updated:** 2026-03-06  
+**Version:** v1.0  
+**Status:** ✅ Production Ready

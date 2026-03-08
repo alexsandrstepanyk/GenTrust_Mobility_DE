@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { 
+import { Button } from '@/components/ui/Button';
+import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { 
-  TrendingUp, Users, FileText, CheckCircle, XCircle, 
-  Clock, AlertCircle, ThumbsUp, Trash2
+import {
+  TrendingUp, Users, FileText, CheckCircle, XCircle,
+  Clock, AlertCircle, ThumbsUp, Trash2, Building2
 } from 'lucide-react';
 import { statsAPI } from '@/lib/api';
 import { useSocket, useSocketEvent } from '@/lib/socket';
 import { api } from '@/lib/api';
+import DepartmentsOverview from './DepartmentsOverview';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -22,6 +24,7 @@ export default function Dashboard() {
   const [pendingReports, setPendingReports] = useState<any[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState<Record<string, string>>({});
   const [approving, setApproving] = useState<Record<string, boolean>>({});
+  const [showDepartments, setShowDepartments] = useState(false);
   const { socket } = useSocket();
 
   const departments = [
@@ -110,6 +113,20 @@ export default function Dashboard() {
     );
   }
 
+  // Show Departments Overview
+  if (showDepartments) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Button onClick={() => setShowDepartments(false)} variant="outline">
+            ← Назад до головної
+          </Button>
+        </div>
+        <DepartmentsOverview />
+      </div>
+    );
+  }
+
   const reportsData = stats?.reportsOverTime || [];
   const statusDistribution = stats?.statusDistribution || [];
   const categoryData = stats?.categoryBreakdown || [];
@@ -156,13 +173,19 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Dashboard
-        </h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Огляд системи GenTrust City Hall
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Dashboard
+          </h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Огляд системи GenTrust City Hall
+          </p>
+        </div>
+        <Button onClick={() => setShowDepartments(true)} variant="outline">
+          <Building2 className="w-4 h-4 mr-2" />
+          Департаменти
+        </Button>
       </div>
 
       {/* Stats Cards */}

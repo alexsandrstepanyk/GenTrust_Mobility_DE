@@ -12,7 +12,9 @@
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev --name init"
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:generate:department": "prisma generate --schema=./prisma/schema_departments.prisma",
+    "prisma:migrate:department": "bash scripts/init_department_dbs.sh"
   },
   "keywords": [
     "telegram",

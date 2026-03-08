@@ -1,5 +1,5 @@
-import bot from "./bot";
-import { cityHallBot } from "./city_hall_bot";
+// import bot from "./bot"; // DISABLED: 2026-03-07 - Prisma errors
+// import { cityHallBot } from "./city_hall_bot"; // DISABLED: temporary
 import { questProviderBot } from "./quest_provider_bot";
 import { masterBot } from "./master_bot";
 import { runBackup } from "./backup_manager";
@@ -56,12 +56,12 @@ const launchBot = (botInstance: any, botName: string, hubName: string) => {
         }
 
         // Start Scout Bot
-        launchBot(bot, "Scout Bot", "scout");
+        // launchBot(bot, "Scout Bot", "scout"); // DISABLED
 
         // Start City Hall Bot
-        if (cityHallBot) {
-            launchBot(cityHallBot, "City Hall Bot", "cityhall");
-        }
+        // if (cityHallBot) { // DISABLED
+        //     launchBot(cityHallBot, "City Hall Bot", "cityhall");
+        // }
 
         // Start Quest Provider Bot
         if (questProviderBot) {
