@@ -27,7 +27,6 @@ export function initRedis(): Redis {
 
   redis = new Redis(REDIS_URL, {
     maxRetriesPerRequest: 3,
-    retryDelayOnFailure: 100,
     lazyConnect: true,
   });
 
