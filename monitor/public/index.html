@@ -56,6 +56,13 @@
             <div id="database-status" class="service-grid"></div>
         </section>
 
+        <!-- 🏢 8 БАЗ ДАНИХ ДЕПАРТАМЕНТІВ -->
+        <section class="section">
+            <h3>🏢 Бази Даних Департаментів (8 БД)</h3>
+            <p id="dept-db-total" class="section-total"></p>
+            <div id="department-databases-status" class="service-grid"></div>
+        </section>
+
         <!-- 1️⃣ BACKEND API -->
         <section class="section">
             <h3>🌐 Backend API</h3>
@@ -262,6 +269,7 @@ npx expo start --port 8081 --lan</pre>
         socket.on('status-update', (data) => {
             updateTimestamp(data.timestamp);
             updateDatabase(data.database);
+            updateDepartmentDatabases(data.departmentDatabases);  // 🆕 8 БД департаментів
             updateBackend(data.services);
             updateBots(data.bots || []);  // ← Боти приходять окремо
             updateCoreDashboards(data.services);
@@ -293,6 +301,37 @@ npx expo start --port 8081 --lan</pre>
                     </div>
                 </div>
             `;
+        }
+
+        function updateDepartmentDatabases(deptDbs) {
+            const container = document.getElementById('department-databases-status');
+            if (!container || !deptDbs || !deptDbs.departments) return;
+
+            container.innerHTML = deptDbs.departments.map(dept => {
+                const statusClass = dept.status === 'online' ? 'online' : dept.status === 'error' ? 'offline' : 'warning';
+                
+                return `
+                    <div class="service-card ${statusClass}">
+                        <div class="service-header">
+                            <div class="service-icon">${dept.name.split(' ')[0]}</div>
+                            <div class="service-info">
+                                <h4>${dept.name}</h4>
+                                <p class="service-description">/databases/${dept.file}</p>
+                            </div>
+                            <div class="status-indicator ${statusClass}"></div>
+                        </div>
+                        <div class="service-status">
+                            <p><strong>${dept.message}</strong></p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Оновити загальну статистику
+            const totalContainer = document.getElementById('dept-db-total');
+            if (totalContainer) {
+                totalContainer.innerHTML = `<strong>${deptDbs.message}</strong>`;
+            }
         }
 
         function updateBackend(services) {

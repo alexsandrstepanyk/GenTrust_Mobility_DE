@@ -555,6 +555,73 @@ async function checkDatabase() {
     });
 }
 
+/**
+ * Перевірка статусу баз даних департаментів (8 БД)
+ */
+async function checkDepartmentDatabases() {
+    const departments = [
+        { id: 'roads', name: '🛣️ Дороги', file: 'roads_dept.db' },
+        { id: 'lighting', name: '💡 Освітлення', file: 'lighting_dept.db' },
+        { id: 'waste', name: '🗑️ Сміття', file: 'waste_dept.db' },
+        { id: 'parks', name: '🌳 Парки', file: 'parks_dept.db' },
+        { id: 'water', name: '🚰 Вода', file: 'water_dept.db' },
+        { id: 'transport', name: '🚌 Транспорт', file: 'transport_dept.db' },
+        { id: 'ecology', name: '🌿 Екологія', file: 'ecology_dept.db' },
+        { id: 'vandalism', name: '🎨 Вандалізм', file: 'vandalism_dept.db' }
+    ];
+
+    const results = [];
+    let totalReports = 0;
+
+    for (const dept of departments) {
+        const dbPath = `${PROJECT_DIR}/databases/${dept.file}`;
+        
+        if (!fs.existsSync(dbPath)) {
+            results.push({
+                ...dept,
+                status: 'error',
+                message: '❌ БД не знайдена',
+                reports: 0
+            });
+            continue;
+        }
+
+        try {
+            const count = await new Promise((resolve) => {
+                exec(`sqlite3 "${dbPath}" "SELECT COUNT(*) FROM DepartmentReport;" 2>/dev/null`, (error, stdout) => {
+                    if (error) {
+                        resolve(0);
+                    } else {
+                        resolve(parseInt(stdout.trim()) || 0);
+                    }
+                });
+            });
+
+            totalReports += count;
+            results.push({
+                ...dept,
+                status: count > 0 ? 'online' : 'warning',
+                message: count > 0 ? `✅ ${count} звітів` : '⚠️ Немає звітів',
+                reports: count
+            });
+        } catch (error) {
+            results.push({
+                ...dept,
+                status: 'error',
+                message: '❌ Помилка запиту',
+                reports: 0
+            });
+        }
+    }
+
+    return {
+        total: totalReports,
+        departments: results,
+        status: totalReports > 0 ? 'online' : 'warning',
+        message: `✅ Всього ${totalReports} звітів у 8 БД`
+    };
+}
+
 // Socket.IO для real-time оновлення
 io.on('connection', (socket) => {
     console.log('✅ Клієнт підключився до моніторингу');
@@ -563,10 +630,12 @@ io.on('connection', (socket) => {
     const interval = setInterval(async () => {
         const status = await collectServicesStatus();
         const dbStatus = await checkDatabase();
+        const deptDbStatus = await checkDepartmentDatabases();
 
         socket.emit('status-update', {
             ...status,
-            database: dbStatus
+            database: dbStatus,
+            departmentDatabases: deptDbStatus
         });
     }, 3000);
 
@@ -574,9 +643,11 @@ io.on('connection', (socket) => {
     (async () => {
         const status = await collectServicesStatus();
         const dbStatus = await checkDatabase();
+        const deptDbStatus = await checkDepartmentDatabases();
         socket.emit('status-update', {
             ...status,
-            database: dbStatus
+            database: dbStatus,
+            departmentDatabases: deptDbStatus
         });
     })();
 
