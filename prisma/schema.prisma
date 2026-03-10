@@ -24,11 +24,11 @@ model User {
   grade         String?  // Клас/Група
   phone         String?  // Contact phone number
   address       String?  // Home address
-  
+
   role          String   @default("SCOUT") // Role: SCOUT, ADMIN, MODERATOR, PARENT
   status        String   @default("PENDING") // Status: PENDING, ACTIVE, PROBATION, BLOCKED
   language      String?  @default("uk")
-  
+
   // Показники
   dignityScore  Int      @default(50)
   balance       Float    @default(0.0)
@@ -36,15 +36,15 @@ model User {
   city          String?  // Місто (напр. Würzburg)
   country       String?  @default("DE") // Країна для масштабування
   urbanBanExpiresAt DateTime? // Блокування доступу до Urban Guardian
-  
+
   // Push notifications
   pushToken     String? // Expo push token for notifications
-  
+
   // Батькові зв'язки
   parentRelations ParentChild[] @relation("parent")
   childRelations  ParentChild[] @relation("child")
   personaltasks   PersonalTask[] @relation("creator")
-  
+
   // Зв'язки
   reports       Report[] // Звіти про поламки
   quests        Quest[]  // Виконані доставки
@@ -52,13 +52,18 @@ model User {
   activities    ActivityRecord[]
   bioReports    BioReport[]
   gpsLocations  GPSLocation[]
-  
+
   // Виконання завдань
   completedTasks TaskCompletion[] @relation("completedBy")  // Завдання виконані цим користувачем
   verifiedTasks  TaskCompletion[] @relation("verifiedBy")   // Завдання підтверджені цим користувачем
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  // ІНДЕКСИ ДЛЯ ОПТИМІЗАЦІЇ (v5.4.0)
+  @@index([role, status])              // ✅ Для фільтрів по ролі
+  @@index([city, district])            // ✅ Для гео-фільтрів
+  @@index([createdAt])                 // ✅ Для сортування
 }
 
 // 1B. ЗӘЯЗОК БАТЬКО-ДИТИНА
@@ -143,23 +148,29 @@ model Report {
   id          String       @id @default(uuid())
   author      User         @relation(fields: [authorId], references: [id])
   authorId    String
-  
+
   photoId     String       // ID файлу в Telegram
   description String?      // Опис від користувача (якщо ШІ не впевнений)
   latitude    Float
   longitude   Float
-  
+
   // Робота ШІ та модерація
   aiVerdict   String?      // Результат від Gemini (JSON-string)
   category    String?      // Категорія проблеми (напр. Дороги, Сміття)
   status      String       @default("PENDING") // ReportStatus: PENDING, APPROVED, REJECTED, FORWARDED
   forwardedTo String?      // Відділ, до якого направлено (roads, lighting, waste, parks, water, transport, other)
   rejectionReason String?  // Причина відхилення
-  
+
   // Зв'язок з комунальною службою
   municipalTask MunicipalTask?
-  
+
   createdAt   DateTime     @default(now())
+
+  // ІНДЕКСИ ДЛЯ ОПТИМІЗАЦІЇ (v5.4.0)
+  @@index([status, createdAt])           // ✅ Для фільтрів по статусах
+  @@index([category, status])            // ✅ Для департаментів
+  @@index([authorId, createdAt])         // ✅ Для історії користувача
+  @@index([forwardedTo, status])         // ✅ Для фільтрів по департаментах
 }
 
 // 4. ЗАВДАННЯ (Logistics Scout / Work)
@@ -170,41 +181,46 @@ model Quest {
   type        String      @default("LOGISTICS") // QuestType: LOGISTICS, WORK, VOLUNTEER
   status      String      @default("OPEN") // QuestStatus: OPEN, IN_PROGRESS, COMPLETED, PENDING_VERIFICATION
   reward      Float       // Грошова винагорода або Dignity Score
-  
+
   // Географія
   city        String?
   district    String?
   location    String?     // Текстова адреса
-  
+
   // Видимість завдання
   isPersonal  Boolean     @default(false) // true = тільки для конкретної дитини, false = для всіх
   assignedToChild String?  // ID конкретної дитини якщо isPersonal = true
-  
+
   // Коди безпеки
   pickupCode    String?   // Код, щоб забрати (4 digits)
   deliveryCode  String?   // Код, отримувач каже скауту (4 digits)
-  
+
   // Локація завершення
   completionLatitude  Float?
   completionLongitude Float?
-  
+
   // Фото-підтвердження
   requiresPhoto Boolean   @default(true)   // Чи потрібне фото для підтвердження
   autoApprove   Boolean   @default(false)  // Автопідтвердження без перевірки
-  
+
   // Зв'язки
   provider      Provider?  @relation(fields: [providerId], references: [id])
   providerId    String?
-  
+
   assignee      User?       @relation(fields: [assigneeId], references: [id])
   assigneeId    String?
 
   taskOrder     TaskOrder?  @relation(fields: [taskOrderId], references: [id])
   taskOrderId   String?     @unique
-  
+
   completions   TaskCompletion[]  // Зв'язок з виконаннями
-  
+
   createdAt     DateTime    @default(now())
+
+  // ІНДЕКСИ ДЛЯ ОПТИМІЗАЦІЇ (v5.4.0)
+  @@index([status, type])              // ✅ Для фільтрів по статусах
+  @@index([city, district])            // ✅ Для гео-пошуку
+  @@index([assigneeId, status])        // ✅ Для завдань користувача
 }
 
 // 4B. ВИКОНАННЯ ЗАВДАНЬ (з фото-підтвердженням)

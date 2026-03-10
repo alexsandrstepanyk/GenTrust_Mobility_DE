@@ -7,6 +7,7 @@ import { recordActivity } from '../../services/life_recorder';
 import { cityHallBot } from '../../city_hall_bot';
 import { Markup } from 'telegraf';
 import { getDepartmentPrisma, DepartmentId } from '../../utils/departmentDatabaseManager';
+import cache from '../../services/cache'; // ✅ Redis Cache (v5.4.0)
 
 const router = Router();
 
@@ -143,14 +144,25 @@ router.post('/', authenticateToken, async (req: any, res, next) => {
 });
 
 // List ALL reports (for city hall dashboard)
+// ✅ OPTIMIZED v5.4.0: Redis Cache + Eager Loading
 router.get('/', async (req, res, next) => {
     try {
         const { status, category, limit = '100' } = req.query;
+        
+        // ✅ Створити унікальний ключ кешу
+        const cacheKey = `reports:${status || 'all'}:${category || 'all'}:${limit}`;
+        
+        // ✅ Спробувати отримати з кешу (5 хвилин)
+        const cached = await cache.get(cacheKey);
+        if (cached) {
+            return res.json(cached);
+        }
 
         const where: any = {};
         if (status) where.status = status;
         if (category) where.category = category;
 
+        // ✅ Eager Loading - уникнення N+1 запиту
         const reports = await prisma.report.findMany({
             where,
             include: {
@@ -193,6 +205,9 @@ router.get('/', async (req, res, next) => {
             aiVerdict: report.aiVerdict ? JSON.parse(report.aiVerdict) : null
         }));
 
+        // ✅ Зберегти в кеш (5 хвилин)
+        await cache.set(cacheKey, transformed, 300);
+
         res.json(transformed);
     } catch (error) {
         console.error('Get all reports error:', error);
@@ -201,18 +216,22 @@ router.get('/', async (req, res, next) => {
 });
 
 // Approve report
+// ✅ OPTIMIZED v5.4.0: Cache Invalidation
 router.post('/:id/approve', async (req, res, next) => {
     try {
         const { id } = req.params;
         const { department } = req.body;
-        
+
         const report = await (prisma as any).report.update({
             where: { id },
-            data: { 
+            data: {
                 status: 'APPROVED',
                 forwardedTo: department || 'general'
             }
         });
+
+        // ✅ Інвалідація кешу
+        await cache.deleteByPrefix('reports:');
 
         res.json({ success: true, report });
     } catch (error) {
@@ -221,18 +240,22 @@ router.post('/:id/approve', async (req, res, next) => {
 });
 
 // Reject report
+// ✅ OPTIMIZED v5.4.0: Cache Invalidation
 router.post('/:id/reject', async (req, res, next) => {
     try {
         const { id } = req.params;
         const { reason } = req.body;
-        
+
         const report = await (prisma as any).report.update({
             where: { id },
-            data: { 
+            data: {
                 status: 'REJECTED',
                 rejectionReason: reason
             }
         });
+
+        // ✅ Інвалідація кешу
+        await cache.deleteByPrefix('reports:');
 
         res.json({ success: true, report });
     } catch (error) {
