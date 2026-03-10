@@ -11,7 +11,7 @@
  * - Після 3 failed - подія видаляється через 7 днів
  */
 
-import { getUnprocessedEvents, markEventAsProcessed, markEventAsFailed } from './outbox';
+import { getUnprocessedEvents, markEventAsProcessed, markEventAsFailed } from '../services/outbox';
 import { getDepartmentPrisma } from '../utils/departmentDatabaseManager';
 
 const PROCESS_INTERVAL = 5000; // 5 секунд
@@ -131,7 +131,6 @@ async function handleReportRejected(payload: any): Promise<void> {
     data: {
       status: 'REJECTED',
       rejectionReason,
-      rejectedAt: new Date(),
     },
   });
   
@@ -156,7 +155,7 @@ async function workerLoop(): Promise<void> {
       
       // Обробляємо події паралельно (але не більше 5 одночасно)
       const batch = events.slice(0, 5);
-      await Promise.all(batch.map(event => processEvent(event)));
+      await Promise.all(batch.map((event: any) => processEvent(event)));
       
     } catch (error: any) {
       console.error('❌ помилка Outbox Worker:', error.message);
