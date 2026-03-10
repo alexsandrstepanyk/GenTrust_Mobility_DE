@@ -8,6 +8,7 @@ import { cityHallBot } from '../../city_hall_bot';
 import { Markup } from 'telegraf';
 import { getDepartmentPrisma, DepartmentId } from '../../utils/departmentDatabaseManager';
 import cache from '../../services/cache'; // ✅ Redis Cache (v5.4.0)
+import { createOutboxEvent } from '../../services/outbox'; // ✅ Outbox Pattern (v6.0.0)
 
 const router = Router();
 

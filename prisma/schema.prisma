@@ -353,3 +353,17 @@ model MunicipalTask {
   completionNote    String?
   createdAt     DateTime @default(now())
 }
+
+// 8. OUTBOX PATTERN (для гарантованої доставки подій)
+model OutboxEvent {
+  id          String   @id @default(uuid())
+  type        String   // REPORT_CREATED, REPORT_APPROVED, REPORT_REJECTED
+  payload     String   // JSON string
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+  error       String?
+  retryCount  Int      @default(0)
+
+  @@index([processedAt, retryCount])  // ✅ Для воркера
+  @@index([createdAt])                 // ✅ Для cleanup
+}
