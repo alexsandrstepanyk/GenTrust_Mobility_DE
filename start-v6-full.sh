@@ -224,6 +224,10 @@ launch_service "Dept: Ecology" "5186" "npm run dev" "$PROJECT_DIR/departments/ec
 echo -e "${CYAN}[12/12] 🎨 Vandalism Department (порт 5187)${NC}"
 launch_service "Dept: Vandalism" "5187" "npm run dev" "$PROJECT_DIR/departments/vandalism" || echo "⚠️ Vandalism failed"
 
+# 13. MONITOR DASHBOARD (порт 9000)
+echo -e "${CYAN}[13/13] 📊 Monitor Dashboard (порт 9000)${NC}"
+launch_service "Monitor Dashboard" "9000" "node server.js" "$PROJECT_DIR/monitor" || echo "⚠️ Monitor failed"
+
 # ============================================================================
 # ФІНАЛЬНИЙ СТАТУС
 # ============================================================================
