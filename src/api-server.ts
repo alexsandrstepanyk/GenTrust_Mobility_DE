@@ -12,6 +12,7 @@ import config from './config';
 import { apiLimiter, requestIdMiddleware, corsOptions } from './middleware/security';
 import healthRoutes from './api/routes/health';
 import reportRoutes from './api/routes/reports';
+import statsRoutes from './api/routes/stats';
 import { startOutboxWorker } from './workers/outboxWorker';
 
 const app = express();
@@ -32,6 +33,7 @@ app.use(morgan('combined'));
 // Routes
 app.use('/health', healthRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/stats', statsRoutes);
 
 app.get('/api', (req, res) => {
   res.json({

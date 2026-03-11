@@ -24,6 +24,17 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skip: (req) => {
+    // ✅ Пропустити stats endpoints для дашбордів
+    if (req.path.includes('/api/stats/')) {
+      return true;
+    }
+    // ✅ Пропустити health checks
+    if (req.path === '/health' || req.path === '/api/health') {
+      return true;
+    }
+    return false;
+  },
 });
 
 /**

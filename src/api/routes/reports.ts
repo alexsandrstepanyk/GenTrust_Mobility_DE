@@ -164,18 +164,11 @@ router.get('/', async (req, res, next) => {
         if (category) where.category = category;
 
         // ✅ Eager Loading - уникнення N+1 запиту
+        // Примітка: author може бути null якщо користувач видалений
         const reports = await prisma.report.findMany({
             where,
             include: {
-                author: {
-                    select: {
-                        id: true,
-                        username: true,
-                        firstName: true,
-                        lastName: true,
-                        email: true
-                    }
-                }
+                author: true  // ✅ Простіше включення без select
             },
             orderBy: { createdAt: 'desc' },
             take: parseInt(limit as string)

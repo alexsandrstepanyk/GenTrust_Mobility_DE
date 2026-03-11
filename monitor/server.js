@@ -58,12 +58,12 @@ const SERVICES = [
         name: 'Backend API',
         icon: '🌐',
         port: 3000,  // ✅ ФІКСОВАНИЙ
-        healthCheck: 'http://localhost:3000/api/health',
-        logFile: '/tmp/backend.log',
-        processName: 'nodemon',
+        healthCheck: 'http://localhost:3000/health',
+        logFile: '/tmp/BackendAPIv6.log',
+        processName: 'ts-node',
         commands: {
             cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE',
-            start: 'npm run dev',
+            start: 'npx ts-node src/api-server.ts',
             kill: 'lsof -ti:3000 | xargs kill -9'  // ← Зупиняє ТІЛЬКИ порт 3000
         }
     },

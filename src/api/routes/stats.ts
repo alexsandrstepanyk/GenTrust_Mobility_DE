@@ -4,16 +4,16 @@ import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
-// Dashboard stats endpoint
-router.get('/dashboard', authenticateToken, async (req, res, next) => {
+// Dashboard stats endpoint (public - for dashboards)
+router.get('/dashboard', async (req, res, next) => {
   try {
     // Get reports stats
     const totalReports = await prisma.report.count();
     const pendingReports = await prisma.report.count({
       where: { status: 'PENDING' }
     });
-    const resolvedReports = await prisma.report.count({
-      where: { status: 'RESOLVED' }
+    const approvedReports = await prisma.report.count({
+      where: { status: 'APPROVED' }
     });
     const inProgressReports = await prisma.report.count({
       where: { status: 'IN_PROGRESS' }
@@ -71,7 +71,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
         total: totalReports,
         pending: pendingReports,
         inProgress: inProgressReports,
-        resolved: resolvedReports,
+        approved: approvedReports,
         byCategory: reportsByCategory.map(cat => ({
           category: cat.category || 'Інше',
           count: cat._count
