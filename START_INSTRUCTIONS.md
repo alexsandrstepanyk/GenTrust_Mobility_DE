@@ -1,316 +1,199 @@
-# 🚀 START.SH - ІНСТРУКЦІЯ ЗАПУСКУ
+# 🚀 GENTRUST MOBILITY - ІНСТРУКЦІЯ З ЗАПУСКУ
 
-**Дата:** 2026-03-08
-**Версія:** v5.3.2
-**Статус:** ✅ ВСІ СЕРВІСИ ПРАЦЮЮТЬ
-
----
-
-## 📋 ПОРЯДОК ЗАПУСКУ СЕРВІСІВ
-
-### start.sh запускає сервіси в такому порядку:
-
-```bash
-# 1️⃣ СИСТЕМА МОНІТОРИНГУ (порт 9000)
-✅ monitor/server.js → http://localhost:9000
-   - Моніторинг всіх сервісів
-   - Real-time логи
-   - Статус портів
-
-# 2️⃣ BACKEND API (порт 3000) - ЗАВЖДИ ПЕРШИМ!
-✅ npm run api → http://localhost:3000/api
-   - API для всіх дашбордів
-   - Боти (Master, City Hall, Quest Provider, Municipal)
-   - Prisma ORM
-   - Gemini AI
-
-# 3️⃣ CITY-HALL DASHBOARD (порт 5173)
-✅ npm run dev (city-hall-dashboard) → http://localhost:5173
-   - Мерія бачить ВСІ звіти (100+)
-   - Статистика по всіх 8 департаментах
-   - AI Recommendations
-   - Модерація звітів
-
-# 4️⃣ ADMIN PANEL (порт 5174)
-✅ npm run dev (admin-panel) → http://localhost:5174
-   - Управління користувачами
-   - Модерація
-   - Статистика
-
-# 5️⃣ DEPARTMENT DASHBOARD BASE (порт 5175)
-✅ npm run dev (department-dashboard) → http://localhost:5175
-   - Базовий шаблон для департаментів
-
-# 6️⃣ 8 ДЕПАРТАМЕНТІВ (порти 5180-5187)
-✅ Кожен департамент на СВІЙ фіксований порт:
-
-5180 → departments/roads (🛣️ Дороги)
-5181 → departments/lighting (💡 Освітлення)
-5182 → departments/waste (🗑️ Сміття)
-5183 → departments/parks (🌳 Парки)
-5184 → departments/water (🚰 Вода)
-5185 → departments/transport (🚌 Транспорт)
-5186 → departments/ecology (🌿 Екологія)
-5187 → departments/vandalism (🎨 Вандалізм)
-
-Кожен департамент:
-- ✅ Власна БД (databases/{dept}_dept.db)
-- ✅ 10-16 тестових звітів
-- ✅ Ідентичний функціонал
-- ✅ Ідентичний дизайн
-- ✅ Vite proxy на /api
-```
+**Версія:** v6.0.6  
+**Дата:** 2026-03-23
 
 ---
 
-## 🎯 ЯК ЗАПУСТИТИ
+## 📋 ОПЦІЇ ЗАПУСКУ
 
-### 1. Основний запуск (всі сервіси):
+### 1. Запуск всіх сервісів
+
 ```bash
 cd /Users/apple/Desktop/GenTrust_Mobility_DE
 ./start.sh
 ```
 
-### 2. Тільки API (без ботів):
+**Запускає:**
+- Backend API (3000)
+- Monitor Dashboard (9000)
+- City-Hall Dashboard (5173)
+- Admin Panel (5174)
+- 8 Департаментів (5180-5187)
+
+**Час запуску:** ~60 секунд
+
+---
+
+### 2. Запуск тільки Expo Parent (НОВЕ!)
+
 ```bash
+cd /Users/apple/Desktop/GenTrust_Mobility_DE
+./start.sh --parent-only
+```
+
+**Запускає:**
+- Expo Parent App (8083)
+
+**Час запуску:** ~15 секунд
+
+**URL:** `exp://192.168.178.34:8083`  
+**Логін:** `admin@parent.com` / `admin`
+
+---
+
+### 3. Запуск тільки Backend API
+
+```bash
+cd /Users/apple/Desktop/GenTrust_Mobility_DE
 ./start.sh --api-only
 ```
 
-### 3. Тільки Staff Panel:
-```bash
-./start.sh --staff-only
-```
+**Запускає:**
+- Backend API (3000) без Telegram ботів
 
-### 4. Тільки Admin Panel:
+**URL:** `http://localhost:3000/api`
+
+---
+
+### 4. Запуск тільки Admin Panel
+
 ```bash
+cd /Users/apple/Desktop/GenTrust_Mobility_DE
 ./start.sh --admin-only
 ```
 
-### 5. Тільки Department Dashboard:
+**Запускає:**
+- Admin Panel (5174)
+
+**URL:** `http://localhost:5174`  
+**Логін:** `admin` / `admin`
+
+---
+
+### 5. Запуск тільки Department Dashboard
+
 ```bash
+cd /Users/apple/Desktop/GenTrust_Mobility_DE
 ./start.sh --dept-only
 ```
 
-### 6. З мобільними додатками:
+**Запускає:**
+- Department Dashboard Base (5175)
+
+**URL:** `http://localhost:5175`
+
+---
+
+## 🛑 ЗУПИНКА
+
+### Зупинити всі сервіси:
+
 ```bash
-./start.sh --with-all-apps
+killall -9 node npm vite expo ts-node nodemon
+```
+
+### Зупинити по портах:
+
+```bash
+lsof -ti:3000 | xargs kill -9  # Backend
+lsof -ti:9000 | xargs kill -9  # Monitor
+lsof -ti:5173 | xargs kill -9  # City-Hall
+lsof -ti:5174 | xargs kill -9  # Admin
+lsof -ti:8083 | xargs kill -9  # Expo Parent
 ```
 
 ---
 
-## 📊 ПОРТИ ВСІХ СЕРВІСІВ
+## 📱 EXPO PARENT - ПІДКЛЮЧЕННЯ
 
-| Сервіс | Порт | URL | Лог | Статус |
-|--------|------|-----|-----|--------|
-| **Backend API** | 3000 | http://localhost:3000/api | /tmp/BackendAPI.log | ✅ |
-| **Monitor** | 9000 | http://localhost:9000 | /tmp/Monitor.log | ✅ |
-| **City-Hall** | 5173 | http://localhost:5173 | /tmp/City-HallDashboard.log | ✅ |
-| **Admin Panel** | 5174 | http://localhost:5174 | /tmp/AdminPanel.log | ✅ |
-| **Dept Base** | 5175 | http://localhost:5175 | /tmp/DepartmentDashboard.log | ✅ |
-| **Roads** | 5180 | http://localhost:5180 | /tmp/roads.log | ✅ |
-| **Lighting** | 5181 | http://localhost:5181 | /tmp/lighting.log | ✅ |
-| **Waste** | 5182 | http://localhost:5182 | /tmp/waste.log | ✅ |
-| **Parks** | 5183 | http://localhost:5183 | /tmp/parks.log | ✅ |
-| **Water** | 5184 | http://localhost:5184 | /tmp/water.log | ✅ |
-| **Transport** | 5185 | http://localhost:5185 | /tmp/transport.log | ✅ |
-| **Ecology** | 5186 | http://localhost:5186 | /tmp/ecology.log | ✅ |
-| **Vandalism** | 5187 | http://localhost:5187 | /tmp/vandalism.log | ✅ |
+### На телефоні:
+
+1. Відкрийте **Expo Go**
+2. Введіть: `exp://192.168.178.34:8083`
+3. Натисніть "Load"
+4. Логін: `admin@parent.com` / `admin`
+
+### Зміна мови:
+
+1. Профіль → Налаштування → Мова
+2. Обрати: English / Deutsch / Українська / Русский / Français
 
 ---
 
-## 🔧 ПРАВИЛА ЗАПУСКУ
+## 📊 ПЕРЕВІРКА СТАТУСУ
 
-### 1. Фіксовані порти:
-```
-✅ Кожен сервіс має СВІЙ фіксований порт (назавжди)
-✅ Ніхто інший НЕ МАЄ ПРАВА займати чужий порт
-✅ Якщо порт зайнятий - ВБИВАЄМО порушника
-```
+### Monitor Dashboard:
 
-### 2. Порядок запуску:
-```
-✅ 1. Monitor (9000) - моніторинг
-✅ 2. Backend API (3000) - база для всіх
-✅ 3. City-Hall Dashboard (5173) - після Backend
-✅ 4. Admin Panel (5174) - після Backend
-✅ 5. Department Dashboard (5175) - після Backend
-✅ 6. 8 Департаментів (5180-5187) - після Backend
-```
-
-### 3. Перевірка готовності Backend:
 ```bash
-# Чекаємо поки Backend буде готовий (до 60 сек)
-curl http://localhost:3000/api/health
-# Має повернути: {"status":"ok"}
+open http://localhost:9000
 ```
 
-### 4. Безпека портів:
+### API Status:
+
+```bash
+curl http://localhost:9000/api/status | python3 -m json.tool
 ```
-⚠️  Твій діапазон: 3000 - 9000
-❌  ЗАБОРОНЕНО чіпати порти ПОЗА цим діапазоном
-❌  НЕ зупиняти: MySQL (3306), Redis (6379), MongoDB (27017), PostgreSQL (5432)
+
+### Тестова команда:
+
+```bash
+./test_system_full.sh
 ```
 
 ---
 
-## 🧪 ПЕРЕВІРКА РОБОТИ
+## 📁 ВСІ ПОРТИ
 
-### 1. Відкрити Monitor:
-```
-http://localhost:9000
-```
-- Показує статус всіх сервісів
-- Real-time логи
-- Зайняті порти
-
-### 2. Перевірити Backend API:
-```bash
-curl http://localhost:3000/api/reports/department/roads?limit=50
-# Має повернути: 16 звітів
-```
-
-### 3. Перевірити City-Hall:
-```
-http://localhost:5173/reports
-# Має показати: 100+ звітів
-```
-
-### 4. Перевірити департаменти:
-```
-http://localhost:5180/reports  # Roads - 16 звітів
-http://localhost:5181/reports  # Lighting - 15 звітів
-http://localhost:5182/reports  # Waste - 16 звітів
-...
-```
-
-### 5. Console log (F12):
-```
-📂 ROADS: Завантажено 16 звітів (фільтр: ALL)
-📂 LIGHTING: Завантажено 15 звітів (фільтр: ALL)
-📂 WASTE: Завантажено 16 звітів (фільтр: ALL)
-```
+| Сервіс | Порт | URL |
+|--------|------|-----|
+| Backend API | 3000 | http://localhost:3000/api |
+| Monitor Dashboard | 9000 | http://localhost:9000 |
+| City-Hall Dashboard | 5173 | http://localhost:5173 |
+| Admin Panel | 5174 | http://localhost:5174 |
+| Department Base | 5175 | http://localhost:5175 |
+| Roads Department | 5180 | http://localhost:5180 |
+| Lighting Department | 5181 | http://localhost:5181 |
+| Waste Department | 5182 | http://localhost:5182 |
+| Parks Department | 5183 | http://localhost:5183 |
+| Water Department | 5184 | http://localhost:5184 |
+| Transport Department | 5185 | http://localhost:5185 |
+| Ecology Department | 5186 | http://localhost:5186 |
+| Vandalism Department | 5187 | http://localhost:5187 |
+| Expo Parent | 8083 | exp://192.168.178.34:8083 |
 
 ---
 
-## 🛠️ ВИРІШЕННЯ ПРОБЛЕМ
+## 🐛 ВИРІШЕННЯ ПРОБЛЕМ
 
-### Проблема 1: Порт зайнятий
+### Backend не запускається:
+
 ```bash
-# Вбити процес на порту
-lsof -ti:5180 | xargs kill -9
-
-# Перезапустити сервіс
-./start.sh
-```
-
-### Проблема 2: Backend не запускається
-```bash
-# Перевірити логи
-tail -f /tmp/BackendAPI.log
-
-# Перезапустити
 lsof -ti:3000 | xargs kill -9
 npm run api
 ```
 
-### Проблема 3: Vite не запускається
-```bash
-# Очистити кеш
-cd departments/roads
-rm -rf node_modules/.vite
+### Expo Parent не запускається:
 
-# Перезапустити
-npm run dev
+```bash
+lsof -ti:8083 | xargs kill -9
+cd mobile-parent
+node node_modules/@expo/cli/build/bin/cli start --port 8083 --lan --clear
 ```
 
-### Проблема 4: CORS помилки
-```bash
-# Перевірити api.ts
-grep "API_BASE_URL" departments/roads/src/lib/api.ts
-# Має бути: const API_BASE_URL = '/api';
+### Monitor Dashboard не працює:
 
-# Якщо ні - виправити і перезапустити Vite
+```bash
+lsof -ti:9000 | xargs kill -9
+cd monitor
+node server.js
 ```
 
 ---
 
-## 📝 ЛОГИ СЕРВІСІВ
-
-### Перегляд логів:
-```bash
-# Backend API
-tail -f /tmp/BackendAPI.log
-
-# Monitor
-tail -f /tmp/Monitor.log
-
-# City-Hall
-tail -f /tmp/City-HallDashboard.log
-
-# Департаменти
-tail -f /tmp/roads.log
-tail -f /tmp/lighting.log
-tail -f /tmp/waste.log
-# ... і т.д.
-
-# Всі логи одночасно
-tail -f /tmp/*.log
-```
+**Готово! Ця інструкція дозволяє швидко запустити проект! 🚀**
 
 ---
 
-## ✅ ФІНАЛЬНА ПЕРЕВІРКА
-
-```bash
-# 1. Перевірити всі порти
-lsof -i :3000,5173,5174,5175,5180,5181,5182,5183,5184,5185,5186,5187,9000 | grep LISTEN
-
-# 2. Перевірити API
-curl http://localhost:3000/api/reports/department/roads?limit=50 | python3 -c "import sys,json; print(f'Roads: {len(json.load(sys.stdin))} звітів')"
-
-# 3. Перевірити дашборди
-for port in 5180 5181 5182; do
-  curl -s "http://localhost:$port/" | grep -o "<title>.*</title>"
-done
-```
-
-**Очікуваний результат:**
-```
-✅ Всі порти LISTEN
-✅ Roads: 16 звітів
-✅ <title>🛣️ Дороги - GenTrust Mobility</title>
-✅ <title>💡 Освітлення - GenTrust Mobility</title>
-✅ <title>🗑️ Сміття - GenTrust Mobility</title>
-```
-
----
-
-## 🎯 ВИСНОВКИ
-
-### ✅ start.sh запускає:
-1. ✅ Monitor (9000) - моніторинг
-2. ✅ Backend API (3000) - база
-3. ✅ City-Hall Dashboard (5173)
-4. ✅ Admin Panel (5174)
-5. ✅ Department Dashboard Base (5175)
-6. ✅ 8 Департаментів (5180-5187)
-
-### ✅ Всі сервіси працюють ідентично:
-- ✅ Однаковий дизайн
-- ✅ Однаковий функціонал
-- ✅ Однакові API endpoints
-- ✅ Однакові фільтри
-- ✅ Однакові компоненти
-
-### ✅ Все задокументовано:
-- ✅ start.sh - порядок запуску
-- ✅ ROADMAP_UPDATED.md - історія змін
-- ✅ DEPARTMENT_UNIFICATION_COMPLETE.md - уніфікація
-- ✅ DESIGN_UNIFICATION_VERIFICATION.md - дизайн
-- ✅ FUNCTIONAL_UNIFICATION_VERIFICATION.md - функціонал
-
----
-
-**Generated:** 2026-03-08
-**Version:** v5.3.2
-**Status:** ✅ All Services Running
+*Створено: 2026-03-23*  
+*Версія: v6.0.6*

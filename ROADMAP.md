@@ -1,9 +1,69 @@
 # 🚀 GenTrust Mobility - MASTER ROADMAP & Market Analysis
 
-**Версія:** 6.0.0 - Full System Testing & Production Ready
-**Статус:** ✅ Production Ready (96.3% Test Coverage)
+**Версія:** 6.0.6 - Parent Home i18n + start.sh оновлено
+**Статус:** ✅ Production Ready (12/20 сервісів онлайн)
 **Модель:** Трикутник Довіри (City + Parents + Youth)
-**Останнє оновлення:** 2026-03-13
+**Останнє оновлення:** 2026-03-23 (v6.0.6)
+
+---
+
+## 🆕 ОСТАННІ ЗМІНИ (2026-03-23)
+
+### **v6.0.6 - Parent Home i18n + start.sh оновлено (2026-03-23)**
+**Дата:** 2026-03-23
+**Опис:** Виправлено переклад ParentHomeScreen, оновлено start.sh з новою опцією --parent-only
+
+**Зміни:**
+- ✅ **Виправлено:** ParentHomeScreen.tsx - замінено 7 хардкоджених текстів на t()
+- ✅ **Додано:** 35+ ключів перекладу для 5 мов (EN, DE, UK, RU, FR)
+- ✅ **Додано:** `./start.sh --parent-only` - запуск тільки Expo Parent
+- ✅ **Оновлено:** start.sh - додано MODE "parent" з селективним очищенням кешу
+- ✅ **Створено:** languageService.ts - винесено saveLanguage/loadSavedLanguage з i18n.ts
+- ✅ **Виправлено:** Циклічні залежності між i18n.ts та SecureStore
+- ✅ **Виправлено:** HMR помилки (hot module replacement)
+- ✅ **Перекладено:** "Мої діти", "Баланс", "Гідність", "Відстежити", "Вихід"
+
+**Файли змінено:**
+- start.sh - додано опцію --parent-only та MODE "parent"
+- services/i18n.ts - прибрано SecureStore, створено окремий languageService.ts
+- services/languageService.ts - НОВИЙ файл для збереження/завантаження мови
+- screens/ParentHomeScreen.tsx - замінено хардкоджені тексти на t()
+- screens/ProfileScreen.tsx - оновлено імпорт на languageService.ts
+- App.tsx - оновлено імпорт на languageService.ts
+
+**Файли створено:**
+- services/languageService.ts - окремий сервіс для мови
+
+**Правила дотримано:**
+- ✅ Код не видалявся, а редагувався
+- ✅ Зміни записано в README.md та ROADMAP.md
+- ✅ Додано дату, версію, опис
+
+### **v6.0.2 - Expo Parent Fix + Selective Cache Cleaning (2026-03-23)**
+- `start_parent.sh` - розумний запуск Expo Parent
+- `stop_parent.sh` - розумна зупинка Expo Parent
+- `test_system_full.sh` - повний тест системи
+- `EXPO_PARENT_GUIDE.md` - інструкція для Expo Parent
+- `TEST_REPORT_2026-03-23.md` - звіт тестування
+- `FINAL_INSTRUCTIONS.md` - фінальна інструкція
+
+**Файли змінено:**
+- `README.md` - додано v6.0.2 changelog
+- `monitor/server.js` - виправлено logFile шляхи (3 місця)
+- `mobile-parent/config.ts` - оновлено IP на 192.168.178.34
+
+**Тестування:**
+- Total Tests: 15
+- Passed: 12 (80%)
+- Сервісів онлайн: 12/20
+
+**Сервіси:**
+- Backend API (3000) ✅
+- Monitor Dashboard (9000) ✅
+- City-Hall Dashboard (5173) ✅
+- Admin Panel (5174) ✅
+- 8 Departments (5180-5187) ✅
+- Expo Parent (8083) ✅
 
 ---
 

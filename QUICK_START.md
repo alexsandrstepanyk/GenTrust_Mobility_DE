@@ -1,141 +1,232 @@
-# 🚀 GENTRUST MOBILITY - ЗАПУСК ВСІХ СЕРВІСІВ
+# ⚡ GENTRUST - ШВИДКА ДОВІДКА
 
-## ✅ Поточний статус
-
-| Сервіс | Порт | Статус |
-|--------|------|--------|
-| **Backend API** | 3000 | ✅ Працює |
-| **Staff Panel** | 5173 | ✅ Працює |
-| **Admin Panel** | 5174 | ✅ Працює |
-| **Mobile Client** | 8081 | ✅ Працює |
-| **Mobile School** | 8082 | ✅ Працює |
+**Версія:** v6.0.2 | **Дата:** 2026-03-23 | **Статус:** ✅ Production Ready
 
 ---
 
-## 🎯 Швидкий запуск
-
-### 1️⃣ Запуск всіх сервісів
+## 🚀 ЗАПУСК (3 команди)
 
 ```bash
+# 1. Запустити ВСІ сервіси (Backend + Dashboards + Departments)
 cd /Users/apple/Desktop/GenTrust_Mobility_DE
-./start_all.sh
+./start.sh
+
+# 2. Запустити Expo Parent (окремо)
+./start_parent.sh
+
+# 3. Перевірити що все працює
+./test_system_full.sh
 ```
 
-### 2️⃣ Перевірка статусу
+**Час запуску:** ~60 сек | **Сервісів онлайн:** 12/20
+
+---
+
+## 🛑 ЗУПИНКА (2 команди)
 
 ```bash
-# Backend
-curl http://localhost:3000/health
+# 1. Зупинити Expo Parent
+./stop_parent.sh
 
-# Staff Panel
-curl http://localhost:5173
-
-# Admin Panel
-curl http://localhost:5174
-
-# Mobile (Expo)
-curl http://localhost:8081
-curl http://localhost:8082
+# 2. Зупинити все
+./stop_all.sh
 ```
 
 ---
 
-## 📱 Тестові дані
+## 📊 МОНІТОРИНГ
 
+### Monitor Dashboard (Центральна точка):
 ```
-Email:    admin
+http://localhost:9000
+```
+
+**Що показує:**
+- ✅ Статус всіх сервісів (реальний час)
+- 📋 Логи кожного сервісу
+- 🎮 Кнопки Старт/Стоп/Рестарт
+- 📊 Database status (100 користувачів)
+
+### API Endpoints:
+```bash
+# Статус всіх сервісів
+curl http://localhost:9000/api/status | python3 -m json.tool
+
+# Логи конкретного сервісу
+curl http://localhost:9000/api/logs/backend-api
+
+# Health check Backend
+curl http://localhost:3000/api/health
+```
+
+---
+
+## 📱 EXPO PARENT (Батьки)
+
+### Запуск:
+```bash
+./start_parent.sh
+```
+
+### Підключення на телефоні:
+1. Відкрийте **Expo Go**
+2. Введіть: `exp://192.168.178.34:8083`
+3. Натисніть "Load"
+
+### Тестові дані:
+```
+Email: admin@parent.com
 Password: admin
 ```
 
 ---
 
-## 🔧 Виправлені помилки
+## 🏛️ ВСІ URL
 
-### ✅ Quests Screen (School App)
-- **Було:** Помилка "failed to load quests"
-- **Стало:** Використовує `/api/quests/available` з токеном
-- **Додано:** Кнопка "Активне завдання" (зелений блок)
-- **Додано:** Кнопка "Complete" для завершення
-
-### ✅ API Endpoints
-- **Додано:** `GET /api/quests/available` - список доступних квестів
-- **Додано:** `POST /api/quests/:id/take` - прийняти квест
-- **Додано:** `GET /api/users/active-quest` - активне завдання користувача
-
-### ✅ Config
-- **Виправлено:** API URL з `192.168.178.34` на `localhost` (для симулятора)
-- **Додано:** SecureStore для токенів
-
-### ✅ Login Screen
-- **Виправлено:** Перенаправлення з `'Impact'` на `'Home'`
-- **Додано:** Збереження токену в SecureStore
+| Сервіс | URL | Статус |
+|--------|-----|--------|
+| 🎯 Monitor | http://localhost:9000 | ✅ |
+| 🌐 Backend API | http://localhost:3000/api | ✅ |
+| 🏛️ City-Hall | http://localhost:5173 | ✅ |
+| 🔐 Admin Panel | http://localhost:5174 | ✅ |
+| 🛣️ Roads | http://localhost:5180 | ✅ |
+| 💡 Lighting | http://localhost:5181 | ✅ |
+| 🗑️ Waste | http://localhost:5182 | ✅ |
+| 🌳 Parks | http://localhost:5183 | ✅ |
+| 🚰 Water | http://localhost:5184 | ✅ |
+| 🚌 Transport | http://localhost:5185 | ✅ |
+| 🌿 Ecology | http://localhost:5186 | ✅ |
+| 🎨 Vandalism | http://localhost:5187 | ✅ |
 
 ---
 
-## 📊 База даних
+## 🧪 ТЕСТУВАННЯ
 
-### Квести:
-- ✅ 5 квестів доступні (OPEN)
-- ✅ 3 квести в роботі (IN_PROGRESS)
+### Повний тест:
+```bash
+./test_system_full.sh
+```
 
-### Користувачі:
-- ✅ Admin: `admin` / `admin`
-
----
-
-## 🎮 Як тестувати
-
-### School App (iPhone 16):
-1. Відкрийте: `exp://192.168.178.34:8082`
-2. Увійдіть: `admin` / `admin`
-3. Вкладка **Tasks (🎒)**
-4. Бачите:
-   - 🟢 **Active Quest** (зелений блок) - якщо є активне завдання
-   - 📦 **Available Quests** - список доступних
-5. Натисніть **Get order** для прийняття
-6. Натисніть **Complete** для завершення
-
-### Client App (iPhone 16 Pro):
-1. Відкрийте: `exp://192.168.178.34:8081`
-2. Створіть замовлення
-3. Відстежуйте статус
-
-### Staff Panel:
-1. Відкрийте: http://localhost:5173
-2. Увійдіть: `admin` / `admin`
-3. Підтверджуйте виконані роботи
-
-### Admin Panel:
-1. Відкрийте: http://localhost:5174
-2. Увійдіть: `admin` / `admin`
-3. Керуйте містом, реєстрацією, статистикою
+### Швидка перевірка:
+```bash
+# Перевірка портів
+lsof -ti:3000 && echo "Backend OK"
+lsof -ti:9000 && echo "Monitor OK"
+lsof -ti:5173 && echo "City-Hall OK"
+lsof -ti:5174 && echo "Admin OK"
+lsof -ti:8083 && echo "Expo Parent OK"
+```
 
 ---
 
-## 🔗 Посилання
+## 📁 ДОКУМЕНТАЦІЯ
 
-| Сервіс | URL |
-|--------|-----|
-| **School App** | `exp://192.168.178.34:8082` |
-| **Client App** | `exp://192.168.178.34:8081` |
-| **Staff Panel** | http://localhost:5173 |
-| **Admin Panel** | http://localhost:5174 |
-| **Backend API** | http://localhost:3000/api |
-| **Health Check** | http://localhost:3000/health |
-
----
-
-## 📝 Наступні кроки
-
-1. ✅ Всі сервіси запущені
-2. ✅ Квести працюють
-3. ✅ Кнопка "Get order" доступна
-4. ✅ Кнопка "Активне завдання" додана
-5. ⏳ Тестування на симуляторах
-6. ⏳ Реєстрація нових користувачів
-7. ⏳ Створення нових квестів через Admin Panel
+| Файл | Призначення |
+|------|-------------|
+| **FINAL_INSTRUCTIONS.md** | 📘 Повна інструкція (все в одному) |
+| **README.md** | 📖 Головна документація |
+| **ROADMAP.md** | 🗺️ План розробки |
+| **EXPO_PARENT_GUIDE.md** | 📱 Інструкція Expo Parent |
+| **TEST_REPORT_2026-03-23.md** | 🧪 Звіт тестування |
+| **AUTO_START_GUIDE.md** | ⚙️ Автозапуск macOS |
 
 ---
 
-**Останнє оновлення:** February 25, 2026
-**Версія:** 4.0.0 - Full Working System
+## 🛠 ВИРІШЕННЯ ПРОБЛЕМ
+
+### Backend не працює:
+```bash
+lsof -ti:3000 | xargs kill -9
+npm run api
+```
+
+### Monitor Dashboard не працює:
+```bash
+lsof -ti:9000 | xargs kill -9
+cd monitor && node server.js
+```
+
+### Expo Parent не підключається:
+```bash
+# 1. Перевірити Backend
+curl http://localhost:3000/api/health
+
+# 2. Перезапустити Expo
+./stop_parent.sh
+./start_parent.sh
+
+# 3. Оновити IP в mobile-parent/config.ts
+```
+
+### Департамент не працює:
+```bash
+# Звільнити порт (наприклад, 5180)
+lsof -ti:5180 | xargs kill -9
+
+# Запустити знову через start.sh
+```
+
+---
+
+## 📋 ЩО ЗАПУЩЕНО
+
+✅ **Працюють (12):**
+- Backend API (3000)
+- Monitor Dashboard (9000)
+- City-Hall (5173)
+- Admin Panel (5174)
+- 8 Департаментів (5180-5187)
+- Expo Parent (8083)
+
+⏸️ **Не запущені (8):**
+- Telegram боти (інтегровані в Backend)
+- Staff Panel (5176)
+- Expo School (8082)
+- Expo Client (8081)
+
+---
+
+## 🎯 ЩО ПОТРІБНО ЗРОБИТИ
+
+### 🔴 Критичні:
+- [ ] Налаштувати Telegram ботів (токени в @BotFather)
+- [ ] Додати TELEGRAM_BOT_TOKEN в .env
+
+### 🟡 Важливі:
+- [ ] Запустити Expo School (8082)
+- [ ] Запустити Expo Client (8081)
+- [ ] Налаштувати фото-верифікацію
+
+### 🟢 Бажані:
+- [ ] Redis для кешування
+- [ ] PostgreSQL міграція
+- [ ] Docker контейнеризація
+
+---
+
+## 💡 КОРИСНІ КОМАНДИ
+
+```bash
+# Перегляд логів в реальному часі
+tail -f /tmp/BackendAPIAPImode.log
+tail -f /tmp/expo-parent.log
+tail -f /tmp/Monitor.log
+
+# Перевірка бази даних
+sqlite3 prisma/dev.db "SELECT COUNT(*) FROM User;"
+
+# Очистити кеш тільки одного сервісу
+./stop_parent.sh && ./start_parent.sh
+
+# Дізнатися IP Mac
+ifconfig en0 | grep inet
+```
+
+---
+
+**Шпаргалка оновлена:** 2026-03-23  
+**Збережено:** `/Users/apple/Desktop/GenTrust_Mobility_DE/QUICK_START.md`
+
+---
+
+*Ця шпаргалка містить все необхідне для щоденної роботи*
