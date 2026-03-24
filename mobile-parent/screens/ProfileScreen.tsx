@@ -17,6 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '../config';
+import { saveLanguage } from '../services/languageService';
 
 const languages = [
     { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -52,6 +53,9 @@ export default function ProfileScreen({ navigation }: any) {
     const [error, setError] = useState<string | null>(null);
     const [languageModalVisible, setLanguageModalVisible] = useState(false);
     const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
+    const [editModalVisible, setEditModalVisible] = useState(false);
+    const [editForm, setEditForm] = useState({ firstName: '', lastName: '', email: '' });
+    const [saving, setSaving] = useState(false);
     const currentLanguage = languages.find(l => i18n.language?.startsWith(l.code)) || languages[1];
 
     useEffect(() => {
@@ -136,9 +140,68 @@ export default function ProfileScreen({ navigation }: any) {
         );
     };
 
-    const changeLanguage = (lang: typeof languages[0]) => {
-        i18n.changeLanguage(lang.code);
+    const changeLanguage = async (lang: typeof languages[0]) => {
+        await saveLanguage(lang.code);
         setLanguageModalVisible(false);
+    };
+
+    const handleEditPress = () => {
+        if (profile) {
+            setEditForm({
+                firstName: profile.firstName || '',
+                lastName: profile.lastName || '',
+                email: profile.email || '',
+            });
+            setEditModalVisible(true);
+        }
+    };
+
+    const handleSaveProfile = async () => {
+        try {
+            setSaving(true);
+            const token = await SecureStore.getItemAsync('userToken');
+            
+            if (!token) {
+                Alert.alert(t('error'), t('logout_confirm_msg'));
+                return;
+            }
+
+            // API запит на оновлення профілю
+            await axios.put(
+                `${API_URL}/auth/profile`,
+                {
+                    firstName: editForm.firstName,
+                    lastName: editForm.lastName,
+                    email: editForm.email,
+                },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            // Оновлюємо локальний стан
+            const updatedProfile = {
+                ...profile!,
+                firstName: editForm.firstName,
+                lastName: editForm.lastName,
+                email: editForm.email,
+            };
+            setProfile(updatedProfile);
+            
+            // Зберігаємо в SecureStore
+            await SecureStore.setItemAsync('userData', JSON.stringify(updatedProfile));
+            
+            Alert.alert(t('success'), t('profile_updated'));
+            setEditModalVisible(false);
+        } catch (err: any) {
+            console.error('Profile update error:', err);
+            Alert.alert(
+                t('error'),
+                err.response?.data?.message || t('failed_to_update_profile')
+            );
+        } finally {
+            setSaving(false);
+        }
     };
 
     if (loading) {
@@ -257,7 +320,7 @@ export default function ProfileScreen({ navigation }: any) {
                     </View>
                 )}
 
-                <TouchableOpacity style={styles.editButton}>
+                <TouchableOpacity style={styles.editButton} onPress={handleEditPress}>
                     <Text style={styles.editButtonText}>✏️ {t('edit_data')}</Text>
                 </TouchableOpacity>
 
@@ -398,6 +461,62 @@ export default function ProfileScreen({ navigation }: any) {
                         >
                             <Text style={styles.closeButtonText}>{t('close')}</Text>
                         </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* ===== EDIT PROFILE MODAL ===== */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={editModalVisible}
+                onRequestClose={() => setEditModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>{t('edit_data')}</Text>
+                        
+                        <Text style={styles.inputLabel}>{t('first_name')}</Text>
+                        <TouchableOpacity
+                            style={styles.inputField}
+                            onPress={() => Alert.alert(t('coming_soon'), t('edit_fields_info'))}
+                        >
+                            <Text style={styles.inputValue}>{editForm.firstName}</Text>
+                        </TouchableOpacity>
+
+                        <Text style={styles.inputLabel}>{t('last_name')}</Text>
+                        <TouchableOpacity
+                            style={styles.inputField}
+                            onPress={() => Alert.alert(t('coming_soon'), t('edit_fields_info'))}
+                        >
+                            <Text style={styles.inputValue}>{editForm.lastName}</Text>
+                        </TouchableOpacity>
+
+                        <Text style={styles.inputLabel}>{t('email')}</Text>
+                        <TouchableOpacity
+                            style={styles.inputField}
+                            onPress={() => Alert.alert(t('coming_soon'), t('edit_fields_info'))}
+                        >
+                            <Text style={styles.inputValue}>{editForm.email}</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.cancelButton]}
+                                onPress={() => setEditModalVisible(false)}
+                            >
+                                <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.saveButton]}
+                                onPress={handleSaveProfile}
+                                disabled={saving}
+                            >
+                                <Text style={styles.saveButtonText}>
+                                    {saving ? t('saving') : t('save')}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </Modal>
@@ -735,5 +854,51 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#1a1a1a',
         marginTop: 8,
+    },
+    // ===== EDIT MODAL STYLES =====
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 8,
+        marginTop: 16,
+    },
+    inputField: {
+        backgroundColor: '#F5F5F5',
+        borderRadius: 12,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    inputValue: {
+        fontSize: 16,
+        color: '#333',
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        marginTop: 24,
+        gap: 12,
+    },
+    modalButton: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    cancelButton: {
+        backgroundColor: '#F0F0F0',
+    },
+    cancelButtonText: {
+        color: '#666',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    saveButton: {
+        backgroundColor: '#007AFF',
+    },
+    saveButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: '600',
     },
 });

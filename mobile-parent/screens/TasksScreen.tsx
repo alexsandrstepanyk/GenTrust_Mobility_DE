@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { useTranslation } from 'react-i18next';
 import { API_URL } from '../config';
 
 interface Child {
@@ -31,6 +32,7 @@ interface PersonalTask {
 }
 
 export default function TasksScreen({ navigation }: any) {
+    const { t } = useTranslation();
     const [children, setChildren] = useState<Child[]>([]);
     const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
     const [tasks, setTasks] = useState<PersonalTask[]>([]);
@@ -114,7 +116,7 @@ export default function TasksScreen({ navigation }: any) {
 
     const handleCreateTask = () => {
         if (!selectedChildId) {
-            return Alert.alert('Оберіть дитину', 'Спочатку оберіть дитину зі списку');
+            return Alert.alert(t('select_child'), t('select_child_first'));
         }
         navigation.navigate('CreateTask', { childId: selectedChildId });
     };

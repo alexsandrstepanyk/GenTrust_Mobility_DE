@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { useTranslation } from 'react-i18next';
 import { API_URL } from '../config';
 
 interface Child {
@@ -27,6 +28,7 @@ interface Child {
 }
 
 export default function ParentHomeScreen({ navigation }: any) {
+    const { t } = useTranslation();
     const [children, setChildren] = useState<Child[]>([]);
     const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -58,7 +60,7 @@ export default function ParentHomeScreen({ navigation }: any) {
             }
         } catch (error: any) {
             console.error('Error fetching children:', error);
-            Alert.alert('Помилка', 'Не вдалося завантажити дітей');
+            Alert.alert(t('error'), t('failed_to_load_children'));
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -78,7 +80,7 @@ export default function ParentHomeScreen({ navigation }: any) {
     const selectedChild = children.find((child) => child.id === selectedChildId) || null;
 
     const openTracking = () => {
-        if (!selectedChildId) return Alert.alert('Оберіть дитину', 'Спочатку оберіть дитину зі списку.');
+        if (!selectedChildId) return Alert.alert(t('select_child'), t('select_child_first'));
         navigation.navigate('ChildTracking', { childId: selectedChildId });
     };
 
@@ -112,21 +114,21 @@ export default function ParentHomeScreen({ navigation }: any) {
 
                 <View style={styles.statsRow}>
                     <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>Баланс</Text>
+                        <Text style={styles.statLabel}>{t('balance')}</Text>
                         <Text style={styles.statValue}>💰 {item.balance.toFixed(2)}€</Text>
                     </View>
                     <View style={styles.statDivider} />
                     <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>Гідність</Text>
+                        <Text style={styles.statLabel}>{t('dignity')}</Text>
                         <Text style={styles.statValue}>⭐ {item.dignityScore}</Text>
                     </View>
                 </View>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.trackButton}
                     onPress={openTracking}
                 >
-                    <Text style={styles.trackButtonText}>📍 Відстежити</Text>
+                    <Text style={styles.trackButtonText}>📍 {t('track')}</Text>
                 </TouchableOpacity>
             </TouchableOpacity>
         );
@@ -144,14 +146,14 @@ export default function ParentHomeScreen({ navigation }: any) {
         <SafeAreaView style={styles.container}>
             <LinearGradient colors={['#3B82F6', '#7C3AED']} style={styles.headerCard}>
                 <View style={styles.headerTopRow}>
-                    <Text style={styles.headerTitle}>👨‍👩‍👧 Мої діти</Text>
+                    <Text style={styles.headerTitle}>👨‍👩‍👧 {t('my_children')}</Text>
                     <TouchableOpacity onPress={handleLogout}>
-                        <Text style={styles.logoutButton}>Вихід</Text>
+                        <Text style={styles.logoutButton}>{t('logout')}</Text>
                     </TouchableOpacity>
                 </View>
                 {selectedChild && (
                     <>
-                        <Text style={styles.selectedLabel}>Активна дитина</Text>
+                        <Text style={styles.selectedLabel}>{t('active_child')}</Text>
                         <Text style={styles.selectedChildName}>
                             {selectedChild.firstName} {selectedChild.lastName}
                         </Text>
@@ -162,8 +164,8 @@ export default function ParentHomeScreen({ navigation }: any) {
             {children.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <Text style={styles.emptyIcon}>👨‍👩‍👧</Text>
-                    <Text style={styles.emptyText}>У вас поки немає прив'язаних дітей</Text>
-                    <Text style={styles.emptySubtext}>Попросіть дитину ввести ваш код при реєстрації</Text>
+                    <Text style={styles.emptyText}>{t('no_children_linked')}</Text>
+                    <Text style={styles.emptySubtext}>{t('ask_child_to_enter_code')}</Text>
                 </View>
             ) : (
                 <FlatList

@@ -1,6 +1,9 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+// Завантажуємо збережену мову
+const SAVED_LANGUAGE_KEY = 'saved_language';
+
 const resources = {
     en: {
         translation: {
@@ -125,7 +128,66 @@ const resources = {
             privacy_8_heading: "8. Right to Complaint",
             privacy_9_heading: "9. Changes",
             privacy_date: "Status: February 2026",
-            privacy_text: "GenTrust Mobility GmbH\nHauptstraße 123, 10115 Berlin\n\nWe process personal data in accordance with GDPR Art. 6. You have rights to information, rectification, deletion, and objection.\n\nFor details: datenschutz@gentrust.de"
+            privacy_text: "GenTrust Mobility GmbH\nHauptstraße 123, 10115 Berlin\n\nWe process personal data in accordance with GDPR Art. 6. You have rights to information, rectification, deletion, and objection.\n\nFor details: datenschutz@gentrust.de",
+            // Edit Profile
+            profile_updated: "Profile updated successfully!",
+            failed_to_update_profile: "Failed to update profile. Please try again.",
+            saving: "Saving...",
+            save: "Save",
+            coming_soon: "Coming Soon",
+            edit_fields_info: "Profile editing will be available in the next update. Contact support for immediate changes.",
+            // Parent Home Screen
+            error: "Error",
+            failed_to_load_children: "Failed to load children",
+            select_child: "Select Child",
+            select_child_first: "Please select a child from the list first.",
+            tracking: "Tracking",
+            tasks: "Tasks",
+            // Tasks Screen
+            no_tasks: "No tasks available",
+            create_task: "Create Task",
+            // Create Task Screen
+            enter_task_title: "Enter task title",
+            task_created: "Task created!",
+            // Pending Approvals
+            pending_approvals: "Pending Approvals",
+            failed_to_load_approvals: "Failed to load approval requests",
+            approved: "Approved",
+            task_confirmed: "Task confirmed, reward credited.",
+            failed_to_approve: "Failed to approve task",
+            rejected: "Rejected",
+            task_rejected: "Task rejected.",
+            failed_to_reject: "Failed to reject task",
+            // Parent Register
+            fill_required_fields: "Please fill in all required fields",
+            parent_registration_complete: "Parent registration completed",
+            registration_failed: "Registration failed",
+            // Quest Details
+            failed_to_resolve_address: "Failed to resolve address on map.",
+            location_required: "Location Required",
+            please_enable_location: "Please enable location to build a route.",
+            failed_to_open_navigation: "Failed to open navigation.",
+            invalid_code: "Invalid Code",
+            pickup_code_incorrect: "Pickup code is incorrect.",
+            pickup_confirmed: "Pickup Confirmed",
+            you_can_now_deliver: "You can now deliver the package.",
+            no_delivery_code: "No Delivery Code",
+            this_quest_does_not_require_delivery_code: "This quest does not require a delivery code.",
+            delivery_code_incorrect: "Delivery code is incorrect. Please try again.",
+            login_required: "Login Required",
+            please_login_to_complete_quest: "Please login to complete quest.",
+            location_needed: "Location Needed",
+            please_enable_location_to_complete: "Please enable location to complete the task.",
+            completed: "Completed",
+            quest_completed: "Quest completed successfully!",
+            // Parent Home Screen - UI
+            my_children: "My Children",
+            active_child: "Active Child",
+            balance: "Balance",
+            dignity: "Dignity",
+            track: "Track",
+            no_children_linked: "You have no children linked yet",
+            ask_child_to_enter_code: "Ask your child to enter your code during registration"
         }
     },
     de: {
@@ -251,7 +313,66 @@ const resources = {
             privacy_8_heading: "8. Beschwerderecht",
             privacy_9_heading: "9. Änderungen",
             privacy_date: "Stand: Februar 2026",
-            privacy_text: "GenTrust Mobility GmbH\nHauptstraße 123, 10115 Berlin\n\nWir verarbeiten personenbezogene Daten gemäß DSGVO Art. 6. Sie haben Rechte auf Auskunft, Berichtigung, Löschung und Widerspruch.\n\nDetails: datenschutz@gentrust.de"
+            privacy_text: "GenTrust Mobility GmbH\nHauptstraße 123, 10115 Berlin\n\nWir verarbeiten personenbezogene Daten gemäß DSGVO Art. 6. Sie haben Rechte auf Auskunft, Berichtigung, Löschung und Widerspruch.\n\nDetails: datenschutz@gentrust.de",
+            // Edit Profile
+            profile_updated: "Profil erfolgreich aktualisiert!",
+            failed_to_update_profile: "Profilaktualisierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+            saving: "Speichern...",
+            save: "Speichern",
+            coming_soon: "Demnächst",
+            edit_fields_info: "Die Profilbearbeitung ist im nächsten Update verfügbar. Kontaktieren Sie den Support für sofortige Änderungen.",
+            // Parent Home Screen
+            error: "Fehler",
+            failed_to_load_children: "Kinder konnten nicht geladen werden",
+            select_child: "Kind auswählen",
+            select_child_first: "Bitte wählen Sie zunächst ein Kind aus der Liste aus.",
+            tracking: "Verfolgung",
+            tasks: "Aufgaben",
+            // Tasks Screen
+            no_tasks: "Keine Aufgaben verfügbar",
+            create_task: "Aufgabe erstellen",
+            // Create Task Screen
+            enter_task_title: "Aufgabentitel eingeben",
+            task_created: "Aufgabe erstellt!",
+            // Pending Approvals
+            pending_approvals: "Ausstehende Genehmigungen",
+            failed_to_load_approvals: "Genehmigungsanfragen konnten nicht geladen werden",
+            approved: "Genehmigt",
+            task_confirmed: "Aufgabe bestätigt, Belohnung gutgeschrieben.",
+            failed_to_approve: "Genehmigung fehlgeschlagen",
+            rejected: "Abgelehnt",
+            task_rejected: "Aufgabe abgelehnt.",
+            failed_to_reject: "Ablehnung fehlgeschlagen",
+            // Parent Register
+            fill_required_fields: "Bitte füllen Sie alle erforderlichen Felder aus",
+            parent_registration_complete: "Elternregistrierung abgeschlossen",
+            registration_failed: "Registrierung fehlgeschlagen",
+            // Quest Details
+            failed_to_resolve_address: "Adresse konnte nicht auf der Karte aufgelöst werden.",
+            location_required: "Standort erforderlich",
+            please_enable_location: "Bitte aktivieren Sie den Standort, um eine Route zu erstellen.",
+            failed_to_open_navigation: "Navigation konnte nicht geöffnet werden.",
+            invalid_code: "Ungültiger Code",
+            pickup_code_incorrect: "Abholcode ist falsch.",
+            pickup_confirmed: "Abholung bestätigt",
+            you_can_now_deliver: "Sie können jetzt liefern.",
+            no_delivery_code: "Kein Liefercode",
+            this_quest_does_not_require_delivery_code: "Dieser Auftrag erfordert keinen Liefercode.",
+            delivery_code_incorrect: "Liefercode ist falsch. Bitte versuchen Sie es erneut.",
+            login_required: "Anmeldung erforderlich",
+            please_login_to_complete_quest: "Bitte melden Sie sich an, um den Auftrag abzuschließen.",
+            location_needed: "Standort erforderlich",
+            please_enable_location_to_complete: "Bitte aktivieren Sie den Standort, um die Aufgabe abzuschließen.",
+            completed: "Abgeschlossen",
+            quest_completed: "Auftrag erfolgreich abgeschlossen!",
+            // Parent Home Screen - UI
+            meine_kinder: "Meine Kinder",
+            aktives_kind: "Aktives Kind",
+            guthaben: "Guthaben",
+            wurde: "Würde",
+            verfolgen: "Verfolgen",
+            keine_kinder: "Sie haben noch keine Kinder verknüpft",
+            ask_child_to_enter_code: "Bitten Sie Ihr Kind, Ihren Code bei der Registrierung einzugeben"
         }
     },
     uk: {
@@ -377,7 +498,66 @@ const resources = {
             privacy_8_heading: "8. Право на скаргу",
             privacy_9_heading: "9. Зміни",
             privacy_date: "Станом на: Лютий 2026",
-            privacy_text: "GenTrust Mobility GmbH\nHauptstraße 123, 10115 Берлін\n\nМи обробляємо персональні дані відповідно до GDPR Art. 6. Ви маєте права на інформацію, виправлення, видалення.\n\nДеталі: datenschutz@gentrust.de"
+            privacy_text: "GenTrust Mobility GmbH\nHauptstraße 123, 10115 Берлін\n\nМи обробляємо персональні дані відповідно до GDPR Art. 6. Ви маєте права на інформацію, виправлення, видалення.\n\nДеталі: datenschutz@gentrust.de",
+            // Edit Profile
+            profile_updated: "Профіль успішно оновлено!",
+            failed_to_update_profile: "Не вдалося оновити профіль. Спробуйте ще раз.",
+            saving: "Збереження...",
+            save: "Зберегти",
+            coming_soon: "Незабаром",
+            edit_fields_info: "Редагування профілю буде доступне в наступному оновленні. Зв'яжіться з підтримкою для негайних змін.",
+            // Parent Home Screen
+            error: "Помилка",
+            failed_to_load_children: "Не вдалося завантажити дітей",
+            select_child: "Оберіть дитину",
+            select_child_first: "Спочатку оберіть дитину зі списку.",
+            tracking: "Відстеження",
+            tasks: "Завдання",
+            // Tasks Screen
+            no_tasks: "Немає завдань",
+            create_task: "Створити завдання",
+            // Create Task Screen
+            enter_task_title: "Введіть назву завдання",
+            task_created: "Завдання створено!",
+            // Pending Approvals
+            pending_approvals: "Заявки на перевірку",
+            failed_to_load_approvals: "Не вдалося завантажити заявки",
+            approved: "Схвалено",
+            task_confirmed: "Завдання підтверджено, винагорода нарахована.",
+            failed_to_approve: "Не вдалося схвалити",
+            rejected: "Відхилено",
+            task_rejected: "Завдання відхилено.",
+            failed_to_reject: "Не вдалося відхилити",
+            // Parent Register
+            fill_required_fields: "Заповніть обов'язкові поля",
+            parent_registration_complete: "Реєстрація батька завершена",
+            registration_failed: "Реєстрація не вдалася",
+            // Quest Details
+            failed_to_resolve_address: "Не вдалося визначити адресу на карті.",
+            location_required: "Потрібна локація",
+            please_enable_location: "Будь ласка, надайте доступ до локації для побудови маршруту.",
+            failed_to_open_navigation: "Не вдалося відкрити навігацію.",
+            invalid_code: "Невірний код",
+            pickup_code_incorrect: "Код отримання невірний.",
+            pickup_confirmed: "Отримання підтверджено",
+            you_can_now_deliver: "Тепер ви можете доставити.",
+            no_delivery_code: "Немає коду доставки",
+            this_quest_does_not_require_delivery_code: "Цей квест не потребує коду доставки.",
+            delivery_code_incorrect: "Код доставки невірний. Спробуйте ще раз.",
+            login_required: "Потрібна авторизація",
+            please_login_to_complete_quest: "Будь ласка, увійдіть для виконання квесту.",
+            location_needed: "Потрібна локація",
+            please_enable_location_to_complete: "Будь ласка, надайте доступ до локації для виконання завдання.",
+            completed: "Виконано",
+            quest_completed: "Квест успішно виконано!",
+            // Parent Home Screen - UI
+            moi_dity: "Мої діти",
+            aktyvna_dytya: "Активна дитина",
+            balans: "Баланс",
+            hidnist: "Гідність",
+            vidstezhyty: "Відстежити",
+            nema_ditey: "У вас поки немає прив'язаних дітей",
+            ask_child_to_enter_code: "Попросіть дитину ввести ваш код при реєстрації"
         }
     },
     ru: {
@@ -418,7 +598,66 @@ const resources = {
             close: "Закрыть",
             points: "очков",
             privacy_title: "Политика конфиденциальности",
-            privacy_text: "Мы обрабатываем персональные данные согласно GDPR."
+            privacy_text: "Мы обрабатываем персональные данные согласно GDPR.",
+            // Edit Profile
+            profile_updated: "Профиль успешно обновлен!",
+            failed_to_update_profile: "Не удалось обновить профиль. Попробуйте еще раз.",
+            saving: "Сохранение...",
+            save: "Сохранить",
+            coming_soon: "Скоро",
+            edit_fields_info: "Редактирование профиля будет доступно в следующем обновлении. Свяжитесь с поддержкой для немедленных изменений.",
+            // Parent Home Screen
+            error: "Ошибка",
+            failed_to_load_children: "Не удалось загрузить детей",
+            select_child: "Выберите ребенка",
+            select_child_first: "Сначала выберите ребенка из списка.",
+            tracking: "Отслеживание",
+            tasks: "Задания",
+            // Tasks Screen
+            no_tasks: "Нет заданий",
+            create_task: "Создать задание",
+            // Create Task Screen
+            enter_task_title: "Введите название задания",
+            task_created: "Задание создано!",
+            // Pending Approvals
+            pending_approvals: "Заявки на проверку",
+            failed_to_load_approvals: "Не удалось загрузить заявки",
+            approved: "Одобрено",
+            task_confirmed: "Задание подтверждено, вознаграждение начислено.",
+            failed_to_approve: "Не удалось одобрить",
+            rejected: "Отклонено",
+            task_rejected: "Задание отклонено.",
+            failed_to_reject: "Не удалось отклонить",
+            // Parent Register
+            fill_required_fields: "Заполните обязательные поля",
+            parent_registration_complete: "Регистрация родителя завершена",
+            registration_failed: "Регистрация не удалась",
+            // Quest Details
+            failed_to_resolve_address: "Не удалось определить адрес на карте.",
+            location_required: "Нужна локация",
+            please_enable_location: "Пожалуйста, предоставьте доступ к локации для построения маршрута.",
+            failed_to_open_navigation: "Не удалось открыть навигацию.",
+            invalid_code: "Неверный код",
+            pickup_code_incorrect: "Код получения неверный.",
+            pickup_confirmed: "Получение подтверждено",
+            you_can_now_deliver: "Теперь вы можете доставить.",
+            no_delivery_code: "Нет кода доставки",
+            this_quest_does_not_require_delivery_code: "Этот квест не требует кода доставки.",
+            delivery_code_incorrect: "Код доставки неверный. Попробуйте еще раз.",
+            login_required: "Нужна авторизация",
+            please_login_to_complete_quest: "Пожалуйста, войдите для выполнения квеста.",
+            location_needed: "Нужна локация",
+            please_enable_location_to_complete: "Пожалуйста, предоставьте доступ к локации для выполнения задания.",
+            completed: "Выполнено",
+            quest_completed: "Квест успешно выполнен!",
+            // Parent Home Screen - UI
+            moi_deti: "Мои дети",
+            aktivnyy_rebenok: "Активный ребенок",
+            balans_ru: "Баланс",
+            dostoinstvo: "Достоинство",
+            otsledit: "Отследить",
+            net_detey: "У вас пока нет привязанных детей",
+            ask_child_to_enter_code: "Попросите ребенка ввести ваш код при регистрации"
         }
     },
     fr: {
@@ -459,7 +698,66 @@ const resources = {
             close: "Fermer",
             points: "points",
             privacy_title: "Politique de confidentialité",
-            privacy_text: "Nous traitons les données personnelles conformément au RGPD."
+            privacy_text: "Nous traitons les données personnelles conformément au RGPD.",
+            // Edit Profile
+            profile_updated: "Profil mis à jour avec succès!",
+            failed_to_update_profile: "Échec de la mise à jour du profil. Veuillez réessayer.",
+            saving: "Enregistrement...",
+            save: "Enregistrer",
+            coming_soon: "Bientôt disponible",
+            edit_fields_info: "La modification du profil sera disponible dans la prochaine mise à jour. Contactez le support pour des modifications immédiates.",
+            // Parent Home Screen
+            error: "Erreur",
+            failed_to_load_children: "Échec du chargement des enfants",
+            select_child: "Sélectionner un enfant",
+            select_child_first: "Veuillez d'abord sélectionner un enfant dans la liste.",
+            tracking: "Suivi",
+            tasks: "Tâches",
+            // Tasks Screen
+            no_tasks: "Aucune tâche disponible",
+            create_task: "Créer une tâche",
+            // Create Task Screen
+            enter_task_title: "Entrez le titre de la tâche",
+            task_created: "Tâche créée!",
+            // Pending Approvals
+            pending_approvals: "Approbations en attente",
+            failed_to_load_approvals: "Échec du chargement des demandes d'approbation",
+            approved: "Approuvé",
+            task_confirmed: "Tâche confirmée, récompense créditée.",
+            failed_to_approve: "Échec de l'approbation",
+            rejected: "Rejeté",
+            task_rejected: "Tâche rejetée.",
+            failed_to_reject: "Échec du rejet",
+            // Parent Register
+            fill_required_fields: "Veuillez remplir tous les champs obligatoires",
+            parent_registration_complete: "Inscription parent terminée",
+            registration_failed: "Échec de l'inscription",
+            // Quest Details
+            failed_to_resolve_address: "Échec de la résolution de l'adresse sur la carte.",
+            location_required: "Localisation requise",
+            please_enable_location: "Veuillez activer la localisation pour tracer un itinéraire.",
+            failed_to_open_navigation: "Échec de l'ouverture de la navigation.",
+            invalid_code: "Code invalide",
+            pickup_code_incorrect: "Le code de récupération est incorrect.",
+            pickup_confirmed: "Récupération confirmée",
+            you_can_now_deliver: "Vous pouvez maintenant livrer.",
+            no_delivery_code: "Aucun code de livraison",
+            this_quest_does_not_require_delivery_code: "Cette quête ne nécessite pas de code de livraison.",
+            delivery_code_incorrect: "Le code de livraison est incorrect. Veuillez réessayer.",
+            login_required: "Connexion requise",
+            please_login_to_complete_quest: "Veuillez vous connecter pour terminer la quête.",
+            location_needed: "Localisation nécessaire",
+            please_enable_location_to_complete: "Veuillez activer la localisation pour terminer la tâche.",
+            completed: "Terminé",
+            quest_completed: "Quête terminée avec succès!",
+            // Parent Home Screen - UI
+            mes_enfants: "Mes enfants",
+            enfant_actif: "Enfant actif",
+            solde: "Solde",
+            dignite: "Dignité",
+            suivre: "Suivre",
+            aucun_enfant: "Vous n'avez aucun enfant lié",
+            ask_child_to_enter_code: "Demandez à votre enfant d'entrer votre code lors de l'inscription"
         }
     }
 };

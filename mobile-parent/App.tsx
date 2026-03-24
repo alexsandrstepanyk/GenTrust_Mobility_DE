@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Text, Platform } from 'react-native';
-import './services/i18n';
+import { loadSavedLanguage } from './services/languageService';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -18,6 +18,11 @@ import { setupNotificationListeners } from './services/pushNotifications';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
+
+// Завантажуємо збережену мову при запуску
+loadSavedLanguage().then((lang) => {
+    console.log('[App] i18n initialized, loaded language:', lang || 'default (de)');
+});
 
 function MainTabs() {
   const insets = useSafeAreaInsets();
