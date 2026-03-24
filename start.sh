@@ -10,6 +10,7 @@
 #   ./start.sh --admin-only     - тільки admin panel (5174)                   #
 #   ./start.sh --api-only       - тільки backend без ботів (API mode)         #
 #   ./start.sh --dept-only      - тільки department dashboard (5175)          #
+#   ./start.sh --parent-only    - тільки Expo Parent App (8083)               #
 #                                                                              #
 # ⚠️  ПРАВИЛО ЗБЕРЕЖЕННЯ КОДУ:                                                 #
 #   - Ніколи не видаляй код з проекту                                         #
@@ -140,6 +141,8 @@ elif [ "$1" == "--api-only" ]; then
     MODE="api"
 elif [ "$1" == "--dept-only" ]; then
     MODE="dept"
+elif [ "$1" == "--parent-only" ]; then
+    MODE="parent"
 fi
 
 ################################################################################
@@ -528,6 +531,41 @@ case $MODE in
     "dept")
         launch_service "Department Dashboard" "5175" "npm run dev" "$PROJECT_DIR/department-dashboard" || exit 1
         ;;
+
+    "parent")
+        # EXPO PARENT APP - тільки Parent App на порту 8083
+        print_step "👨‍👩‍👧 Запуск Expo Parent App (порт 8083)..."
+        
+        # Очищення ТІЛЬКИ кешу Expo Parent
+        rm -rf "$PROJECT_DIR/mobile-parent/.expo" 2>/dev/null
+        rm -rf "$PROJECT_DIR/mobile-parent/node_modules/.cache/metro" 2>/dev/null
+        
+        # Вбивство ТІЛЬКИ порту 8083
+        lsof -ti:8083 2>/dev/null | xargs kill -9 2>/dev/null || true
+        sleep 2
+        
+        # Запуск
+        cd "$PROJECT_DIR/mobile-parent" || exit 1
+        node node_modules/@expo/cli/build/bin/cli start --port 8083 --lan > /tmp/expo-parent.log 2>&1 &
+        EXPO_PID=$!
+        sleep 15
+        
+        # Перевірка
+        if lsof -ti:8083 >/dev/null 2>&1; then
+            print_success "Expo Parent запущено (PID: $EXPO_PID, порт: 8083)"
+            MAC_IP=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
+            echo "  🌐 URL: exp://${MAC_IP}:8083"
+            echo "  📝 Логи: tail -f /tmp/expo-parent.log"
+        else
+            print_error "❌ Не вдалося запустити Expo Parent"
+            exit 1
+        fi
+        
+        echo -e "${GREEN}📍 ПОСИЛАННЯ:${NC}"
+        MAC_IP=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
+        echo -e "   📱 Expo Parent App:    ${CYAN}exp://${MAC_IP}:8083${NC}"
+        echo -e "   Логін: ${YELLOW}admin@parent.com${NC} / Пароль: ${YELLOW}admin${NC}"
+        ;;
 esac
 
 ################################################################################
@@ -668,7 +706,7 @@ case $MODE in
     "api")
         echo -e "${GREEN}📍 ПОСИЛАННЯ:${NC}"
         echo -e "   🌐 Backend API:        ${CYAN}http://localhost:3000/api${NC}"
-        echo -e "   (API-only mode, без телеграм ботів)"
+        echo -e "   API-only mode, без телеграм ботів"
         ;;
 
     "dept")
@@ -678,10 +716,12 @@ case $MODE in
         ;;
 esac
 
+
 echo ""
 echo -e "${GREEN}💡 КОМАНДИ:${NC}"
 echo -e "   Зупинка всіх:    ${YELLOW}killall -9 node npm vite expo${NC}"
-echo -e "   Логи:            ${YELLOW}tail -f /tmp/Backend\\ API\\ \\(з\\ ботами\\).log${NC}"
+echo -e "   Логи:            ${YELLOW}tail -f /tmp/BackendAPI.log${NC}"
 echo -e "   Статус портів:   ${YELLOW}lsof -i :3000 -i :5173 -i :8082${NC}"
 echo ""
-echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}\n"
+echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
+echo ""
