@@ -59,7 +59,7 @@ const SERVICES = [
         icon: '🌐',
         port: 3000,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:3000/health',
-        logFile: '/tmp/BackendAPIv6.log',
+        logFile: '/tmp/BackendAPIAPImode.log',
         processName: 'ts-node',
         commands: {
             cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE',
@@ -156,7 +156,7 @@ const SERVICES = [
         icon: '🔐',
         port: 5174,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5174',
-        logFile: '/tmp/admin-panel.log',
+        logFile: '/tmp/AdminPanelCoreDashboard.log',
         processName: 'vite',
         commands: {
             cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/admin-panel',
@@ -170,7 +170,7 @@ const SERVICES = [
         icon: '🏛️',
         port: 5173,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5173',
-        logFile: '/tmp/city-hall.log',
+        logFile: '/tmp/City-HallDashboard.log',
         processName: 'vite',
         commands: {
             cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE/city-hall-dashboard',
@@ -203,7 +203,7 @@ const SERVICES = [
         icon: '🛣️',
         port: 5180,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5180',
-        logFile: '/tmp/dept-roads.log',
+        logFile: '/tmp/Dept:Roads.log',
         processName: 'vite',
         commands: {
             cd: '/Users/apple/Desktop/GenTrust_Mobility_DE/departments/roads',  // ← Тільки шлях, без 'cd'
@@ -217,7 +217,7 @@ const SERVICES = [
         icon: '💡',
         port: 5181,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5181',
-        logFile: '/tmp/dept-lighting.log',
+        logFile: '/tmp/Dept:Lighting.log',
         processName: 'vite',
         optional: true,
         commands: {
@@ -232,7 +232,7 @@ const SERVICES = [
         icon: '🗑️',
         port: 5182,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5182',
-        logFile: '/tmp/dept-waste.log',
+        logFile: '/tmp/Dept:Waste.log',
         processName: 'vite',
         optional: true,
         commands: {
@@ -247,7 +247,7 @@ const SERVICES = [
         icon: '🌳',
         port: 5183,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5183',
-        logFile: '/tmp/dept-parks.log',
+        logFile: '/tmp/Dept:Parks.log',
         processName: 'vite',
         optional: true,
         commands: {
@@ -262,7 +262,7 @@ const SERVICES = [
         icon: '🚰',
         port: 5184,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5184',
-        logFile: '/tmp/dept-water.log',
+        logFile: '/tmp/Dept:Water.log',
         processName: 'vite',
         optional: true,
         commands: {
@@ -277,7 +277,7 @@ const SERVICES = [
         icon: '🚌',
         port: 5185,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5185',
-        logFile: '/tmp/dept-transport.log',
+        logFile: '/tmp/Dept:Transport.log',
         processName: 'vite',
         optional: true,
         commands: {
@@ -292,7 +292,7 @@ const SERVICES = [
         icon: '🌿',
         port: 5186,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5186',
-        logFile: '/tmp/dept-ecology.log',
+        logFile: '/tmp/Dept:Ecology.log',
         processName: 'vite',
         optional: true,
         commands: {
@@ -307,7 +307,7 @@ const SERVICES = [
         icon: '🎨',
         port: 5187,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:5187',
-        logFile: '/tmp/dept-vandalism.log',
+        logFile: '/tmp/Dept:Vandalism.log',
         processName: 'vite',
         optional: true,
         commands: {
@@ -896,22 +896,22 @@ app.get('/api/logs/:service', (req, res) => {
     const fs = require('fs');
     const service = req.params.service;
     const logFiles = {
-        'backend': '/tmp/backend.log',
-        'admin': '/tmp/admin-panel.log',
-        'city-hall': '/tmp/city-hall.log',
-        'staff': '/tmp/staff-panel.log',
-        'roads': '/tmp/dept-roads.log',
-        'lighting': '/tmp/dept-lighting.log',
-        'waste': '/tmp/dept-waste.log',
-        'parks': '/tmp/dept-parks.log',
-        'water': '/tmp/dept-water.log',
-        'transport': '/tmp/dept-transport.log',
-        'ecology': '/tmp/dept-ecology.log',
-        'vandalism': '/tmp/dept-vandalism.log',
-        'expo-school': '/tmp/expo-school.log',
-        'expo-parent': '/tmp/expo-parent.log',
-        'expo-client': '/tmp/expo-client.log',
-        'monitor': '/tmp/monitor.log'
+        'backend-api': '/tmp/BackendAPIAPImode.log',
+        'admin-panel': '/tmp/AdminPanelCoreDashboard.log',
+        'city-hall-dashboard': '/tmp/City-HallDashboard.log',
+        'staff-panel': '/tmp/StaffPanel.log',
+        'dept-roads': '/tmp/Dept:Roads.log',
+        'dept-lighting': '/tmp/Dept:Lighting.log',
+        'dept-waste': '/tmp/Dept:Waste.log',
+        'dept-parks': '/tmp/Dept:Parks.log',
+        'dept-water': '/tmp/Dept:Water.log',
+        'dept-transport': '/tmp/Dept:Transport.log',
+        'dept-ecology': '/tmp/Dept:Ecology.log',
+        'dept-vandalism': '/tmp/Dept:Vandalism.log',
+        'expo-school': '/tmp/ExpoSchool.log',
+        'expo-parent': '/tmp/ExpoParent.log',
+        'expo-client': '/tmp/ExpoClient.log',
+        'monitor': '/tmp/Monitor.log'
     };
 
     const logFile = logFiles[service];
@@ -936,22 +936,22 @@ app.get('/api/logs/:service', (req, res) => {
 app.get('/api/all-logs', (req, res) => {
     const fs = require('fs');
     const logFiles = {
-        'backend': '/tmp/backend.log',
-        'admin': '/tmp/admin-panel.log',
-        'city-hall': '/tmp/city-hall.log',
-        'staff': '/tmp/staff-panel.log',
-        'roads': '/tmp/dept-roads.log',
-        'lighting': '/tmp/dept-lighting.log',
-        'waste': '/tmp/dept-waste.log',
-        'parks': '/tmp/dept-parks.log',
-        'water': '/tmp/dept-water.log',
-        'transport': '/tmp/dept-transport.log',
-        'ecology': '/tmp/dept-ecology.log',
-        'vandalism': '/tmp/dept-vandalism.log',
-        'expo-school': '/tmp/expo-school.log',
-        'expo-parent': '/tmp/expo-parent.log',
-        'expo-client': '/tmp/expo-client.log',
-        'monitor': '/tmp/monitor.log'
+        'backend-api': '/tmp/BackendAPIAPImode.log',
+        'admin-panel': '/tmp/AdminPanelCoreDashboard.log',
+        'city-hall-dashboard': '/tmp/City-HallDashboard.log',
+        'staff-panel': '/tmp/StaffPanel.log',
+        'dept-roads': '/tmp/Dept:Roads.log',
+        'dept-lighting': '/tmp/Dept:Lighting.log',
+        'dept-waste': '/tmp/Dept:Waste.log',
+        'dept-parks': '/tmp/Dept:Parks.log',
+        'dept-water': '/tmp/Dept:Water.log',
+        'dept-transport': '/tmp/Dept:Transport.log',
+        'dept-ecology': '/tmp/Dept:Ecology.log',
+        'dept-vandalism': '/tmp/Dept:Vandalism.log',
+        'expo-school': '/tmp/ExpoSchool.log',
+        'expo-parent': '/tmp/ExpoParent.log',
+        'expo-client': '/tmp/ExpoClient.log',
+        'monitor': '/tmp/Monitor.log'
     };
 
     const allLogs = {};

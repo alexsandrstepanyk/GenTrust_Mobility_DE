@@ -110,18 +110,26 @@ router.post('/:id/take', authenticateToken, async (req: any, res, next) => {
 // Complete a quest
 router.post('/:id/complete', authenticateToken, completionUpload.single('photo'), async (req: any, res, next) => {
     try {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('[QUEST COMPLETE] Request received');
-        console.log('[QUEST COMPLETE] Body:', req.body);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('[QUEST COMPLETE] Quest ID:', req.params.id);
+        console.log('[QUEST COMPLETE] User ID:', req.user.userId);
+        console.log('[QUEST COMPLETE] Body:', JSON.stringify(req.body, null, 2));
         console.log('[QUEST COMPLETE] File:', req.file ? {
             filename: req.file.filename,
             size: req.file.size,
-            mimetype: req.file.mimetype
-        } : 'No file');
-        
+            mimetype: req.file.mimetype,
+            path: req.file.path
+        } : '❌ No file uploaded');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
         const questId = req.params.id;
         const { code, latitude, longitude } = req.body;
         const userId = req.user.userId;
 
+        // Step 1: Validate quest exists
+        console.log('[QUEST COMPLETE] Step 1: Loading quest from database...');
         const quest = await (prisma as any).quest.findUnique({
             where: { id: questId },
             include: {
@@ -131,35 +139,61 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
             }
         });
 
-        if (!quest || quest.assigneeId !== userId || quest.status !== 'IN_PROGRESS') {
-            console.log('[QUEST COMPLETE] Invalid quest state:', {
-                exists: !!quest,
-                assigneeId: quest?.assigneeId,
-                userId,
-                status: quest?.status
-            });
-            return res.status(400).json({ error: 'Invalid quest state' });
+        if (!quest) {
+            console.error('[QUEST COMPLETE] ❌ Quest not found:', questId);
+            return res.status(404).json({ error: 'Quest not found' });
+        }
+        console.log('[QUEST COMPLETE] ✅ Quest found:', { title: quest.title, status: quest.status, assigneeId: quest.assigneeId });
+
+        // Step 2: Validate quest state
+        console.log('[QUEST COMPLETE] Step 2: Validating quest state...');
+        if (quest.assigneeId !== userId) {
+            console.error('[QUEST COMPLETE] ❌ Quest not assigned to this user. Expected:', quest.assigneeId, 'Got:', userId);
+            return res.status(400).json({ error: 'This quest is not assigned to you' });
         }
 
+        if (quest.status !== 'IN_PROGRESS') {
+            console.error('[QUEST COMPLETE] ❌ Quest status is not IN_PROGRESS. Current:', quest.status);
+            return res.status(400).json({ error: 'Quest is not in progress' });
+        }
+        console.log('[QUEST COMPLETE] ✅ Quest state valid');
+
+        // Step 3: Validate delivery code
+        console.log('[QUEST COMPLETE] Step 3: Validating delivery code...');
         if (code !== quest.deliveryCode) {
-            console.log('[QUEST COMPLETE] Invalid delivery code:', { provided: code, expected: quest.deliveryCode });
+            console.error('[QUEST COMPLETE] ❌ Invalid delivery code. Expected:', quest.deliveryCode, 'Got:', code);
             return res.status(400).json({ error: 'Invalid delivery code' });
         }
+        console.log('[QUEST COMPLETE] ✅ Delivery code valid');
 
-        // Перевірка наявності локації
+        // Step 4: Validate location
+        console.log('[QUEST COMPLETE] Step 4: Validating location...');
         if (!latitude || !longitude) {
+            console.error('[QUEST COMPLETE] ❌ Location is required');
             return res.status(400).json({ error: 'Location is required to complete quest' });
         }
+        console.log('[QUEST COMPLETE] ✅ Location valid:', { latitude, longitude });
 
+        // Step 5: Process photo
+        console.log('[QUEST COMPLETE] Step 5: Processing photo...');
         const photoFile = req.file as Express.Multer.File | undefined;
         const photoUrl = photoFile ? `/uploads/completions/${photoFile.filename}` : (req.body?.photoUrl || null);
         const photoTelegramId = req.body?.photoTelegramId || null;
         const description = req.body?.description || null;
+        console.log('[QUEST COMPLETE] Photo URL:', photoUrl);
 
         const verifiers = await getQuestVerifiers(quest);
         const mustBeVerified = Boolean(quest.taskOrderId || quest.isPersonal) && !quest.autoApprove;
 
+        console.log('[QUEST COMPLETE] Step 6: Checking verification requirements...');
+        console.log('[QUEST COMPLETE] Task Order ID:', quest.taskOrderId);
+        console.log('[QUEST COMPLETE] Is Personal:', quest.isPersonal);
+        console.log('[QUEST COMPLETE] Auto Approve:', quest.autoApprove);
+        console.log('[QUEST COMPLETE] Must Be Verified:', mustBeVerified);
+        console.log('[QUEST COMPLETE] Verifiers:', verifiers);
+
         if (mustBeVerified && verifiers.length > 0) {
+            console.log('[QUEST COMPLETE] Step 7a: Creating pending completion...');
             const completion = await (prisma as any).taskCompletion.create({
                 data: {
                     questId,
@@ -172,7 +206,9 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
                     status: 'PENDING'
                 }
             });
+            console.log('[QUEST COMPLETE] ✅ Completion created:', completion.id);
 
+            console.log('[QUEST COMPLETE] Step 8a: Updating quest status to PENDING_VERIFICATION...');
             await (prisma as any).quest.update({
                 where: { id: questId },
                 data: {
@@ -181,7 +217,9 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
                     completionLongitude: Number(longitude)
                 }
             });
+            console.log('[QUEST COMPLETE] ✅ Quest status updated');
 
+            console.log('[QUEST COMPLETE] Step 9a: Notifying verifiers...');
             const student = await prisma.user.findUnique({
                 where: { id: userId },
                 select: { firstName: true, lastName: true }
@@ -195,16 +233,20 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
                 photoUrl,
                 verifiers
             });
+            console.log('[QUEST COMPLETE] ✅ Verifiers notified');
 
             await recordActivity(userId, 'QUEST_SUBMITTED_FOR_VERIFICATION', {
                 questId,
                 completionId: completion.id,
                 location: { latitude, longitude }
             });
-            
+
             // Send push notification about quest completion
             notifyQuestCompleted(questId).catch(e => console.error('[PUSH] Failed to notify quest completed:', e));
 
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('[QUEST COMPLETE] ✅✅✅ SUCCESS - PENDING_VERIFICATION');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             return res.json({
                 message: 'Завдання надіслано на перевірку. Винагорода буде нарахована після підтвердження.',
                 status: 'PENDING_VERIFICATION',
@@ -212,6 +254,7 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
             });
         }
 
+        console.log('[QUEST COMPLETE] Step 7b: Auto-approving quest...');
         await (prisma as any).quest.update({
             where: { id: questId },
             data: {
@@ -220,12 +263,16 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
                 completionLongitude: Number(longitude)
             }
         });
+        console.log('[QUEST COMPLETE] ✅ Quest status updated to COMPLETED');
 
+        console.log('[QUEST COMPLETE] Step 8b: Updating user balance...');
         await prisma.user.update({
             where: { id: userId },
             data: { balance: { increment: Number(quest.reward) } }
         });
+        console.log('[QUEST COMPLETE] ✅ Balance updated: +', quest.reward);
 
+        console.log('[QUEST COMPLETE] Step 9b: Creating completion record...');
         await (prisma as any).taskCompletion.create({
             data: {
                 questId,
@@ -242,15 +289,35 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
                 verifiedAt: new Date()
             }
         });
+        console.log('[QUEST COMPLETE] ✅ Completion record created');
 
+        console.log('[QUEST COMPLETE] Step 10b: Awarding dignity points...');
         await awardDignity(userId, 5);
+        console.log('[QUEST COMPLETE] ✅ Dignity points awarded: +5');
+
         await recordActivity(userId, 'QUEST_COMPLETED', {
             questId,
             location: { latitude, longitude }
         });
+        console.log('[QUEST COMPLETE] ✅ Activity recorded');
 
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('[QUEST COMPLETE] ✅✅✅ SUCCESS - COMPLETED');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         res.json({ message: 'Quest completed successfully', reward: quest.reward, status: 'COMPLETED' });
-    } catch (error) {
+    } catch (error: any) {
+        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.error('[QUEST COMPLETE] ❌❌❌ ERROR');
+        console.error('[QUEST COMPLETE] Error type:', error.constructor.name);
+        console.error('[QUEST COMPLETE] Error message:', error.message);
+        console.error('[QUEST COMPLETE] Stack:', error.stack);
+        console.error('[QUEST COMPLETE] Body:', req.body);
+        console.error('[QUEST COMPLETE] File:', req.file ? {
+            filename: req.file.filename,
+            size: req.file.size,
+            mimetype: req.file.mimetype
+        } : 'No file');
+        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         next(error);
     }
 });

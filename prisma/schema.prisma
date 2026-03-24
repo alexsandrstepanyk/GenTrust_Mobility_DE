@@ -44,6 +44,10 @@ model User {
   parentRelations ParentChild[] @relation("parent")
   childRelations  ParentChild[] @relation("child")
   personaltasks   PersonalTask[] @relation("creator")
+  
+  // Digital Consent (DSGVO)
+  givenConsents   DigitalConsent[] @relation("consentParent") // Згоди які дав цей користувач (parent)
+  receivedConsents DigitalConsent[] @relation("consentChild")  // Згоди отримані на цього користувача (child)
 
   // Зв'язки
   reports       Report[] // Звіти про поламки
@@ -89,6 +93,49 @@ model ParentChild {
   updatedAt     DateTime @updatedAt
   
   @@unique([parentId, childId])
+}
+
+// 1B-2. DIGITAL CONSENT (DSGVO/JArbSchG Compliance)
+model DigitalConsent {
+  id              String   @id @default(uuid())
+  
+  // Parent & Child
+  parent          User     @relation("consentParent", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId        String
+  child           User     @relation("consentChild", fields: [childId], references: [id], onDelete: Cascade)
+  childId         String
+  
+  // Consent Details
+  consentText     String   // Текст згоди (німецька + українська + англійська)
+  consentVersion  String   @default("1.0.0") // Версія для відстеження змін
+  language        String   @default("de") // Мова підписання (de/uk/en)
+  
+  // E-Signature
+  signatureHash   String   // Криптографічний хеш підпису (SHA-256)
+  ipAddress       String   // IP адреса при підписанні
+  userAgent       String   // Browser/App info
+  
+  // Status
+  status          String   @default("ACTIVE") // ACTIVE, REVOKED, EXPIRED
+  revokedAt       DateTime?
+  revokedBy       String?  // userID хто відкликав (parent або admin)
+  revokeReason    String?  // Причина відкликання
+  
+  // Validity
+  signedAt        DateTime @default(now())
+  expiresAt       DateTime? // Опціонально: термін дії
+  reviewedAt      DateTime? // Коли переглянуто оновлення
+  
+  // Audit
+  pdfUrl          String?  // Посилання на PDF версію
+  telegramNotified Boolean @default(false) // Чи відправлено в Telegram
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([parentId, status])
+  @@index([childId, status])
+  @@index([status])
 }
 
 // 1C. GPS ЛОКАЦІЇ ДИТИНИ

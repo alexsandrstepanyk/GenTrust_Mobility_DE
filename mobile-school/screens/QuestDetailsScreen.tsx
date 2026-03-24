@@ -135,11 +135,14 @@ export default function QuestDetailsScreen({ route, navigation }: any) {
             });
 
             const codeToSend = deliveryInput.trim();
+            
+            // Create FormData properly
             const formData = new FormData();
             formData.append('code', codeToSend);
             formData.append('latitude', String(location.coords.latitude));
             formData.append('longitude', String(location.coords.longitude));
 
+            // Check if photo is required
             const requiresPhoto = Boolean(quest?.taskOrderId || quest?.isPersonal || quest?.requiresPhoto);
             if (requiresPhoto && !photoUri) {
                 Alert.alert('Фото обовʼязкове', 'Додайте фото-звіт перед завершенням завдання.');
@@ -147,36 +150,62 @@ export default function QuestDetailsScreen({ route, navigation }: any) {
                 return;
             }
 
+            // Append photo if exists
             if (photoUri) {
                 // React Native requires specific format for file upload
                 const filename = photoUri.split('/').pop() || `completion-${Date.now()}.jpg`;
                 const match = /\.(\w+)$/.exec(filename);
                 const type = match ? `image/${match[1]}` : `image/jpeg`;
-                
+
+                console.log('[QUEST COMPLETE] Photo details:', {
+                    uri: photoUri,
+                    filename,
+                    type,
+                    exists: true
+                });
+
+                // @ts-ignore - FormData in React Native
                 formData.append('photo', {
                     uri: photoUri,
                     name: filename,
                     type: type,
-                } as any);
+                });
             }
 
             console.log('[QUEST COMPLETE] Sending request to:', `${API_URL}/quests/${quest?.id}/complete`);
             console.log('[QUEST COMPLETE] FormData keys:', Object.keys(formData));
+            console.log('[QUEST COMPLETE] Token:', token ? 'Present' : 'Missing');
 
             const res = await axios.post(`${API_URL}/quests/${quest?.id}/complete`, formData, {
-                headers: { 
+                headers: {
                     Authorization: `Bearer ${token}`,
-                    // DON'T set Content-Type manually - let axios set it with boundary
+                    'Content-Type': 'multipart/form-data',
                     'Accept': 'application/json',
-                }
+                },
+                timeout: 30000, // 30 second timeout
             });
 
+            console.log('[QUEST COMPLETE] Response:', res.data);
             Alert.alert('Виконано', res.data?.message || 'Квест успішно виконано!');
             navigation.goBack();
         } catch (e: any) {
-            console.error('[QUEST COMPLETE ERROR]', e);
-            console.error('[QUEST COMPLETE ERROR RESPONSE]', e?.response?.data);
-            const msg = e?.response?.data?.error || e?.message || 'Не вдалося завершити квест.';
+            console.error('[QUEST COMPLETE ERROR]');
+            console.error('[QUEST COMPLETE ERROR] Message:', e.message);
+            console.error('[QUEST COMPLETE ERROR] Response:', e?.response?.data);
+            console.error('[QUEST COMPLETE ERROR] Status:', e?.response?.status);
+            console.error('[QUEST COMPLETE ERROR] Headers:', e?.config?.headers);
+            
+            let msg = 'Не вдалося завершити квест.';
+            if (e?.response?.data?.error) {
+                msg = e.response.data.error;
+            } else if (e?.response?.status === 413) {
+                msg = 'Фото занадто велике. Максимум 8MB.';
+            } else if (e?.code === 'ECONNABORTED') {
+                msg = 'Час запиту минув. Перевірте інтернет.';
+            } else if (e?.message) {
+                msg = e.message;
+            }
+            
             Alert.alert('Помилка', msg);
         } finally {
             setSubmitting(false);
