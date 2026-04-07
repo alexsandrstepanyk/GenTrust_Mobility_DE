@@ -54,6 +54,16 @@
 #   5. Продовжуй згідно ROADMAP (Рівень 1, 2, 3 оптимізації)                   #
 #                                                                              #
 # 📝 ОСТАННІ ЗМІНИ:                                                            #
+#   ## 2026-04-07 v6.0.7 - Dynamic Departments + Auto-Launch + Full Sync      #
+#   - Додано: створення департаменту з City-Hall Dashboard                    #
+#   - Додано: окрема SQLite БД для кожного нового департаменту                #
+#   - Додано: departments.registry.json з автопризначенням порту              #
+#   - Додано: автозапуск dynamic departments у start-v6-full.sh               #
+#   - Додано: автопояву dynamic departments у Monitor Dashboard (9000)        #
+#   - Виправлено: Socket.IO + JWT auth у основному api-server.ts              #
+#   - Додано: синхронізацію main DB ↔ department DB для reports               #
+#   - Оновлено: README.md та ROADMAP.md з документацією релізу                #
+#                                                                              #
 #   ## 2026-03-07 v5.1.8 - Фінальна стабілізація                              #
 #   - Виправлено: department-dashboard API (reportsRes.data?.data → reportsRes)#
 #   - Виправлено: authorId в тестових звітах (usr_* → UUID)                   #

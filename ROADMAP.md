@@ -1,9 +1,57 @@
 # 🚀 GenTrust Mobility - MASTER ROADMAP & Market Analysis
 
-**Версія:** 6.0.6 - Parent Home i18n + start.sh оновлено
+**Версія:** 6.0.7 - Dynamic Departments + Auto-Launch + Full Sync
 **Статус:** ✅ Production Ready (12/20 сервісів онлайн)
 **Модель:** Трикутник Довіри (City + Parents + Youth)
-**Останнє оновлення:** 2026-03-23 (v6.0.6)
+**Останнє оновлення:** 2026-04-07 (v6.0.7)
+
+---
+
+## 🆕 ОСТАННІ ЗМІНИ (2026-03-23)
+
+### **v6.0.7 - Dynamic Departments + Auto-Launch + Full Sync (2026-04-07)**
+**Дата:** 2026-04-07
+**Опис:** Додано повний цикл створення нових департаментів: UI → головна БД → окрема БД департаменту → registry → автозапуск → Monitor Dashboard → realtime синхронізація
+
+**Зміни:**
+- ✅ **Додано:** вкладку `Додати департамент` в City-Hall Dashboard
+- ✅ **Додано:** форму створення департаменту з полями назви та опису діяльності
+- ✅ **Додано:** автоматичне створення окремої SQLite БД `databases/{slug}_dept.db`
+- ✅ **Додано:** автоматичне застосування `prisma/schema_departments.prisma` до нової БД
+- ✅ **Додано:** `DepartmentSettings` bootstrap для нової БД департаменту
+- ✅ **Додано:** динамічний registry `departments/departments.registry.json`
+- ✅ **Додано:** автоматичне виділення вільного порту для нових департаментів (з `5188+`)
+- ✅ **Додано:** автозапуск динамічних департаментів у `start-v6-full.sh`
+- ✅ **Додано:** автоматичне підключення нових департаментів у Monitor Dashboard (`monitor/server.js`)
+- ✅ **Додано:** автоматичний моніторинг БД нових департаментів у Monitor Dashboard
+- ✅ **Виправлено:** `src/api-server.ts` тепер містить Socket.IO, тому realtime працює в основному startup flow
+- ✅ **Виправлено:** критичні безпекові проблеми Reports API (auth на критичних маршрутах)
+- ✅ **Виправлено:** Socket.IO auth з реальною JWT-перевіркою
+- ✅ **Додано:** realtime події `report:new`, `stats:update`, `user:registered`
+- ✅ **Додано:** синхронізацію статусів звітів між головною БД і БД департаменту
+- ✅ **Додано:** idempotency + transaction для approve task order
+- ✅ **Додано:** idempotency + transaction для complete quest
+
+**Файли змінено:**
+- `src/api/routes/departments-manager.ts` - створення департаменту, БД, registry, bootstrap
+- `src/utils/departmentDatabaseManager.ts` - підтримка dynamic slug department DB
+- `src/api/routes/reports.ts` - auth, realtime, sync між main DB і department DB
+- `src/api/routes/task_orders.ts` - idempotent approve + transaction
+- `src/api/routes/quests.ts` - idempotent complete + transaction
+- `src/api/routes/auth.ts` - `user:registered` realtime event
+- `src/api-server.ts` - Socket.IO + departments-manager route
+- `city-hall-dashboard/src/components/Layout.tsx` - нова вкладка створення департаменту
+- `city-hall-dashboard/src/pages/Departments.tsx` - робота з dynamic department API
+- `city-hall-dashboard/src/screens/CreateDepartmentScreen.tsx` - UI створення департаменту
+- `start-v6-full.sh` - автозапуск dynamic departments із registry
+- `monitor/server.js` - dynamic services + dynamic DB checks + logs
+
+**Результат релізу:**
+- 🏢 Новий департамент створюється з UI без ручного дублювання коду
+- 🗄️ Кожен новий департамент отримує власну БД
+- 🔄 Звіти синхронізуються між головною БД і БД департаменту
+- 🚀 Новий департамент підтягується у повний автозапуск системи
+- 📊 Новий департамент автоматично з'являється на Monitor Dashboard
 
 ---
 

@@ -21,6 +21,7 @@ const io = socketIo(server);
 
 const PORT = 9000;
 const PROJECT_DIR = '/Users/apple/Desktop/GenTrust_Mobility_DE';
+const DEPARTMENTS_REGISTRY_PATH = path.join(PROJECT_DIR, 'departments', 'departments.registry.json');
 
 // Middleware для парсингу JSON
 app.use(express.json());
@@ -49,7 +50,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ФІКСОВАНІ ПОРТИ - КОЖЕН СЕРВІС МАЄ СВІЙ ВЛАСНИЙ ПОРТ
 // Ніхто інший не має права займати ці порти!
 
-const SERVICES = [
+let SERVICES = [
     // ========================================
     // BACKEND API
     // ========================================
@@ -59,7 +60,7 @@ const SERVICES = [
         icon: '🌐',
         port: 3000,  // ✅ ФІКСОВАНИЙ
         healthCheck: 'http://localhost:3000/health',
-        logFile: '/tmp/BackendAPIAPImode.log',
+        logFile: '/tmp/BackendAPI.log',  // ✅ ВИПРАВЛЕНО: правильний лог файл
         processName: 'ts-node',
         commands: {
             cd: 'cd /Users/apple/Desktop/GenTrust_Mobility_DE',
@@ -366,6 +367,45 @@ const SERVICES = [
     }
 ];
 
+function loadDynamicDepartmentServices() {
+    const fixed = new Set(['roads', 'lighting', 'waste', 'parks', 'water', 'transport', 'ecology', 'vandalism']);
+    if (!fs.existsSync(DEPARTMENTS_REGISTRY_PATH)) return [];
+
+    try {
+        const registry = JSON.parse(fs.readFileSync(DEPARTMENTS_REGISTRY_PATH, 'utf8'));
+        if (!Array.isArray(registry)) return [];
+
+        return registry
+            .filter((d) => d && d.slug && d.port)
+            .filter((d) => !fixed.has(String(d.slug).toLowerCase()))
+            .map((d) => {
+                const slug = String(d.slug).toLowerCase();
+                const port = Number(d.port);
+                const safeName = d.nameUa || d.nameEn || d.name || slug;
+                return {
+                    id: `dept-${slug}`,
+                    name: `${safeName} Department`,
+                    icon: d.icon || '🏢',
+                    port,
+                    healthCheck: `http://localhost:${port}`,
+                    logFile: `/tmp/Dept:${slug}.log`,
+                    processName: 'vite',
+                    optional: true,
+                    commands: {
+                        cd: `${PROJECT_DIR}/departments/${slug}`,
+                        start: `npm run dev -- --port ${port} --host 0.0.0.0`,
+                        kill: `lsof -ti:${port} | xargs kill -9`
+                    }
+                };
+            });
+    } catch (error) {
+        console.error('Failed to load dynamic departments registry:', error.message);
+        return [];
+    }
+}
+
+SERVICES = [...SERVICES, ...loadDynamicDepartmentServices()];
+
 // Telegram боти (перевіряємо чи вони запущені через порти)
 const TELEGRAM_BOTS = [
     { id: 'master-bot', name: 'Master Core Bot', icon: '🤖', port: 3001 },
@@ -570,6 +610,28 @@ async function checkDepartmentDatabases() {
         { id: 'vandalism', name: '🎨 Вандалізм', file: 'vandalism_dept.db' }
     ];
 
+    try {
+        if (fs.existsSync(DEPARTMENTS_REGISTRY_PATH)) {
+            const registry = JSON.parse(fs.readFileSync(DEPARTMENTS_REGISTRY_PATH, 'utf8'));
+            const fixed = new Set(['roads', 'lighting', 'waste', 'parks', 'water', 'transport', 'ecology', 'vandalism']);
+            if (Array.isArray(registry)) {
+                registry
+                    .filter((d) => d && d.slug)
+                    .forEach((d) => {
+                        const slug = String(d.slug).toLowerCase();
+                        if (fixed.has(slug)) return;
+                        departments.push({
+                            id: slug,
+                            name: `${d.icon || '🏢'} ${d.nameUa || d.nameEn || d.name || slug}`,
+                            file: `${slug}_dept.db`
+                        });
+                    });
+            }
+        }
+    } catch (error) {
+        console.error('Failed to append dynamic department DB checks:', error.message);
+    }
+
     const results = [];
     let totalReports = 0;
 
@@ -618,7 +680,7 @@ async function checkDepartmentDatabases() {
         total: totalReports,
         departments: results,
         status: totalReports > 0 ? 'online' : 'warning',
-        message: `✅ Всього ${totalReports} звітів у 8 БД`
+        message: `✅ Всього ${totalReports} звітів у ${results.length} БД`
     };
 }
 
@@ -895,26 +957,8 @@ app.post('/api/enable-auto-start', (req, res) => {
 app.get('/api/logs/:service', (req, res) => {
     const fs = require('fs');
     const service = req.params.service;
-    const logFiles = {
-        'backend-api': '/tmp/BackendAPIAPImode.log',
-        'admin-panel': '/tmp/AdminPanelCoreDashboard.log',
-        'city-hall-dashboard': '/tmp/City-HallDashboard.log',
-        'staff-panel': '/tmp/StaffPanel.log',
-        'dept-roads': '/tmp/Dept:Roads.log',
-        'dept-lighting': '/tmp/Dept:Lighting.log',
-        'dept-waste': '/tmp/Dept:Waste.log',
-        'dept-parks': '/tmp/Dept:Parks.log',
-        'dept-water': '/tmp/Dept:Water.log',
-        'dept-transport': '/tmp/Dept:Transport.log',
-        'dept-ecology': '/tmp/Dept:Ecology.log',
-        'dept-vandalism': '/tmp/Dept:Vandalism.log',
-        'expo-school': '/tmp/ExpoSchool.log',
-        'expo-parent': '/tmp/ExpoParent.log',
-        'expo-client': '/tmp/ExpoClient.log',
-        'monitor': '/tmp/Monitor.log'
-    };
-
-    const logFile = logFiles[service];
+    const monitorService = SERVICES.find(s => s.id === service);
+    const logFile = monitorService?.logFile || (service === 'monitor' ? '/tmp/MonitorDashboard.log' : null);
     if (!logFile) {
         return res.status(404).json({ error: 'Log file not found' });
     }
@@ -935,24 +979,13 @@ app.get('/api/logs/:service', (req, res) => {
 // API endpoint для отримання всіх логів
 app.get('/api/all-logs', (req, res) => {
     const fs = require('fs');
-    const logFiles = {
-        'backend-api': '/tmp/BackendAPIAPImode.log',
-        'admin-panel': '/tmp/AdminPanelCoreDashboard.log',
-        'city-hall-dashboard': '/tmp/City-HallDashboard.log',
-        'staff-panel': '/tmp/StaffPanel.log',
-        'dept-roads': '/tmp/Dept:Roads.log',
-        'dept-lighting': '/tmp/Dept:Lighting.log',
-        'dept-waste': '/tmp/Dept:Waste.log',
-        'dept-parks': '/tmp/Dept:Parks.log',
-        'dept-water': '/tmp/Dept:Water.log',
-        'dept-transport': '/tmp/Dept:Transport.log',
-        'dept-ecology': '/tmp/Dept:Ecology.log',
-        'dept-vandalism': '/tmp/Dept:Vandalism.log',
-        'expo-school': '/tmp/ExpoSchool.log',
-        'expo-parent': '/tmp/ExpoParent.log',
-        'expo-client': '/tmp/ExpoClient.log',
-        'monitor': '/tmp/Monitor.log'
-    };
+    const logFiles = {};
+    SERVICES.forEach((service) => {
+        if (service?.id && service?.logFile) {
+            logFiles[service.id] = service.logFile;
+        }
+    });
+    logFiles.monitor = '/tmp/MonitorDashboard.log';
 
     const allLogs = {};
     for (const [service, logFile] of Object.entries(logFiles)) {
@@ -972,7 +1005,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Запуск сервера
+// Запуск сервера з обробкою помилок
 server.listen(PORT, () => {
     console.log('\n╔════════════════════════════════════════════════════════╗');
     console.log('║   🎯 GENTRUST MOBILITY - СИСТЕМА МОНІТОРИНГУ          ║');
@@ -981,4 +1014,38 @@ server.listen(PORT, () => {
     console.log(`📊 Відкрийте в браузері: http://localhost:${PORT}`);
     console.log(`🔄 Автоматичне оновлення кожні 3 секунди\n`);
     console.log('Для зупинки: Ctrl+C\n');
+}).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.error(`❌ ПОРТ ${PORT} ЗАЙНЯТИЙ! Вбиваємо порушника...`);
+        const { exec } = require('child_process');
+        exec(`lsof -ti:${PORT} | xargs kill -9`, (killErr) => {
+            if (killErr) {
+                console.error('❌ Не вдалося звільнити порт:', killErr.message);
+                process.exit(1);
+            }
+            console.log('✅ Порт звільнено. Перезапуск...');
+            setTimeout(() => server.listen(PORT), 2000);
+        });
+    } else {
+        console.error('❌ Помилка сервера:', err);
+        // Зберігаємо лог помилки
+        const fs = require('fs');
+        fs.appendFileSync('/tmp/MonitorDashboard-error.log', 
+            `${new Date().toISOString()} - ${err.message}\n`);
+    }
+});
+
+// Обробка неспійманих помилок щоб сервер не падав
+process.on('uncaughtException', (err) => {
+    console.error('❌ Uncaught Exception:', err);
+    const fs = require('fs');
+    fs.appendFileSync('/tmp/MonitorDashboard-error.log', 
+        `${new Date().toISOString()} - Uncaught Exception: ${err.message}\n${err.stack}\n`);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    const fs = require('fs');
+    fs.appendFileSync('/tmp/MonitorDashboard-error.log', 
+        `${new Date().toISOString()} - Unhandled Rejection: ${reason}\n`);
 });

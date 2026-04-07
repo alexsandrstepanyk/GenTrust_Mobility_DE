@@ -145,11 +145,32 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
         }
         console.log('[QUEST COMPLETE] ✅ Quest found:', { title: quest.title, status: quest.status, assigneeId: quest.assigneeId });
 
-        // Step 2: Validate quest state
-        console.log('[QUEST COMPLETE] Step 2: Validating quest state...');
+        // Step 2: Validate ownership
+        console.log('[QUEST COMPLETE] Step 2: Validating quest ownership...');
         if (quest.assigneeId !== userId) {
             console.error('[QUEST COMPLETE] ❌ Quest not assigned to this user. Expected:', quest.assigneeId, 'Got:', userId);
             return res.status(400).json({ error: 'This quest is not assigned to you' });
+        }
+
+        // Idempotency checks
+        if (quest.status === 'COMPLETED') {
+            console.log('[QUEST COMPLETE] ✅ Idempotent complete: quest already COMPLETED');
+            return res.json({ message: 'Quest already completed', reward: quest.reward, status: 'COMPLETED', idempotent: true });
+        }
+
+        if (quest.status === 'PENDING_VERIFICATION') {
+            const existingPending = await (prisma as any).taskCompletion.findFirst({
+                where: { questId, studentId: userId, status: 'PENDING' },
+                orderBy: { createdAt: 'desc' }
+            });
+
+            console.log('[QUEST COMPLETE] ✅ Idempotent complete: quest already PENDING_VERIFICATION');
+            return res.json({
+                message: 'Завдання вже надіслано на перевірку.',
+                status: 'PENDING_VERIFICATION',
+                completionId: existingPending?.id || null,
+                idempotent: true
+            });
         }
 
         if (quest.status !== 'IN_PROGRESS') {
@@ -193,31 +214,70 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
         console.log('[QUEST COMPLETE] Verifiers:', verifiers);
 
         if (mustBeVerified && verifiers.length > 0) {
-            console.log('[QUEST COMPLETE] Step 7a: Creating pending completion...');
-            const completion = await (prisma as any).taskCompletion.create({
-                data: {
-                    questId,
-                    studentId: userId,
-                    photoUrl,
-                    photoTelegramId,
-                    description,
-                    latitude: Number(latitude),
-                    longitude: Number(longitude),
-                    status: 'PENDING'
+            console.log('[QUEST COMPLETE] Step 7a: Transaction for pending completion...');
+            const completion = await prisma.$transaction(async (tx: any) => {
+                const lockQuest = await tx.quest.findUnique({ where: { id: questId } });
+
+                if (!lockQuest) {
+                    throw new Error('Quest not found');
                 }
+
+                if (lockQuest.status === 'PENDING_VERIFICATION') {
+                    const existing = await tx.taskCompletion.findFirst({
+                        where: { questId, studentId: userId, status: 'PENDING' },
+                        orderBy: { createdAt: 'desc' }
+                    });
+                    if (existing) {
+                        return existing;
+                    }
+                }
+
+                if (lockQuest.status !== 'IN_PROGRESS') {
+                    throw new Error(`Quest cannot be completed from status ${lockQuest.status}`);
+                }
+
+                const updated = await tx.quest.updateMany({
+                    where: {
+                        id: questId,
+                        status: 'IN_PROGRESS',
+                        assigneeId: userId,
+                        deliveryCode: code
+                    },
+                    data: {
+                        status: 'PENDING_VERIFICATION',
+                        completionLatitude: Number(latitude),
+                        completionLongitude: Number(longitude)
+                    }
+                });
+
+                if (updated.count === 0) {
+                    const latest = await tx.quest.findUnique({ where: { id: questId } });
+                    if (latest?.status === 'PENDING_VERIFICATION') {
+                        const existing = await tx.taskCompletion.findFirst({
+                            where: { questId, studentId: userId, status: 'PENDING' },
+                            orderBy: { createdAt: 'desc' }
+                        });
+                        if (existing) {
+                            return existing;
+                        }
+                    }
+                    throw new Error('Quest completion state changed, retry request');
+                }
+
+                return tx.taskCompletion.create({
+                    data: {
+                        questId,
+                        studentId: userId,
+                        photoUrl,
+                        photoTelegramId,
+                        description,
+                        latitude: Number(latitude),
+                        longitude: Number(longitude),
+                        status: 'PENDING'
+                    }
+                });
             });
             console.log('[QUEST COMPLETE] ✅ Completion created:', completion.id);
-
-            console.log('[QUEST COMPLETE] Step 8a: Updating quest status to PENDING_VERIFICATION...');
-            await (prisma as any).quest.update({
-                where: { id: questId },
-                data: {
-                    status: 'PENDING_VERIFICATION',
-                    completionLatitude: Number(latitude),
-                    completionLongitude: Number(longitude)
-                }
-            });
-            console.log('[QUEST COMPLETE] ✅ Quest status updated');
 
             console.log('[QUEST COMPLETE] Step 9a: Notifying verifiers...');
             const student = await prisma.user.findUnique({
@@ -241,6 +301,16 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
                 location: { latitude, longitude }
             });
 
+            const io = (global as any).io;
+            if (io) {
+                io.to('stats').emit('stats:update', {
+                    scope: 'quests',
+                    action: 'pending_verification',
+                    questId,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
             // Send push notification about quest completion
             notifyQuestCompleted(questId).catch(e => console.error('[PUSH] Failed to notify quest completed:', e));
 
@@ -254,42 +324,74 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
             });
         }
 
-        console.log('[QUEST COMPLETE] Step 7b: Auto-approving quest...');
-        await (prisma as any).quest.update({
-            where: { id: questId },
-            data: {
-                status: 'COMPLETED',
-                completionLatitude: Number(latitude),
-                completionLongitude: Number(longitude)
-            }
-        });
-        console.log('[QUEST COMPLETE] ✅ Quest status updated to COMPLETED');
+        console.log('[QUEST COMPLETE] Step 7b: Auto-approving quest transaction...');
+        const autoResult = await prisma.$transaction(async (tx: any) => {
+            const lockQuest = await tx.quest.findUnique({ where: { id: questId } });
 
-        console.log('[QUEST COMPLETE] Step 8b: Updating user balance...');
-        await prisma.user.update({
-            where: { id: userId },
-            data: { balance: { increment: Number(quest.reward) } }
-        });
-        console.log('[QUEST COMPLETE] ✅ Balance updated: +', quest.reward);
-
-        console.log('[QUEST COMPLETE] Step 9b: Creating completion record...');
-        await (prisma as any).taskCompletion.create({
-            data: {
-                questId,
-                studentId: userId,
-                photoUrl,
-                photoTelegramId,
-                description,
-                latitude: Number(latitude),
-                longitude: Number(longitude),
-                status: 'APPROVED',
-                rewardAmount: Number(quest.reward),
-                rewardPaid: true,
-                verifiedById: userId,
-                verifiedAt: new Date()
+            if (!lockQuest) {
+                throw new Error('Quest not found');
             }
+
+            if (lockQuest.status === 'COMPLETED') {
+                return { alreadyCompleted: true };
+            }
+
+            if (lockQuest.status !== 'IN_PROGRESS') {
+                throw new Error(`Quest cannot be completed from status ${lockQuest.status}`);
+            }
+
+            const updated = await tx.quest.updateMany({
+                where: {
+                    id: questId,
+                    status: 'IN_PROGRESS',
+                    assigneeId: userId,
+                    deliveryCode: code
+                },
+                data: {
+                    status: 'COMPLETED',
+                    completionLatitude: Number(latitude),
+                    completionLongitude: Number(longitude)
+                }
+            });
+
+            if (updated.count === 0) {
+                const latest = await tx.quest.findUnique({ where: { id: questId } });
+                if (latest?.status === 'COMPLETED') {
+                    return { alreadyCompleted: true };
+                }
+                throw new Error('Quest completion state changed, retry request');
+            }
+
+            await tx.user.update({
+                where: { id: userId },
+                data: { balance: { increment: Number(quest.reward) } }
+            });
+
+            const completion = await tx.taskCompletion.create({
+                data: {
+                    questId,
+                    studentId: userId,
+                    photoUrl,
+                    photoTelegramId,
+                    description,
+                    latitude: Number(latitude),
+                    longitude: Number(longitude),
+                    status: 'APPROVED',
+                    rewardAmount: Number(quest.reward),
+                    rewardPaid: true,
+                    verifiedById: userId,
+                    verifiedAt: new Date()
+                }
+            });
+
+            return { alreadyCompleted: false, completion };
         });
-        console.log('[QUEST COMPLETE] ✅ Completion record created');
+
+        if ((autoResult as any).alreadyCompleted) {
+            return res.json({ message: 'Quest already completed', reward: quest.reward, status: 'COMPLETED', idempotent: true });
+        }
+
+        console.log('[QUEST COMPLETE] ✅ Quest COMPLETED, balance updated, completion created');
 
         console.log('[QUEST COMPLETE] Step 10b: Awarding dignity points...');
         await awardDignity(userId, 5);
@@ -300,6 +402,16 @@ router.post('/:id/complete', authenticateToken, completionUpload.single('photo')
             location: { latitude, longitude }
         });
         console.log('[QUEST COMPLETE] ✅ Activity recorded');
+
+        const io = (global as any).io;
+        if (io) {
+            io.to('stats').emit('stats:update', {
+                scope: 'quests',
+                action: 'completed',
+                questId,
+                timestamp: new Date().toISOString()
+            });
+        }
 
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('[QUEST COMPLETE] ✅✅✅ SUCCESS - COMPLETED');

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { Prisma } from '@prisma/client';
 import prisma from '../../services/prisma';
 import { authenticateToken } from '../middleware/auth';
 import { messengerHub } from '../../services/messenger';
@@ -115,40 +116,74 @@ router.post('/:id/approve', authenticateToken, async (req: any, res, next) => {
             return res.status(403).json({ error: 'Admin access required' });
         }
 
-        // Get the order
-        const order = await (prisma as any).taskOrder.findUnique({
-            where: { id: orderId }
+        const txResult = await prisma.$transaction(async (tx: any) => {
+            const order = await tx.taskOrder.findUnique({ where: { id: orderId } });
+
+            if (!order) {
+                return { notFound: true };
+            }
+
+            const existingQuest = await tx.quest.findUnique({ where: { taskOrderId: orderId } });
+            if (order.status === 'PUBLISHED' || existingQuest) {
+                const publishedOrder = order.status === 'PUBLISHED'
+                    ? order
+                    : await tx.taskOrder.update({
+                        where: { id: orderId },
+                        data: { status: 'PUBLISHED' }
+                    });
+
+                return {
+                    alreadyProcessed: true,
+                    quest: existingQuest,
+                    order: publishedOrder
+                };
+            }
+
+            if (order.status !== 'PENDING_MODERATION') {
+                return { invalidStatus: true, status: order.status };
+            }
+
+            const quest = await tx.quest.create({
+                data: {
+                    title: order.title,
+                    description: order.description,
+                    type: 'WORK',
+                    status: 'OPEN',
+                    reward: Number(order.budget),
+                    city: order.city,
+                    district: order.district,
+                    location: order.location,
+                    taskOrderId: order.id
+                }
+            });
+
+            const updatedOrder = await tx.taskOrder.update({
+                where: { id: orderId },
+                data: { status: 'PUBLISHED' }
+            });
+
+            return { quest, order: updatedOrder, alreadyProcessed: false };
         });
 
-        if (!order) {
+        if ((txResult as any).notFound) {
             return res.status(404).json({ error: 'Task order not found' });
         }
 
-        // Create quest from task order
-        const quest = await (prisma as any).quest.create({
-            data: {
-                title: order.title,
-                description: order.description,
-                type: 'WORK', // TaskOrder are considered WORK type
-                status: 'OPEN',
-                reward: Number(order.budget),
-                city: order.city,
-                district: order.district,
-                location: order.location,
-                taskOrderId: order.id
-            }
-        });
+        if ((txResult as any).invalidStatus) {
+            return res.status(409).json({
+                error: `Task order cannot be approved from status ${(txResult as any).status}`
+            });
+        }
 
-        // Update task order status
-        const updatedOrder = await (prisma as any).taskOrder.update({
-            where: { id: orderId },
-            data: { status: 'PUBLISHED' }
-        });
+        const quest = (txResult as any).quest;
+        const updatedOrder = (txResult as any).order;
+        const alreadyProcessed = Boolean((txResult as any).alreadyProcessed);
 
         console.log('[SYNC] TaskOrder approved and converted to Quest:', {
-            taskOrderId: order.id,
-            questId: quest.id,
-            title: quest.title
+            taskOrderId: updatedOrder.id,
+            questId: quest?.id,
+            title: quest?.title,
+            alreadyProcessed
         });
 
         // Notify via messenger if available
@@ -156,10 +191,10 @@ router.post('/:id/approve', authenticateToken, async (req: any, res, next) => {
             const studentChatId = process.env.STUDENT_CHAT_ID;
             if (studentChatId) {
                 const msg = `✅ **Нове завдання від клієнта!**\n\n` +
-                    `📝 ${quest.title}\n` +
-                    `💬 ${quest.description || '—'}\n` +
-                    `💰 Винагорода: ${quest.reward}€\n` +
-                    `📍 ${quest.city || '—'}, ${quest.district || '—'}\n\n` +
+                    `📝 ${quest?.title || 'Завдання'}\n` +
+                    `💬 ${quest?.description || '—'}\n` +
+                    `💰 Винагорода: ${quest?.reward ?? '—'}€\n` +
+                    `📍 ${quest?.city || '—'}, ${quest?.district || '—'}\n\n` +
                     `Перегляньте в додатку!`;
                 
                 await messengerHub.sendToMaster(Number(studentChatId), msg);
@@ -168,8 +203,44 @@ router.post('/:id/approve', authenticateToken, async (req: any, res, next) => {
             console.warn('Failed to send notification:', e);
         }
 
-        res.json({ message: 'Task order approved', quest, order: updatedOrder });
+        const io = (global as any).io;
+        if (io) {
+            io.to('stats').emit('stats:update', {
+                scope: 'task_orders',
+                action: alreadyProcessed ? 'approve_idempotent' : 'approved',
+                orderId,
+                questId: quest?.id || null,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        res.json({
+            message: alreadyProcessed ? 'Task order already approved' : 'Task order approved',
+            quest,
+            order: updatedOrder,
+            idempotent: alreadyProcessed
+        });
     } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            try {
+                const orderId = req.params.id;
+                const [order, quest] = await Promise.all([
+                    (prisma as any).taskOrder.findUnique({ where: { id: orderId } }),
+                    (prisma as any).quest.findUnique({ where: { taskOrderId: orderId } })
+                ]);
+
+                if (order && quest) {
+                    return res.json({
+                        message: 'Task order already approved',
+                        quest,
+                        order,
+                        idempotent: true
+                    });
+                }
+            } catch (nestedError) {
+                return next(nestedError);
+            }
+        }
         next(error);
     }
 });

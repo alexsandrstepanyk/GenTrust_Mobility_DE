@@ -4,6 +4,8 @@ import {
   FileText, 
   Users, 
   Settings,
+  Building2,
+  PlusSquare,
   Bell,
   LogOut,
   Menu
@@ -16,6 +18,8 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Звіти', href: '/reports', icon: FileText },
   { name: 'Користувачі', href: '/users', icon: Users },
+  { name: 'Департаменти', href: '/departments', icon: Building2 },
+  { name: 'Додати департамент', href: '/departments/create', icon: PlusSquare },
   { name: 'Налаштування', href: '/settings', icon: Settings },
 ];
 

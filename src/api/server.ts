@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import authRoutes from './routes/auth';
@@ -13,6 +14,7 @@ import adminRoutes from './routes/admin';
 import parentRoutes from './routes/parents';
 import completionRoutes from './routes/completions';
 import statsRoutes from './routes/stats';
+import departmentsManagerRoutes from './routes/departments-manager'; // ✅ NEW: Department Management
 // import departmentRoutes from './routes/departments'; // DISABLED: 2026-03-06
 // import germanComplianceRoutes from './german/compliance';
 // import germanSmsRoutes from './german/sms';
@@ -22,6 +24,7 @@ import path from 'path';
 // import exceptionManager from '../services/exception_manager';
 
 dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
 
 const app = express();
 const httpServer = createServer(app);
@@ -55,6 +58,7 @@ app.use('/api/task-orders', taskOrderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/completions', completionRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/departments-manager', departmentsManagerRoutes); // ✅ NEW: Department Management
 // app.use('/api/departments', departmentRoutes); // DISABLED: 2026-03-06
 // app.use('/api/german', germanComplianceRoutes);
 // app.use('/api/german', germanSmsRoutes);
@@ -62,14 +66,20 @@ app.use('/api/stats', statsRoutes);
 // Socket.IO Authentication Middleware
 io.use((socket, next) => {
   try {
-    const token = socket.handshake.auth.token;
-    if (!token) {
+    const rawToken = socket.handshake.auth?.token || socket.handshake.headers?.authorization;
+    if (!rawToken) {
       return next(new Error('Authentication error: No token provided'));
     }
-    // Token validation happens in your auth middleware
+
+    const token = String(rawToken).startsWith('Bearer ')
+      ? String(rawToken).slice(7)
+      : String(rawToken);
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    (socket.data as any).user = decoded;
     next();
   } catch (error) {
-    next(new Error('Authentication error'));
+    next(new Error('Authentication error: Invalid token'));
   }
 });
 

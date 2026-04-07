@@ -9,15 +9,7 @@ import path from 'path';
 import { PrismaClient } from '@prisma/client-department';
 
 // Типи департаментів
-export type DepartmentId = 
-  | 'roads'
-  | 'lighting'
-  | 'waste'
-  | 'parks'
-  | 'water'
-  | 'transport'
-  | 'ecology'
-  | 'vandalism';
+export type DepartmentId = string;
 
 // Мапа шляхів до баз даних (використовуємо абсолютні шляхи)
 const PROJECT_ROOT = process.cwd();
@@ -33,6 +25,19 @@ const DEPARTMENT_DB_PATHS: Record<DepartmentId, string> = {
   vandalism: `file:${path.join(PROJECT_ROOT, 'databases/vandalism_dept.db')}`,
 };
 
+function sanitizeDepartmentId(departmentId: string): string {
+  return String(departmentId || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '-');
+}
+
+function getDepartmentDbUrl(departmentId: DepartmentId): string {
+  const normalized = sanitizeDepartmentId(departmentId);
+  return DEPARTMENT_DB_PATHS[normalized]
+    || `file:${path.join(PROJECT_ROOT, `databases/${normalized}_dept.db`)}`;
+}
+
 // Кеш Prisma клієнтів для кожного департаменту
 const prismaClients: Partial<Record<DepartmentId, PrismaClient>> = {};
 
@@ -41,16 +46,18 @@ const prismaClients: Partial<Record<DepartmentId, PrismaClient>> = {};
  * Клієнти кешуються для повторного використання
  */
 export function getDepartmentPrisma(departmentId: DepartmentId): PrismaClient {
+  const normalizedDepartmentId = sanitizeDepartmentId(departmentId);
+
   // Перевіряємо чи вже є кешований клієнт
-  if (prismaClients[departmentId]) {
-    return prismaClients[departmentId]!;
+  if (prismaClients[normalizedDepartmentId]) {
+    return prismaClients[normalizedDepartmentId]!;
   }
 
   // Створюємо новий підключення
-  const dbPath = DEPARTMENT_DB_PATHS[departmentId];
+  const dbPath = getDepartmentDbUrl(normalizedDepartmentId);
   
   if (!dbPath) {
-    throw new Error(`Unknown department: ${departmentId}`);
+    throw new Error(`Unknown department: ${normalizedDepartmentId}`);
   }
 
   const prisma = new PrismaClient({
@@ -62,9 +69,9 @@ export function getDepartmentPrisma(departmentId: DepartmentId): PrismaClient {
   });
 
   // Кешуємо клієнта
-  prismaClients[departmentId] = prisma;
+  prismaClients[normalizedDepartmentId] = prisma;
 
-  console.log(`✅ Department Prisma Client created for: ${departmentId}`);
+  console.log(`✅ Department Prisma Client created for: ${normalizedDepartmentId}`);
   
   return prisma;
 }
@@ -73,7 +80,7 @@ export function getDepartmentPrisma(departmentId: DepartmentId): PrismaClient {
  * Отримати всі доступні департаменти
  */
 export function getAllDepartments(): DepartmentId[] {
-  return Object.keys(DEPARTMENT_DB_PATHS) as DepartmentId[];
+  return Object.keys(DEPARTMENT_DB_PATHS);
 }
 
 /**

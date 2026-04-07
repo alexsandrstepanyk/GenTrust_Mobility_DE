@@ -40,6 +40,10 @@ model User {
   // Push notifications
   pushToken     String? // Expo push token for notifications
 
+  // Департамент (співробітник)
+  department    Department? @relation(fields: [departmentId], references: [id])
+  departmentId  String?
+
   // Батькові зв'язки
   parentRelations ParentChild[] @relation("parent")
   childRelations  ParentChild[] @relation("child")
@@ -208,6 +212,10 @@ model Report {
   forwardedTo String?      // Відділ, до якого направлено (roads, lighting, waste, parks, water, transport, other)
   rejectionReason String?  // Причина відхилення
 
+  // Зв'язок з департаментом
+  department  Department?  @relation(fields: [departmentId], references: [id])
+  departmentId String?
+
   // Зв'язок з комунальною службою
   municipalTask MunicipalTask?
 
@@ -218,6 +226,7 @@ model Report {
   @@index([category, status])            // ✅ Для департаментів
   @@index([authorId, createdAt])         // ✅ Для історії користувача
   @@index([forwardedTo, status])         // ✅ Для фільтрів по департаментах
+  @@index([departmentId])                // ✅ Для зв'язку з департаментами
 }
 
 // 4. ЗАВДАННЯ (Logistics Scout / Work)
@@ -413,4 +422,50 @@ model OutboxEvent {
 
   @@index([processedAt, retryCount])  // ✅ Для воркера
   @@index([createdAt])                 // ✅ Для cleanup
+}
+
+// 9. ДЕПАРТАМЕНТИ (Dynamic Department Management)
+model Department {
+  id              String   @id @default(uuid())
+  slug            String   @unique  // URL-friendly name (roads, lighting, etc.)
+  
+  // Назви
+  nameUa          String   // Українська назва
+  nameEn          String   // Англійська назва
+  
+  // Візуалізація
+  color           String   @default("#3B82F6")  // Hex color
+  icon            String   @default("🏢")       // Emoji icon
+  
+  // Опис
+  description     String   // Детальний опис діяльності
+  responsibilities String?  // JSON array of responsibilities
+  
+  // Регіони
+  regions         String?  // JSON array of regions
+  
+  // Контакти
+  contactEmail    String?
+  contactPhone    String?
+  
+  // Бюджет
+  budget          Float    @default(0)
+  
+  // Налаштування
+  autoApproveReports Boolean @default(false)  // Авто-затвердження звітів
+  requiresPhotoForReports Boolean @default(true)  // Чи потрібне фото для звітів
+  
+  // Статус
+  status          String   @default("ACTIVE")  // ACTIVE, INACTIVE
+  
+  // Зв'язки
+  employees       User[]   // Співробітники департаменту (майбутнє розширення)
+  reports         Report[] // Звіти цього департаменту
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([status])
+  @@index([nameUa])
 }

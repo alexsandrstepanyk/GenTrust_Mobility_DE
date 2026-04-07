@@ -76,6 +76,27 @@ router.post('/register', async (req, res, next) => {
             }
         });
 
+        const io = (global as any).io;
+        if (io) {
+            io.to('users').emit('user:registered', {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                city: user.city,
+                district: user.district,
+                status: user.status,
+                role: user.role,
+                createdAt: user.createdAt
+            });
+            io.to('stats').emit('stats:update', {
+                scope: 'users',
+                action: 'registered',
+                userId: user.id,
+                timestamp: new Date().toISOString()
+            });
+        }
+
         const adminChatId = process.env.ADMIN_CHAT_ID;
         // Only adults are sent to City Hall moderation queue immediately
         if (adminChatId && initialStatus === 'PENDING') {

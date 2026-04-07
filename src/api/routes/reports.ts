@@ -12,6 +12,50 @@ import { createOutboxEvent } from '../../services/outbox'; // ✅ Outbox Pattern
 
 const router = Router();
 
+function emitRealtime(event: string, payload: any, room?: string) {
+    const io = (global as any).io;
+    if (!io) return;
+    if (room) {
+        io.to(room).emit(event, payload);
+    } else {
+        io.emit(event, payload);
+    }
+}
+
+async function upsertDepartmentReport(report: any, departmentId: string) {
+    const normalizedDepartment = String(departmentId || '').trim().toLowerCase();
+    if (!normalizedDepartment || normalizedDepartment === 'general') return;
+
+    const deptPrisma = getDepartmentPrisma(normalizedDepartment as DepartmentId);
+    await deptPrisma.departmentReport.upsert({
+        where: { id: report.id },
+        create: {
+            id: report.id,
+            userId: report.authorId,
+            photoId: report.photoId,
+            photoUrl: String(report.photoId || '').startsWith('data:image') ? null : report.photoId,
+            description: report.description || null,
+            latitude: Number(report.latitude),
+            longitude: Number(report.longitude),
+            aiVerdict: report.aiVerdict || null,
+            aiCategory: report.category || null,
+            status: report.status || 'PENDING'
+        },
+        update: {
+            userId: report.authorId,
+            photoId: report.photoId,
+            description: report.description || null,
+            latitude: Number(report.latitude),
+            longitude: Number(report.longitude),
+            aiVerdict: report.aiVerdict || null,
+            aiCategory: report.category || null,
+            status: report.status || 'PENDING',
+            rejectionReason: report.rejectionReason || null,
+            approvedAt: report.status === 'APPROVED' ? new Date() : null
+        }
+    });
+}
+
 // Analyze photo (before submitting report)
 router.post('/analyze', authenticateToken, async (req: any, res, next) => {
     try {
@@ -72,7 +116,8 @@ router.post('/', authenticateToken, async (req: any, res, next) => {
             'vandalism': 'vandalism',
         };
 
-        const departmentId: DepartmentId = (departmentMap[category] as DepartmentId) || 'roads';
+        const normalizedCategory = String(category || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+        const departmentId: DepartmentId = (departmentMap[category] as DepartmentId) || normalizedCategory || 'roads';
 
         // ========================================
         // 1️⃣ ЗАПИС В ГОЛОВНУ БД (для City-Hall)
@@ -115,6 +160,23 @@ router.post('/', authenticateToken, async (req: any, res, next) => {
         await awardDignity(userId, 2);
         await recordActivity(userId, 'REPORT_SUBMITTED', { reportId: report.id, category });
 
+        await cache.deleteByPrefix('reports:');
+
+        emitRealtime('report:new', {
+            id: report.id,
+            category: report.category,
+            status: report.status,
+            forwardedTo: report.forwardedTo,
+            createdAt: report.createdAt,
+            authorId: report.authorId
+        }, 'reports');
+        emitRealtime('stats:update', {
+            scope: 'reports',
+            action: 'created',
+            reportId: report.id,
+            timestamp: new Date().toISOString()
+        }, 'stats');
+
         // Notify City Hall
         const adminChatId = process.env.ADMIN_CHAT_ID;
         if (cityHallBot && adminChatId && adminChatId !== '0') {
@@ -146,7 +208,7 @@ router.post('/', authenticateToken, async (req: any, res, next) => {
 
 // List ALL reports (for city hall dashboard)
 // ✅ OPTIMIZED v5.4.0: Redis Cache + Eager Loading
-router.get('/', async (req, res, next) => {
+router.get('/', authenticateToken, async (req, res, next) => {
     try {
         const { status, category, limit = '100' } = req.query;
         
@@ -211,21 +273,45 @@ router.get('/', async (req, res, next) => {
 
 // Approve report
 // ✅ OPTIMIZED v5.4.0: Cache Invalidation
-router.post('/:id/approve', async (req, res, next) => {
+router.post('/:id/approve', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
         const { department } = req.body;
+
+        const existingReport = await (prisma as any).report.findUnique({ where: { id } });
+        if (!existingReport) {
+            return res.status(404).json({ error: 'Report not found' });
+        }
 
         const report = await (prisma as any).report.update({
             where: { id },
             data: {
                 status: 'APPROVED',
-                forwardedTo: department || 'general'
+                forwardedTo: department || existingReport.forwardedTo || 'general'
             }
         });
 
+        try {
+            await upsertDepartmentReport(report, String(report.forwardedTo || ''));
+        } catch (deptSyncError) {
+            console.error(`⚠️ Failed to sync APPROVED report ${id} to department DB:`, deptSyncError);
+        }
+
         // ✅ Інвалідація кешу
         await cache.deleteByPrefix('reports:');
+
+        emitRealtime('report:updated', {
+            id: report.id,
+            status: report.status,
+            forwardedTo: report.forwardedTo,
+            updatedAt: new Date().toISOString()
+        }, 'reports');
+        emitRealtime('stats:update', {
+            scope: 'reports',
+            action: 'approved',
+            reportId: report.id,
+            timestamp: new Date().toISOString()
+        }, 'stats');
 
         res.json({ success: true, report });
     } catch (error) {
@@ -235,7 +321,7 @@ router.post('/:id/approve', async (req, res, next) => {
 
 // Reject report
 // ✅ OPTIMIZED v5.4.0: Cache Invalidation
-router.post('/:id/reject', async (req, res, next) => {
+router.post('/:id/reject', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
         const { reason } = req.body;
@@ -248,8 +334,29 @@ router.post('/:id/reject', async (req, res, next) => {
             }
         });
 
+        try {
+            if (report.forwardedTo) {
+                await upsertDepartmentReport(report, String(report.forwardedTo));
+            }
+        } catch (deptSyncError) {
+            console.error(`⚠️ Failed to sync REJECTED report ${id} to department DB:`, deptSyncError);
+        }
+
         // ✅ Інвалідація кешу
         await cache.deleteByPrefix('reports:');
+
+        emitRealtime('report:updated', {
+            id: report.id,
+            status: report.status,
+            rejectionReason: report.rejectionReason,
+            updatedAt: new Date().toISOString()
+        }, 'reports');
+        emitRealtime('stats:update', {
+            scope: 'reports',
+            action: 'rejected',
+            reportId: report.id,
+            timestamp: new Date().toISOString()
+        }, 'stats');
 
         res.json({ success: true, report });
     } catch (error) {
@@ -258,10 +365,15 @@ router.post('/:id/reject', async (req, res, next) => {
 });
 
 // Forward report to department
-router.post('/:id/forward', async (req, res, next) => {
+router.post('/:id/forward', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
         const { to } = req.body; // department: utilities, transport, ecology
+
+        const existingReport = await (prisma as any).report.findUnique({ where: { id } });
+        if (!existingReport) {
+            return res.status(404).json({ error: 'Report not found' });
+        }
         
         const report = await (prisma as any).report.update({
             where: { id },
@@ -271,6 +383,27 @@ router.post('/:id/forward', async (req, res, next) => {
             }
         });
 
+        try {
+            await upsertDepartmentReport(report, String(to || report.forwardedTo || ''));
+        } catch (deptSyncError) {
+            console.error(`⚠️ Failed to sync FORWARDED report ${id} to department DB:`, deptSyncError);
+        }
+
+        await cache.deleteByPrefix('reports:');
+
+        emitRealtime('report:updated', {
+            id: report.id,
+            status: report.status,
+            forwardedTo: report.forwardedTo,
+            updatedAt: new Date().toISOString()
+        }, 'reports');
+        emitRealtime('stats:update', {
+            scope: 'reports',
+            action: 'forwarded',
+            reportId: report.id,
+            timestamp: new Date().toISOString()
+        }, 'stats');
+
         res.json({ success: true, report });
     } catch (error) {
         next(error);
@@ -278,7 +411,7 @@ router.post('/:id/forward', async (req, res, next) => {
 });
 
 // Get report statistics
-router.get('/stats/overview', async (req, res, next) => {
+router.get('/stats/overview', authenticateToken, async (req, res, next) => {
     try {
         const [total, pending, approved, rejected, forwarded] = await Promise.all([
             (prisma as any).report.count(),
@@ -343,7 +476,7 @@ router.get('/my', authenticateToken, async (req: any, res, next) => {
 // DEPARTMENT ENDPOINTS
 // ========================================
 // Отримати звіти конкретного департаменту
-router.get('/department/:deptId', async (req, res, next) => {
+router.get('/department/:deptId', authenticateToken, async (req, res, next) => {
     try {
         const { deptId } = req.params; // roads, lighting, waste, parks, water, transport, ecology, vandalism
         const { status, limit = '100' } = req.query;
@@ -402,7 +535,7 @@ router.get('/department/:deptId', async (req, res, next) => {
 });
 
 // Отримати статистику департаменту
-router.get('/department/:deptId/stats', async (req, res, next) => {
+router.get('/department/:deptId/stats', authenticateToken, async (req, res, next) => {
     try {
         const { deptId } = req.params;
 

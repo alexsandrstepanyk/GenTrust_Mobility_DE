@@ -120,6 +120,38 @@ launch_service() {
     return 1
 }
 
+launch_dynamic_departments_from_registry() {
+    local registry_file="$PROJECT_DIR/departments/departments.registry.json"
+    local fixed_slugs="roads|lighting|waste|parks|water|transport|ecology|vandalism"
+
+    if [ ! -f "$registry_file" ]; then
+        echo -e "${YELLOW}→${NC} Dynamic registry not found, skip dynamic departments"
+        return 0
+    fi
+
+    echo -e "${CYAN}🔄 Запуск динамічних департаментів з registry...${NC}"
+
+    while IFS='|' read -r slug name port; do
+        if [ -z "$slug" ] || [ -z "$port" ]; then
+            continue
+        fi
+
+        if [[ "$slug" =~ ^($fixed_slugs)$ ]]; then
+            continue
+        fi
+
+        local dept_dir="$PROJECT_DIR/departments/$slug"
+        if [ ! -d "$dept_dir" ]; then
+            echo -e "${YELLOW}⚠${NC} Dynamic dept folder missing: $dept_dir"
+            continue
+        fi
+
+        local dept_name="${name:-$slug}"
+        echo -e "${CYAN}→ Dynamic Department: ${dept_name} (порт ${port})${NC}"
+        launch_service "Dept: ${dept_name}" "$port" "npm run dev -- --port ${port} --host 0.0.0.0" "$dept_dir" || echo "⚠️ ${dept_name} failed"
+    done < <(node -e "const fs=require('fs');const p='$registry_file';try{const arr=JSON.parse(fs.readFileSync(p,'utf8'));(Array.isArray(arr)?arr:[]).forEach(d=>{const s=(d.slug||'').toString().trim();const n=(d.nameUa||d.name||d.nameEn||s).toString().replace(/\|/g,'/');const port=Number(d.port||0);if(s&&port) console.log(s+'|'+n+'|'+port);});}catch(e){}")
+}
+
 # ============================================================================
 # ГОЛОВНА ПРОГРАМА
 # ============================================================================
@@ -169,8 +201,9 @@ echo -e "${BLUE}║${NC}  STARTING ALL SERVICES"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}\n"
 
 # 1. BACKEND API (ЗАВЖДИ ПЕРШИМ)
+# ✅ ВИПРАВЛЕНО: запускаємо через nodemon для стабільності та авто-рестарту
 echo -e "${CYAN}[1/11] Backend API v6 (порт 3000)${NC}"
-launch_service "Backend API v6" "3000" "npx ts-node src/api-server.ts" "$PROJECT_DIR" || exit 1
+launch_service "Backend API v6" "3000" "npx nodemon --exec ts-node src/api-server.ts" "$PROJECT_DIR" || exit 1
 sleep 2
 
 # Перевірка що Backend запустився
@@ -224,9 +257,13 @@ launch_service "Dept: Ecology" "5186" "npm run dev" "$PROJECT_DIR/departments/ec
 echo -e "${CYAN}[12/12] 🎨 Vandalism Department (порт 5187)${NC}"
 launch_service "Dept: Vandalism" "5187" "npm run dev" "$PROJECT_DIR/departments/vandalism" || echo "⚠️ Vandalism failed"
 
+# Dynamic departments from registry (ports 5188+)
+launch_dynamic_departments_from_registry
+
 # 13. MONITOR DASHBOARD (порт 9000)
+# ✅ ВИПРАВЛЕНО: додано обробку помилок в server.js + nohup для стабільності
 echo -e "${CYAN}[13/13] 📊 Monitor Dashboard (порт 9000)${NC}"
-launch_service "Monitor Dashboard" "9000" "node server.js" "$PROJECT_DIR/monitor" || echo "⚠️ Monitor failed"
+launch_service "Monitor Dashboard" "9000" "nohup node server.js" "$PROJECT_DIR/monitor" || echo "⚠️ Monitor failed"
 
 # ============================================================================
 # ФІНАЛЬНИЙ СТАТУС
@@ -249,6 +286,12 @@ echo -e "   🚰 Water:               ${GREEN}http://localhost:5184${NC}"
 echo -e "   🚌 Transport:           ${GREEN}http://localhost:5185${NC}"
 echo -e "   🌿 Ecology:             ${GREEN}http://localhost:5186${NC}"
 echo -e "   🎨 Vandalism:           ${GREEN}http://localhost:5187${NC}"
+if [ -f "$PROJECT_DIR/departments/departments.registry.json" ]; then
+    DYNAMIC_SERVICES=$(node -e "const fs=require('fs');const p='$PROJECT_DIR/departments/departments.registry.json';try{const arr=JSON.parse(fs.readFileSync(p,'utf8'));const fixed=new Set(['roads','lighting','waste','parks','water','transport','ecology','vandalism']);(Array.isArray(arr)?arr:[]).filter(d=>d&&d.slug&&!fixed.has(String(d.slug))).forEach(d=>{if(d.port)console.log('   🆕 '+(d.nameUa||d.name||d.slug)+': '.padEnd(24,' ')+'${GREEN}http://localhost:'+d.port+'${NC}');});}catch(e){}")
+    if [ -n "$DYNAMIC_SERVICES" ]; then
+        echo -e "$DYNAMIC_SERVICES"
+    fi
+fi
 echo ""
 
 echo -e "${YELLOW}🔒 Rules Applied:${NC}"

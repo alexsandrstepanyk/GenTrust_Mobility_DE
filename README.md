@@ -4,6 +4,23 @@ Ukrainian edtech platform connecting students with earning opportunities through
 
 ## 🆕 LATEST UPDATES
 
+### **2026-04-07 v6.0.7 - Dynamic Departments + Auto-Launch + Full Sync** 🏢
+- ✅ **Додано**: створення нового департаменту з City-Hall Dashboard
+- ✅ **Додано**: автоматичне створення окремої SQLite БД для нового департаменту
+- ✅ **Додано**: автоматичне застосування `schema_departments.prisma` для нової БД
+- ✅ **Додано**: динамічний `departments.registry.json` з портом для кожного нового департаменту
+- ✅ **Додано**: автозапуск нових департаментів у `start-v6-full.sh`
+- ✅ **Додано**: автоматичне підключення нових департаментів у Monitor Dashboard (`9000`)
+- ✅ **Додано**: динамічну перевірку БД нових департаментів у Monitor Dashboard
+- ✅ **Виправлено**: Socket.IO в основному `api-server.ts`, щоб realtime працював у production-like старті
+- ✅ **Виправлено**: захист критичних маршрутів `reports` через `authenticateToken`
+- ✅ **Виправлено**: Socket auth тепер перевіряє JWT через `jwt.verify()`
+- ✅ **Додано**: realtime події `report:new`, `stats:update`, `user:registered`
+- ✅ **Додано**: idempotency + transaction для `task_orders approve`
+- ✅ **Додано**: idempotency + transaction для `quests complete`
+- ✅ **Додано**: синхронізацію `Report` між головною БД і БД департаменту при `create/forward/approve/reject`
+- 🚀 **Status**: Dynamic Department Release Ready
+
 ### **2026-03-23 v6.0.6 - Parent Home Screen i18n Fix + start.sh оновлено** 🌍
 - ✅ **Виправлено**: ParentHomeScreen тепер перекладено (було хардкоджено)
 - ✅ **Додано**: 35+ ключів перекладу для 5 мов
