@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -121,7 +122,7 @@ export default function ReportMap({ reports, onMarkerClick }: ReportMapProps) {
                   </Badge>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Категорія:</span>{' '}
+                  <span className="text-muted-foreground">{t('category_label')}</span>{' '}
                   {report.category}
                 </div>
                 <div>

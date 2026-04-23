@@ -1,5 +1,5 @@
 #!/bin/bash
-
+export PATH="/opt/homebrew/bin:$PATH"
 ################################################################################
 #                   GENTRUST MOBILITY - УНІВЕРСАЛЬНИЙ ЗАПУСК                  #
 #                                                                              #
@@ -136,7 +136,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # 📍 Базова директорія проекту
-PROJECT_DIR="/Users/apple/Desktop/GenTrust_Mobility_DE"
+PROJECT_DIR="$(pwd)"
 cd "$PROJECT_DIR" || exit 1
 
 # 🎯 Парсинг аргументів

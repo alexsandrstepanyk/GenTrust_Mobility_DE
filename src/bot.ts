@@ -8,10 +8,10 @@ import { logisticsScene } from "./scenes/logistics";
 import { Markup } from "telegraf";
 import { cityHallBot } from "./city_hall_bot";
 import { awardDignity, getLeaderboard } from "./services/reputation";
-import { mainMenu } from "./keyboards";
+import { recordActivity } from "./services/life_recorder";
+import { getMainMenu } from "./keyboards";
 import prisma from "./services/prisma";
 import { getQuestVerifiers, notifyCompletionSubmitted } from "./services/task_completion";
-import { recordActivity } from "./services/life_recorder";
 
 dotenv.config();
 
@@ -53,10 +53,12 @@ bot.start((ctx) => {
         return;
     }
 
-    ctx.reply(`Вітаю, ${ctx.user?.firstName || ctx.user?.username || 'скаут'}! 
-Ти в системі GenTrust Alpha. Твій рейтинг допомагає місту ставати кращим. ✨
-
-Використовуй меню нижче для навігації:`, mainMenu);
+    const lang = ctx.user?.language || 'de';
+    const welcome = lang === 'uk' 
+        ? `Вітаю, ${ctx.user?.firstName || ctx.user?.username || 'скаут'}! \nТи в системі GenTrust Alpha. Оберіть дію нижче:` 
+        : `Willkommen, ${ctx.user?.firstName || ctx.user?.username || 'Scout'}! \nDu bist im GenTrust Alpha-System. Wählen Sie eine Aktion aus:`;
+    
+    ctx.reply(welcome, getMainMenu(lang));
 });
 
 // Navigation Handlers
@@ -72,16 +74,21 @@ const checkModeration = async (ctx: BotContext, next: () => Promise<void>) => {
     return next();
 };
 
-bot.hears("📸 Звіт", checkModeration, (ctx) => ctx.scene.enter("urban_guardian"));
-bot.hears("🎒 Квести", checkModeration, (ctx) => ctx.scene.enter("logistics"));
-bot.hears("🏆 Рейтинг", checkModeration, (ctx) => ctx.reply("🏆 **Рейтинг Скаутів**\n\nОберіть масштаб:", {
-    parse_mode: "Markdown",
-    ...Markup.inlineKeyboard([
-        [Markup.button.callback("🌍 Загальний ТОП", "rating_global")],
-        [Markup.button.callback("🏙️ Моє Місто", "rating_city"), Markup.button.callback("🏠 Мій Район", "rating_district")],
-        [Markup.button.callback("🏫 Моя Школа", "rating_school")]
-    ])
-}));
+bot.hears(/📸 (Звіт|Problem melden)/, checkModeration, (ctx) => ctx.scene.enter("urban_guardian"));
+bot.hears(/🎒 (Квести|Aufgaben)/, checkModeration, (ctx) => ctx.scene.enter("logistics"));
+bot.hears(/🏆 (Рейтинг|Bewertung)/, checkModeration, (ctx) => {
+    const lang = ctx.user?.language || 'de';
+    const title = lang === 'uk' ? "🏆 **Рейтинг Скаутів**\n\nОберіть масштаб:" : "🏆 **Scout-Bewertung**\n\nWählen Sie den Maßstab:";
+    ctx.reply(title, {
+        parse_mode: "Markdown",
+        ...Markup.inlineKeyboard([
+            [Markup.button.callback(lang === 'uk' ? "🌍 Загальний ТОП" : "🌍 Globale TOP", "rating_global")],
+            [Markup.button.callback(lang === 'uk' ? "🏙️ Моє Місто" : "🏙️ Meine Stadt", "rating_city"), 
+             Markup.button.callback(lang === 'uk' ? "🏠 Мій Район" : "🏠 Mein Bezirk", "rating_district")],
+            [Markup.button.callback(lang === 'uk' ? "🏫 Моя Школа" : "🏫 Meine Schule", "rating_school")]
+        ])
+    });
+});
 
 // Action Handlers for Ratings
 bot.action(/^rating_(.+)/, async (ctx) => {
@@ -142,6 +149,27 @@ bot.action("rating_back", async (ctx) => {
 });
 
 
+bot.command("language", async (ctx) => {
+    await ctx.reply(`🌐 **Sprache wählen / Оберіть мову**`, {
+        parse_mode: "Markdown",
+        ...Markup.inlineKeyboard([
+            [Markup.button.callback("🇩🇪 Deutsch", "lang_de"), Markup.button.callback("🇺🇦 Українська", "lang_uk")]
+        ])
+    });
+});
+
+const profileMenu = (user: any) => {
+    return { 
+        parse_mode: "Markdown" as const, 
+        ...Markup.inlineKeyboard([
+            [Markup.button.callback("🌐 Sprache / Мова", "profile_language")],
+            [Markup.button.callback("🔒 Datenschutz / Конфіденційність", "profile_privacy")],
+            [Markup.button.callback("ℹ️ Über die App / Про додаток", "profile_about")],
+            [Markup.button.callback("⬅️ Zurück / Назад", "profile_close")]
+        ])
+    };
+};
+
 bot.command("profile", (ctx) => {
     const user = ctx.user;
     ctx.reply(`👤 **Mein Profil** / **Мій Профіль**
@@ -155,18 +183,10 @@ bot.command("profile", (ctx) => {
 🏫 Schule / Школа: ${user?.school || "Nicht festgelegt"}
 
 ⚙️ **Einstellungen / Налаштування**
-`, { 
-        parse_mode: "Markdown", 
-        ...Markup.inlineKeyboard([
-            [Markup.button.callback("🌐 Sprache / Мова", "profile_language")],
-            [Markup.button.callback("🔒 Datenschutz / Конфіденційність", "profile_privacy")],
-            [Markup.button.callback("ℹ️ Über die App / Про додаток", "profile_about")],
-            [Markup.button.callback("⬅️ Zurück / Назад", "profile_close")]
-        ])
-    });
+`, profileMenu(user));
 });
 
-bot.hears("👤 Профіль", (ctx) => {
+bot.hears(/👤 (Профіль|Profil)/, (ctx) => {
     const user = ctx.user;
     ctx.reply(`👤 **Mein Profil** / **Мій Профіль**
     
@@ -179,15 +199,7 @@ bot.hears("👤 Профіль", (ctx) => {
 🏫 Schule / Школа: ${user?.school || "Nicht festgelegt"}
 
 ⚙️ **Einstellungen / Налаштування**
-`, { 
-        parse_mode: "Markdown", 
-        ...Markup.inlineKeyboard([
-            [Markup.button.callback("🌐 Sprache / Мова", "profile_language")],
-            [Markup.button.callback("🔒 Datenschutz / Конфіденційність", "profile_privacy")],
-            [Markup.button.callback("ℹ️ Über die App / Про додаток", "profile_about")],
-            [Markup.button.callback("⬅️ Zurück / Назад", "profile_close")]
-        ])
-    });
+`, profileMenu(user));
 });
 
 bot.command('complete', async (ctx) => {
@@ -405,12 +417,23 @@ bot.action(/^lang_(.+)/, async (ctx) => {
         ru: "🇷🇺 Русский",
         fr: "🇫🇷 Français"
     };
+
+    if (ctx.user?.id) {
+        await prisma.user.update({
+            where: { id: ctx.user.id },
+            data: { language: lang }
+        });
+        if (ctx.user) ctx.user.language = lang; // update local session cache
+    }
     
-    // TODO: Save language preference to database
-    await ctx.editMessageText(`✅ Sprache geändert zu: ${langNames[lang]}\n\n*Hinweis: Spracheinstellungen werden in der nächsten Version gespeichert.*`, {
+    await ctx.editMessageText(`✅ Sprache geändert zu: ${langNames[lang]}\n✅ Мову змінено на: ${langNames[lang]}`, {
         parse_mode: "Markdown",
-        ...Markup.inlineKeyboard([[Markup.button.callback("⬅️ Zurück", "profile_back")]])
+        ...Markup.inlineKeyboard([[Markup.button.callback("⬅️ Zurück / Назад", "profile_back")]])
     });
+    
+    // Refresh main menu safely by sending a new message to apply keyboard changes
+    await ctx.reply(lang === 'de' ? "🔄 Hauptmenü aktualisiert:" : "🔄 Головне меню оновлено:", getMainMenu(lang));
+    
     await ctx.answerCbQuery(`Sprache: ${langNames[lang]}`);
 });
 
@@ -486,15 +509,7 @@ bot.action("profile_back", async (ctx) => {
 🏫 Schule / Школа: ${user?.school || "Nicht festgelegt"}
 
 ⚙️ **Einstellungen / Налаштування**
-`, { 
-        parse_mode: "Markdown", 
-        ...Markup.inlineKeyboard([
-            [Markup.button.callback("🌐 Sprache / Мова", "profile_language")],
-            [Markup.button.callback("🔒 Datenschutz / Конфіденційність", "profile_privacy")],
-            [Markup.button.callback("ℹ️ Über die App / Про додаток", "profile_about")],
-            [Markup.button.callback("⬅️ Zurück / Назад", "profile_close")]
-        ])
-    });
+`, profileMenu(user));
     await ctx.answerCbQuery();
 });
 

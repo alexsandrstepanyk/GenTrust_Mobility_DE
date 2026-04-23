@@ -15,10 +15,12 @@ import { statsAPI } from '@/lib/api';
 import { useSocket, useSocketEvent } from '@/lib/socket';
 import { api } from '@/lib/api';
 import DepartmentsOverview from './DepartmentsOverview';
+import { useTranslation } from 'react-i18next';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [pendingReports, setPendingReports] = useState<any[]>([]);
@@ -28,13 +30,13 @@ export default function Dashboard() {
   const { socket } = useSocket();
 
   const departments = [
-    { id: 'roads', name: '🛣️ Дороги' },
-    { id: 'lighting', name: '💡 Освітлення' },
-    { id: 'waste', name: '🗑️ Сміття' },
-    { id: 'parks', name: '🌳 Парки' },
-    { id: 'water', name: '🚰 Водопровід' },
-    { id: 'transport', name: '🚗 Транспорт' },
-    { id: 'other', name: '❓ Інше' },
+    { id: 'roads', name: t('roads_dept') },
+    { id: 'lighting', name: t('lighting_dept') },
+    { id: 'waste', name: t('waste_dept') },
+    { id: 'parks', name: t('parks_dept') },
+    { id: 'water', name: t('water_dept') },
+    { id: 'transport', name: t('transport_dept') },
+    { id: 'other', name: t('other_dept') },
   ];
 
   useEffect(() => {
@@ -62,7 +64,7 @@ export default function Dashboard() {
     try {
       const department = selectedDepartment[reportId];
       if (!department) {
-        alert('Виберіть відділ');
+        alert(t('select_department'));
         return;
       }
       
@@ -76,7 +78,7 @@ export default function Dashboard() {
       loadStats();
     } catch (error) {
       console.error('Failed to approve report:', error);
-      alert('Помилка при підтвердженні звіту');
+      alert(t('error_approving'));
     } finally {
       setApproving(prev => ({ ...prev, [reportId]: false }));
     }
@@ -90,7 +92,7 @@ export default function Dashboard() {
       loadStats();
     } catch (error) {
       console.error('Failed to reject report:', error);
-      alert('Помилка при відхиленні звіту');
+      alert(t('error_rejecting'));
     } finally {
       setApproving(prev => ({ ...prev, [reportId]: false }));
     }
@@ -119,7 +121,7 @@ export default function Dashboard() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <Button onClick={() => setShowDepartments(false)} variant="outline">
-            ← Назад до головної
+            {t('back_to_main')}
           </Button>
         </div>
         <DepartmentsOverview />
@@ -133,7 +135,7 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      title: 'Всього звітів',
+      title: t('total_reports'),
       value: stats?.totalReports || 0,
       change: '+12%',
       trend: 'up',
@@ -142,7 +144,7 @@ export default function Dashboard() {
       bgColor: 'bg-blue-100',
     },
     {
-      title: 'Активні користувачі',
+      title: t('active_users'),
       value: stats?.activeUsers || 0,
       change: '+8%',
       trend: 'up',
@@ -151,7 +153,7 @@ export default function Dashboard() {
       bgColor: 'bg-green-100',
     },
     {
-      title: 'Підтверджено',
+      title: t('approved'),
       value: stats?.approvedReports || 0,
       change: '+23%',
       trend: 'up',
@@ -160,7 +162,7 @@ export default function Dashboard() {
       bgColor: 'bg-emerald-100',
     },
     {
-      title: 'Очікують',
+      title: t('pending'),
       value: stats?.pendingReports || 0,
       change: '-5%',
       trend: 'down',
@@ -176,15 +178,15 @@ export default function Dashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Dashboard
+            {t('dashboard')}
           </h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Огляд системи GenTrust City Hall
+            {t('overview_gentrust')}
           </p>
         </div>
         <Button onClick={() => setShowDepartments(true)} variant="outline">
           <Building2 className="w-4 h-4 mr-2" />
-          Департаменти
+          {t('departments')}
         </Button>
       </div>
 
@@ -207,7 +209,7 @@ export default function Dashboard() {
                       stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
                     }`}>
                       <TrendingUp className="inline h-4 w-4 mr-1" />
-                      {stat.change} за місяць
+                      {stat.change} {t('per_month')}
                     </p>
                   </div>
                   <div className={`${stat.bgColor} ${stat.color} p-3 rounded-lg`}>
@@ -225,8 +227,8 @@ export default function Dashboard() {
         {/* Reports Over Time */}
         <Card>
           <CardHeader>
-            <CardTitle>Звіти за часом</CardTitle>
-            <CardDescription>Останні 30 днів</CardDescription>
+            <CardTitle>{t('reports_over_time')}</CardTitle>
+            <CardDescription>{t('last_30_days')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -256,8 +258,8 @@ export default function Dashboard() {
         {/* Status Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Розподіл за статусами</CardTitle>
-            <CardDescription>Поточний стан</CardDescription>
+            <CardTitle>{t('status_distribution')}</CardTitle>
+            <CardDescription>{t('current_state')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -285,8 +287,8 @@ export default function Dashboard() {
         {/* Category Breakdown */}
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Звіти за категоріями</CardTitle>
-            <CardDescription>Розподіл за типами проблем</CardDescription>
+            <CardTitle>{t('reports_by_category')}</CardTitle>
+            <CardDescription>{t('problem_type_distribution')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -309,10 +311,10 @@ export default function Dashboard() {
         <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-900">
           <CardHeader>
             <CardTitle className="text-yellow-800 dark:text-yellow-200">
-              ⏳ Звіти на розгляді ({pendingReports.length})
+              {t('pending_reports_review')} ({pendingReports.length})
             </CardTitle>
             <CardDescription className="text-yellow-700 dark:text-yellow-300">
-              Затвердіть звіти та направте до відповідного відділу
+              {t('routing_instructions')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -362,7 +364,7 @@ export default function Dashboard() {
                       </div>
 
                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                        Від: {report.createdBy?.name} | {new Date(report.createdAt).toLocaleDateString('uk-UA')}
+                        {t('from_user')} {report.createdBy?.name} | {new Date(report.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'uk-UA')}
                       </p>
                     </div>
 
@@ -374,7 +376,7 @@ export default function Dashboard() {
                         className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg transition flex items-center gap-2 text-sm font-medium"
                       >
                         <ThumbsUp className="h-4 w-4" />
-                        Підтвердити
+                        {t('approve_btn')}
                       </button>
                       <button
                         onClick={() => handleReject(report.id)}
@@ -382,7 +384,7 @@ export default function Dashboard() {
                         className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg transition flex items-center gap-2 text-sm font-medium"
                       >
                         <Trash2 className="h-4 w-4" />
-                        Відхилити
+                        {t('reject_btn')}
                       </button>
                     </div>
                   </div>
@@ -396,8 +398,8 @@ export default function Dashboard() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Недавня активність</CardTitle>
-          <CardDescription>Останні дії в системі</CardDescription>
+          <CardTitle>{t('recent_activity')}</CardTitle>
+          <CardDescription>{t('recent_system_actions')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -425,7 +427,7 @@ export default function Dashboard() {
                   activity.type === 'rejected' ? 'destructive' :
                   'default'
                 }>
-                  {activity.type}
+                  {t(activity.type) || activity.type}
                 </Badge>
               </div>
             ))}

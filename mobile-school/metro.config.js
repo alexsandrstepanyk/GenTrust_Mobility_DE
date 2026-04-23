@@ -32,6 +32,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
 	if (moduleName === 'axios') {
 		return { filePath: axiosBrowserBuild, type: 'sourceFile' };
 	}
+	if (platform === 'web' && (moduleName === 'react-native-maps' || moduleName.startsWith('react-native-maps/'))) {
+		return {
+			filePath: path.resolve(__dirname, 'scripts/mock-maps.js'),
+			type: 'sourceFile',
+		};
+	}
 	if (originalResolveRequest) {
 		return originalResolveRequest(context, moduleName, platform);
 	}

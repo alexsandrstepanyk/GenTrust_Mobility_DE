@@ -15,7 +15,7 @@ RED='\033[0;31m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-PROJECT_DIR="/Users/apple/Desktop/GenTrust_Mobility_DE"
+PROJECT_DIR="$(pwd)"
 cd "$PROJECT_DIR"
 
 # ============================================================================
@@ -202,8 +202,8 @@ echo -e "${BLUE}╚════════════════════�
 
 # 1. BACKEND API (ЗАВЖДИ ПЕРШИМ)
 # ✅ ВИПРАВЛЕНО: запускаємо через nodemon для стабільності та авто-рестарту
-echo -e "${CYAN}[1/11] Backend API v6 (порт 3000)${NC}"
-launch_service "Backend API v6" "3000" "npx nodemon --exec ts-node src/api-server.ts" "$PROJECT_DIR" || exit 1
+echo -e "${CYAN}[1/11] Backend API + Bots v6 (порт 3000)${NC}"
+launch_service "Backend + Bots" "3000" "npx nodemon --exec ts-node src/index.ts" "$PROJECT_DIR" || exit 1
 sleep 2
 
 # Перевірка що Backend запустився

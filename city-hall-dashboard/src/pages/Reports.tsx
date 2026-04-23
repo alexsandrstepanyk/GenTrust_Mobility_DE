@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
@@ -32,6 +33,7 @@ interface MapMarker {
 }
 
 function Reports() {
+  const { t, i18n } = useTranslation();
   const [reports, setReports] = useState<Report[]>([]);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -176,10 +178,10 @@ function Reports() {
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      RESOLVED: '✓ Вирішено',
-      IN_PROGRESS: '⟳ В процесі',
-      PENDING: '⏳ На розгляді',
-      REJECTED: '✗ Відхилено'
+      RESOLVED: t('resolved'),
+      IN_PROGRESS: t('in_progress'),
+      PENDING: t('pending'),
+      REJECTED: t('rejected')
     };
     return labels[status] || status;
   };
@@ -187,7 +189,7 @@ function Reports() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Звіти про проблеми</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t("problem_reports")}</h1>
         <Button
           onClick={() => setMapOpen(true)}
           className="flex items-center gap-2"
@@ -245,11 +247,11 @@ function Reports() {
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-          <p className="mt-4 text-gray-600">Завантаження звітів...</p>
+          <p className="mt-4 text-gray-600">Завантаження {t('reports')}...</p>
         </div>
       ) : filteredReports.length === 0 ? (
         <Card className="text-center py-12">
-          <p className="text-gray-600">Немає звітів за обраним фільтром</p>
+          <p className="text-gray-600">Немає {t('reports')} за обраним фільтром</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -305,7 +307,7 @@ function Reports() {
                 <div className="flex justify-between items-center text-xs text-gray-600 pt-2 border-t">
                   <span>{report.createdBy.name}</span>
                   <span>
-                    {new Date(report.createdAt).toLocaleDateString('uk-UA')}
+                    {new Date(report.createdAt).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'uk-UA')}
                   </span>
                 </div>
               </div>
@@ -319,7 +321,7 @@ function Reports() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-4xl h-[90vh] flex flex-col">
             <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-bold">Карта проблем</h2>
+              <h2 className="text-xl font-bold">{t("problem_map")}</h2>
               <button
                 onClick={() => setMapOpen(false)}
                 className="p-2 hover:bg-gray-200 rounded-lg transition"
@@ -336,7 +338,7 @@ function Reports() {
             <div className="border-t p-4 flex gap-6">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-                <span className="text-sm">Активні проблеми ({getMarkers().filter(m => m.status !== 'RESOLVED').length})</span>
+                <span className="text-sm">{t("active_problems")} ({getMarkers().filter(m => m.status !== 'RESOLVED').length})</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-green-500 rounded-full"></div>
@@ -393,23 +395,23 @@ function Reports() {
                 <Card className="border-2 border-purple-200 bg-purple-50">
                   <div className="flex items-center gap-2 mb-3">
                     <BrainCircuit className="h-5 w-5 text-purple-600" />
-                    <h3 className="font-bold text-purple-900">🤖 Рекомендація ШІ</h3>
+                    <h3 className="font-bold text-purple-900">{t("ai_recommendation")}</h3>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-purple-700">Чи є проблемою:</span>
+                      <span className="text-sm text-purple-700">{t("is_issue")}</span>
                       <span className={`font-bold ${selectedReport.aiVerdict.is_issue ? 'text-green-600' : 'text-red-600'}`}>
                         {selectedReport.aiVerdict.is_issue ? '✅ Так' : '❌ Ні'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-purple-700">Впевненість:</span>
+                      <span className="text-sm text-purple-700">{t("confidence")}</span>
                       <span className={`px-3 py-1 rounded-full text-sm font-bold ${getAIConfidenceColor(selectedReport.aiVerdict.confidence)}`}>
                         {getAIConfidenceLabel(selectedReport.aiVerdict.confidence)} ({(selectedReport.aiVerdict.confidence * 100).toFixed(0)}%)
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-purple-700">Категорія:</span>
+                      <span className="text-sm text-purple-700">{t("category")}</span>
                       <Badge className="bg-purple-100 text-purple-800">
                         {selectedReport.aiVerdict.category}
                       </Badge>
@@ -427,7 +429,7 @@ function Reports() {
 
               {selectedReport.description && (
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-2">Опис</h3>
+                  <h3 className="font-bold text-gray-900 mb-2">{t("description")}</h3>
                   <p className="text-gray-700 whitespace-pre-wrap">
                     {selectedReport.description}
                   </p>
@@ -436,7 +438,7 @@ function Reports() {
 
               {selectedReport.location && (
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-2">Локація</h3>
+                  <h3 className="font-bold text-gray-900 mb-2">{t("location")}</h3>
                   <div className="bg-gray-100 p-3 rounded-lg font-mono text-sm">
                     Широта: {selectedReport.location.lat.toFixed(6)}
                     <br />
@@ -447,7 +449,7 @@ function Reports() {
 
               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div>
-                  <p className="text-xs text-gray-600">Автор</p>
+                  <p className="text-xs text-gray-600">{t("author")}</p>
                   <p className="font-bold text-gray-900">
                     {selectedReport.createdBy.name}
                   </p>
@@ -456,7 +458,7 @@ function Reports() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Дата створення</p>
+                  <p className="text-xs text-gray-600">{t("creation_date")}</p>
                   <p className="font-bold text-gray-900">
                     {new Date(selectedReport.createdAt).toLocaleDateString(
                       'uk-UA',
@@ -476,10 +478,10 @@ function Reports() {
                 </div>
               </div>
 
-              {/* Action Buttons - тільки для PENDING звітів */}
+              {/* Action Buttons - тільки для PENDING {t('reports')} */}
               {selectedReport.status === 'PENDING' && (
                 <div className="pt-4 border-t space-y-3">
-                  <h3 className="font-bold text-gray-900">Дії модератора</h3>
+                  <h3 className="font-bold text-gray-900">{t("moderator_actions")}</h3>
                   <div className="grid grid-cols-2 gap-3">
                     <Button
                       onClick={() => setApproveModalOpen(true)}
@@ -509,7 +511,7 @@ function Reports() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md">
             <div className="p-6 space-y-4">
-              <h3 className="text-xl font-bold text-gray-900">✅ Підтвердити звіт</h3>
+              <h3 className="text-xl font-bold text-gray-900">{t("confirm_report")}</h3>
               <p className="text-sm text-gray-600">
                 Оберіть департамент для відповідального виконання:
               </p>
@@ -518,14 +520,14 @@ function Reports() {
                 onChange={(e) => setSelectedDepartment(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2"
               >
-                <option value="general">📋 Загальний відділ</option>
-                <option value="roads">🛣️ Дороги та тротуари</option>
-                <option value="lighting">💡 Освітлення</option>
-                <option value="waste">🗑️ Сміття та переробка</option>
-                <option value="parks">🌳 Парки та зони відпочинку</option>
-                <option value="water">💧 Водопостачання</option>
-                <option value="transport">🚌 Транспорт</option>
-                <option value="graffiti">🎨 Графіті</option>
+                <option value="general">{t("general_dept")}</option>
+                <option value="roads">{t("roads_and_sidewalks")}</option>
+                <option value="lighting">{t("lighting_dept")}</option>
+                <option value="waste">{t("waste_and_recycling")}</option>
+                <option value="parks">{t("parks_and_rec")}</option>
+                <option value="water">{t("water_supply")}</option>
+                <option value="transport">{t("transport_dept")}</option>
+                <option value="graffiti">{t("graffiti")}</option>
               </select>
               <div className="flex gap-3 pt-4">
                 <Button
@@ -533,7 +535,7 @@ function Reports() {
                   disabled={processing}
                   className="flex-1 bg-green-600 hover:bg-green-700"
                 >
-                  {processing ? '⏳ Обробка...' : '✅ Підтвердити'}
+                  {processing ? t("processing") : '✅ Підтвердити'}
                 </Button>
                 <Button
                   onClick={() => setApproveModalOpen(false)}
@@ -554,14 +556,14 @@ function Reports() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md">
             <div className="p-6 space-y-4">
-              <h3 className="text-xl font-bold text-red-600">❌ Відхилити звіт</h3>
+              <h3 className="text-xl font-bold text-red-600">{t("reject_report")}</h3>
               <p className="text-sm text-gray-600">
                 Вкажіть причину відхилення:
               </p>
               <textarea
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Наприклад: недостатньо інформації, фейкове фото, не відповідна категорія..."
+                placeholder={t("reject_placeholder")}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 min-h-[100px]"
               />
               <div className="flex gap-3 pt-4">
@@ -570,7 +572,7 @@ function Reports() {
                   disabled={processing || !rejectionReason}
                   className="flex-1 bg-red-600 hover:bg-red-700"
                 >
-                  {processing ? '⏳ Обробка...' : '❌ Відхилити'}
+                  {processing ? t("processing") : '❌ Відхилити'}
                 </Button>
                 <Button
                   onClick={() => setRejectModalOpen(false)}

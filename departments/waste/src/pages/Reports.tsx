@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { api, departmentAPI, DEPARTMENT_ID } from '../lib/api';
 import { Badge } from '../components/ui/Badge';
@@ -35,6 +36,7 @@ interface MapMarker {
 }
 
 function Reports() {
+  const { t } = useTranslation();
   const [reports, setReports] = useState<Report[]>([]);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -163,9 +165,9 @@ function Reports() {
   };
 
   const getAIConfidenceLabel = (confidence: number) => {
-    if (confidence >= 0.8) return '✅ Висока';
-    if (confidence >= 0.5) return '⚠️ Середня';
-    return '❌ Низька';
+    if (confidence >= 0.8) return t('high_confidence');
+    if (confidence >= 0.5) return t('medium_confidence');
+    return t('low_confidence');
   };
 
   const applyAIRecommendation = () => {
@@ -244,10 +246,10 @@ function Reports() {
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      RESOLVED: '✓ Вирішено',
-      IN_PROGRESS: '⟳ В процесі',
-      PENDING: '⏳ На розгляді',
-      REJECTED: '✗ Відхилено'
+      RESOLVED: t('resolved'),
+      IN_PROGRESS: t('in_progress'),
+      PENDING: t('pending'),
+      REJECTED: t('rejected')
     };
     return labels[status] || status;
   };
@@ -255,7 +257,7 @@ function Reports() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Звіти про проблеми</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('problem_reports')}</h1>
         <Button
           onClick={() => setMapOpen(true)}
           className="flex items-center gap-2"
@@ -313,11 +315,11 @@ function Reports() {
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-          <p className="mt-4 text-gray-600">Завантаження звітів...</p>
+          <p className="mt-4 text-gray-600">{t('loading_reports')}</p>
         </div>
       ) : filteredReports.length === 0 ? (
         <Card className="text-center py-12">
-          <p className="text-gray-600">Немає звітів за обраним фільтром</p>
+          <p className="text-gray-600">{t('no_reports_filter')}</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -387,7 +389,7 @@ function Reports() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-4xl h-[90vh] flex flex-col">
             <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-bold">Карта проблем</h2>
+              <h2 className="text-xl font-bold">{t('problem_map')}</h2>
               <button
                 onClick={() => setMapOpen(false)}
                 className="p-2 hover:bg-gray-200 rounded-lg transition"
@@ -471,13 +473,13 @@ function Reports() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-purple-700">Впевненість:</span>
+                      <span className="text-sm text-purple-700">{t('confidence')}</span>
                       <span className={`px-3 py-1 rounded-full text-sm font-bold ${getAIConfidenceColor(selectedReport.aiVerdict.confidence)}`}>
                         {getAIConfidenceLabel(selectedReport.aiVerdict.confidence)} ({(selectedReport.aiVerdict.confidence * 100).toFixed(0)}%)
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-purple-700">Категорія:</span>
+                      <span className="text-sm text-purple-700">{t('category_label')}</span>
                       <Badge className="bg-purple-100 text-purple-800">
                         {selectedReport.aiVerdict.category}
                       </Badge>
@@ -507,11 +509,11 @@ function Reports() {
                 </div>
                 {triageResult ? (
                   <div className="space-y-2 text-sm">
-                    <div><b>Рішення:</b> {triageResult.action === 'REJECT' ? '❌ Відхилити' : '✅ Відправити у відділ'}</div>
-                    <div><b>Відділ:</b> {triageResult.recommendedDepartment || '—'}</div>
-                    <div><b>Категорія:</b> {triageResult.category || '—'}</div>
-                    <div><b>Впевненість:</b> {Math.round((Number(triageResult.confidence || 0)) * 100)}%</div>
-                    <div><b>Пояснення:</b> {triageResult.reason || '—'}</div>
+                    <div><b>{t('decision')}</b> {triageResult.action === 'REJECT' ? '❌ Відхилити' : '✅ Відправити у відділ'}</div>
+                    <div><b>{t('department')}</b> {triageResult.recommendedDepartment || '—'}</div>
+                    <div><b>{t('category_label')}</b> {triageResult.category || '—'}</div>
+                    <div><b>{t('confidence')}</b> {Math.round((Number(triageResult.confidence || 0)) * 100)}%</div>
+                    <div><b>{t('explanation')}</b> {triageResult.reason || '—'}</div>
                     <Button size="sm" className="mt-2" onClick={applyCityHallTriage}>
                       Застосувати рекомендацію мерії
                     </Button>
@@ -523,7 +525,7 @@ function Reports() {
 
               {selectedReport.description && (
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-2">Опис</h3>
+                  <h3 className="font-bold text-gray-900 mb-2">{t('description')}</h3>
                   <p className="text-gray-700 whitespace-pre-wrap">
                     {selectedReport.description}
                   </p>
@@ -532,7 +534,7 @@ function Reports() {
 
               {selectedReport.location && (
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-2">Локація</h3>
+                  <h3 className="font-bold text-gray-900 mb-2">{t('location')}</h3>
                   <div className="space-y-3">
                     <iframe
                       title="Локація проблеми на Google Maps"
@@ -550,9 +552,7 @@ function Reports() {
                         target="_blank"
                         rel="noreferrer"
                         className="text-blue-600 hover:text-blue-800 font-semibold"
-                      >
-                        Відкрити в Google Maps
-                      </a>
+                      >{t('open_in_google_maps')}</a>
                     </div>
                   </div>
                 </div>
@@ -560,7 +560,7 @@ function Reports() {
 
               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div>
-                  <p className="text-xs text-gray-600">Автор</p>
+                  <p className="text-xs text-gray-600">{t('author')}</p>
                   <p className="font-bold text-gray-900">
                     {selectedReport.createdBy.name}
                   </p>
@@ -569,7 +569,7 @@ function Reports() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Дата створення</p>
+                  <p className="text-xs text-gray-600">{t('creation_date')}</p>
                   <p className="font-bold text-gray-900">
                     {new Date(selectedReport.createdAt).toLocaleDateString(
                       'uk-UA',
@@ -591,7 +591,7 @@ function Reports() {
 
               {/* Action Buttons */}
               <div className="pt-4 border-t space-y-3">
-                <h3 className="font-bold text-gray-900">Дії модератора</h3>
+                <h3 className="font-bold text-gray-900">{t('moderator_actions')}</h3>
                 {canModerateReport(selectedReport.status) ? (
                   <div className="grid grid-cols-2 gap-3">
                     <Button
@@ -628,9 +628,7 @@ function Reports() {
           <Card className="w-full max-w-md">
             <div className="p-6 space-y-4">
               <h3 className="text-xl font-bold text-gray-900">✅ Підтвердити звіт</h3>
-              <p className="text-sm text-gray-600">
-                Оберіть департамент для відповідального виконання:
-              </p>
+              <p className="text-sm text-gray-600">{t('choose_department_assign')}</p>
               <select
                 value={selectedDepartment}
                 onChange={(e) => setSelectedDepartment(e.target.value)}
@@ -658,9 +656,7 @@ function Reports() {
                   variant="outline"
                   className="flex-1"
                   disabled={processing}
-                >
-                  Скасувати
-                </Button>
+                >{t('cancel')}</Button>
               </div>
             </div>
           </Card>
@@ -673,9 +669,7 @@ function Reports() {
           <Card className="w-full max-w-md">
             <div className="p-6 space-y-4">
               <h3 className="text-xl font-bold text-red-600">❌ Відхилити звіт</h3>
-              <p className="text-sm text-gray-600">
-                Вкажіть причину відхилення:
-              </p>
+              <p className="text-sm text-gray-600">{t('reject_reason')}</p>
               <textarea
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
@@ -695,9 +689,7 @@ function Reports() {
                   variant="outline"
                   className="flex-1"
                   disabled={processing}
-                >
-                  Скасувати
-                </Button>
+                >{t('cancel')}</Button>
               </div>
             </div>
           </Card>

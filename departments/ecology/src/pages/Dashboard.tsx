@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -19,6 +20,7 @@ import { useDepartment } from '../App';
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const department = useDepartment();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -129,7 +131,7 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      title: 'Всього звітів',
+      title: t('total_reports'),
       value: stats?.totalReports || 0,
       change: '+12%',
       trend: 'up',
@@ -138,7 +140,7 @@ export default function Dashboard() {
       bgColor: 'bg-blue-100',
     },
     {
-      title: 'Активні користувачі',
+      title: t('active_users'),
       value: stats?.activeUsers || 0,
       change: '+8%',
       trend: 'up',
@@ -147,7 +149,7 @@ export default function Dashboard() {
       bgColor: 'bg-green-100',
     },
     {
-      title: 'Підтверджено',
+      title: t('approved'),
       value: stats?.approvedReports || 0,
       change: '+23%',
       trend: 'up',
@@ -156,7 +158,7 @@ export default function Dashboard() {
       bgColor: 'bg-emerald-100',
     },
     {
-      title: 'Очікують',
+      title: t('pending'),
       value: stats?.pendingReports || 0,
       change: '-5%',
       trend: 'down',
@@ -174,14 +176,10 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold" style={{ color: primaryColor }}>
             {department.emoji} {department.name}
           </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Dashboard департаменту
-          </p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t('department_dashboard')}</p>
         </div>
         <Button onClick={handleRefresh} disabled={refreshing} variant="outline">
-          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Оновити
-        </Button>
+          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />{t('')}</Button>
       </div>
 
       {/* Stats Cards */}
@@ -221,8 +219,8 @@ export default function Dashboard() {
         {/* Reports Over Time */}
         <Card>
           <CardHeader>
-            <CardTitle>Звіти за часом</CardTitle>
-            <CardDescription>Останні 30 днів</CardDescription>
+            <CardTitle>{t('reports_over_time')}</CardTitle>
+            <CardDescription>{t('last_30_days')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -252,8 +250,8 @@ export default function Dashboard() {
         {/* Status Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Розподіл за статусами</CardTitle>
-            <CardDescription>Поточний стан</CardDescription>
+            <CardTitle>{t('status_distribution')}</CardTitle>
+            <CardDescription>{t('current_state')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -281,8 +279,8 @@ export default function Dashboard() {
         {/* Category Breakdown */}
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Звіти за категоріями</CardTitle>
-            <CardDescription>Розподіл за типами проблем</CardDescription>
+            <CardTitle>{t('reports_by_category')}</CardTitle>
+            <CardDescription>{t('problem_type_distribution')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -292,8 +290,8 @@ export default function Dashboard() {
                 <YAxis stroke="#6b7280" />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="count" fill={primaryColor} radius={[8, 8, 0, 0]} name="Всього" />
-                <Bar dataKey="resolved" fill="#10b981" radius={[8, 8, 0, 0]} name="Вирішено" />
+                <Bar dataKey="count" fill={primaryColor} radius={[8, 8, 0, 0]} name={t('all')} />
+                <Bar dataKey="resolved" fill="#10b981" radius={[8, 8, 0, 0]} name={t('resolved')} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -369,17 +367,13 @@ export default function Dashboard() {
                         disabled={!selectedDepartment[report.id] || approving[report.id]}
                         className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg transition flex items-center gap-2 text-sm font-medium"
                       >
-                        <ThumbsUp className="h-4 w-4" />
-                        Підтвердити
-                      </button>
+                        <ThumbsUp className="h-4 w-4" />{t('approve_btn')}</button>
                       <button
                         onClick={() => handleReject(report.id)}
                         disabled={approving[report.id]}
                         className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg transition flex items-center gap-2 text-sm font-medium"
                       >
-                        <Trash2 className="h-4 w-4" />
-                        Відхилити
-                      </button>
+                        <Trash2 className="h-4 w-4" />{t('reject_btn')}</button>
                     </div>
                   </div>
                 </div>
@@ -392,8 +386,8 @@ export default function Dashboard() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Недавня активність</CardTitle>
-          <CardDescription>Останні дії в системі</CardDescription>
+          <CardTitle>{t('recent_activity')}</CardTitle>
+          <CardDescription>{t('recent_system_actions')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

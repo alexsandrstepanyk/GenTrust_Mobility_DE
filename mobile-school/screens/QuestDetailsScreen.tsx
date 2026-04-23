@@ -280,7 +280,7 @@ export default function QuestDetailsScreen({ route, navigation }: any) {
                     <View style={styles.loading}>
                         <ActivityIndicator size="large" color="#007AFF" />
                     </View>
-                ) : coords ? (
+                ) : coords && Platform.OS !== 'web' ? (
                     <MapView
                         style={styles.map}
                         initialRegion={{
@@ -294,7 +294,9 @@ export default function QuestDetailsScreen({ route, navigation }: any) {
                     </MapView>
                 ) : (
                     <View style={styles.loading}>
-                        <Text style={styles.subtitle}>Map not available for this address.</Text>
+                        <Text style={styles.subtitle}>
+                            {Platform.OS === 'web' ? '📍 [Map Placeholder - Native Only]' : 'Map not available for this address.'}
+                        </Text>
                     </View>
                 )}
             </View>

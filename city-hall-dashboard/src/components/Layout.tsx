@@ -14,19 +14,23 @@ import { useState } from 'react';
 import { useSocket } from '@/lib/socket';
 import { cn } from '@/lib/utils';
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Звіти', href: '/reports', icon: FileText },
-  { name: 'Користувачі', href: '/users', icon: Users },
-  { name: 'Департаменти', href: '/departments', icon: Building2 },
-  { name: 'Додати департамент', href: '/departments/create', icon: PlusSquare },
-  { name: 'Налаштування', href: '/settings', icon: Settings },
-];
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 export default function Layout() {
+  const { t } = useTranslation();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { connected } = useSocket();
+
+  const navigation = [
+    { name: t('dashboard'), href: '/', icon: LayoutDashboard },
+    { name: t('reports'), href: '/reports', icon: FileText },
+    { name: t('users'), href: '/users', icon: Users },
+    { name: t('departments'), href: '/departments', icon: Building2 },
+    { name: t('add_department'), href: '/departments/create', icon: PlusSquare },
+    { name: t('settings'), href: '/settings', icon: Settings },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -39,7 +43,7 @@ export default function Layout() {
       >
         <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
           <h1 className="text-xl font-bold text-primary">
-            🏛️ City Hall
+            {t('city_hall')}
           </h1>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -55,7 +59,7 @@ export default function Layout() {
             const isActive = location.pathname === item.href;
             return (
               <Link
-                key={item.name}
+                key={item.href}
                 to={item.href}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 mb-1 text-sm font-medium transition-colors',
@@ -78,12 +82,12 @@ export default function Layout() {
               connected ? 'bg-green-500' : 'bg-red-500'
             )} />
             <span className="text-xs text-gray-600 dark:text-gray-400">
-              {connected ? 'Підключено' : 'Відключено'}
+              {connected ? t('connected') : t('disconnected')}
             </span>
           </div>
           <button className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-red-600">
             <LogOut className="h-4 w-4" />
-            Вихід
+            {t('logout')}
           </button>
         </div>
       </aside>
@@ -104,6 +108,8 @@ export default function Layout() {
             </button>
 
             <div className="flex items-center gap-4">
+              <LanguageSwitcher />
+
               <button className="relative p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />

@@ -1,8 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Bell, Shield, Database, Webhook } from 'lucide-react';
 
 function Settings() {
+  const { t, i18n } = useTranslation();
   return (
     <div className="space-y-6">
       <div>
@@ -22,23 +24,23 @@ function Settings() {
                 <Bell className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle>Сповіщення</CardTitle>
-                <CardDescription>Налаштування push-сповіщень</CardDescription>
+                <CardTitle>{t("notifications")}</CardTitle>
+                <CardDescription>{t("notifications_desc")}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <label className="flex items-center justify-between">
-                <span className="text-sm">Нові звіти</span>
+                <span className="text-sm">{t("new_reports")}</span>
                 <input type="checkbox" defaultChecked className="toggle" />
               </label>
               <label className="flex items-center justify-between">
-                <span className="text-sm">Реєстрація користувачів</span>
+                <span className="text-sm">{t("user_registration")}</span>
                 <input type="checkbox" defaultChecked className="toggle" />
               </label>
               <label className="flex items-center justify-between">
-                <span className="text-sm">Email-сповіщення</span>
+                <span className="text-sm">{t("email_notifications")}</span>
                 <input type="checkbox" className="toggle" />
               </label>
             </div>
@@ -52,15 +54,15 @@ function Settings() {
                 <Shield className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle>Безпека</CardTitle>
-                <CardDescription>Налаштування доступу</CardDescription>
+                <CardTitle>{t("security")}</CardTitle>
+                <CardDescription>{t("access_settings")}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Час сесії (хвилин)</label>
+                <label className="text-sm font-medium">{t("session_time")}</label>
                 <input 
                   type="number" 
                   defaultValue={60}
@@ -81,8 +83,8 @@ function Settings() {
                 <Database className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle>База даних</CardTitle>
-                <CardDescription>Синхронізація та backup</CardDescription>
+                <CardTitle>{t("database")}</CardTitle>
+                <CardDescription>{t("sync_backup")}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -105,8 +107,8 @@ function Settings() {
                 <Webhook className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle>Інтеграції</CardTitle>
-                <CardDescription>Підключення до інших сервісів</CardDescription>
+                <CardTitle>{t("integrations")}</CardTitle>
+                <CardDescription>{t("connect_services")}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -115,21 +117,21 @@ function Settings() {
               <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                 <div>
                   <div className="font-medium text-sm">Telegram Bot</div>
-                  <div className="text-xs text-gray-600">Підключено</div>
+                  <div className="text-xs text-gray-600">{t("connected")}</div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-green-500" />
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                 <div>
                   <div className="font-medium text-sm">Mobile App</div>
-                  <div className="text-xs text-gray-600">Підключено</div>
+                  <div className="text-xs text-gray-600">{t("connected")}</div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-green-500" />
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                 <div>
                   <div className="font-medium text-sm">Staff Panel</div>
-                  <div className="text-xs text-gray-600">Підключено</div>
+                  <div className="text-xs text-gray-600">{t("connected")}</div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-green-500" />
               </div>

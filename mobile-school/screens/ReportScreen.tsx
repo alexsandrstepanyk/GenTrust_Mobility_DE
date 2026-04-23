@@ -381,7 +381,7 @@ export default function ReportScreen() {
                                 </TouchableOpacity>
                             </View>
 
-                            {location && (
+                            {location && Platform.OS !== 'web' ? (
                                 <MapView
                                     style={styles.map}
                                     initialRegion={{
@@ -400,6 +400,12 @@ export default function ReportScreen() {
                                         description="Ваша поточна локація"
                                     />
                                 </MapView>
+                            ) : (
+                                <View style={styles.map}>
+                                    <View style={styles.loading}>
+                                        <Text style={styles.subtitle}>📍 [Map Placeholder - Native Only]</Text>
+                                    </View>
+                                </View>
                             )}
 
                             <View style={styles.modalFooter}>

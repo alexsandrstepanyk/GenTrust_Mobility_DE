@@ -11,6 +11,7 @@ import {
   ArrowRight, RefreshCw, ExternalLink, FileText
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 
 const DEPARTMENT_PORTS: Record<string, number> = {
   roads: 5180,
@@ -42,6 +43,7 @@ interface DepartmentStats {
 }
 
 export default function DepartmentsOverview() {
+  const { t, i18n } = useTranslation();
   const [departments, setDepartments] = useState<DepartmentStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -99,10 +101,10 @@ export default function DepartmentsOverview() {
   }));
 
   const statusDistribution = [
-    { name: 'Очікують', value: totalPending, color: '#f59e0b' },
-    { name: 'Підтверджено', value: totalApproved, color: '#10b981' },
-    { name: 'Виконано', value: totalCompleted, color: '#3b82f6' },
-    { name: 'Відхилено', value: departments.reduce((sum, dept) => sum + (dept.stats?.rejectedReports || 0), 0), color: '#ef4444' },
+    { name: t('pending'), value: totalPending, color: '#f59e0b' },
+    { name: t('approved'), value: totalApproved, color: '#10b981' },
+    { name: t('completed'), value: totalCompleted, color: '#3b82f6' },
+    { name: t('rejected'), value: departments.reduce((sum, dept) => sum + (dept.stats?.rejectedReports || 0), 0), color: '#ef4444' },
   ];
 
   return (
@@ -110,12 +112,12 @@ export default function DepartmentsOverview() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Огляд департаментів</h2>
-          <p className="text-gray-500">Статистика по всіх 8 департаментах</p>
+          <h2 className="text-2xl font-bold">{t('departments_overview')}</h2>
+          <p className="text-gray-500">{t('departments_stats')}</p>
         </div>
         <Button onClick={handleRefresh} disabled={refreshing}>
           <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Оновити
+          {t('refresh')}
         </Button>
       </div>
 
@@ -123,45 +125,45 @@ export default function DepartmentsOverview() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Всього звітів</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('total_reports')}</CardTitle>
             <FileText className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalReports}</div>
-            <p className="text-xs text-gray-500">По всіх департаментах</p>
+            <p className="text-xs text-gray-500">{t('across_departments')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Очікують</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('pending')}</CardTitle>
             <Clock className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalPending}</div>
-            <p className="text-xs text-gray-500">Потребують уваги</p>
+            <p className="text-xs text-gray-500">{t('needs_attention')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Підтверджено</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('approved')}</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalApproved}</div>
-            <p className="text-xs text-gray-500">Схвалено модераторами</p>
+            <p className="text-xs text-gray-500">{t('approved_by_moderators')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Виконано</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('completed')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-emerald-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCompleted}</div>
-            <p className="text-xs text-gray-500">Завершено успішно</p>
+            <p className="text-xs text-gray-500">{t('completed_successfully')}</p>
           </CardContent>
         </Card>
       </div>
@@ -171,8 +173,8 @@ export default function DepartmentsOverview() {
         {/* Bar Chart - Reports by Department */}
         <Card>
           <CardHeader>
-            <CardTitle>Звіти по департаментах</CardTitle>
-            <CardDescription>Порівняння кількості звітів</CardDescription>
+            <CardTitle>{t('reports_by_department')}</CardTitle>
+            <CardDescription>{t('reports_comparison')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -182,9 +184,9 @@ export default function DepartmentsOverview() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="total" fill="#3b82f6" name="Всього" />
-                <Bar dataKey="pending" fill="#f59e0b" name="Очікують" />
-                <Bar dataKey="completed" fill="#10b981" name="Виконано" />
+                <Bar dataKey="total" fill="#3b82f6" name={t('total_reports')} />
+                <Bar dataKey="pending" fill="#f59e0b" name={t('pending')} />
+                <Bar dataKey="completed" fill="#10b981" name={t('completed')} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -193,8 +195,8 @@ export default function DepartmentsOverview() {
         {/* Pie Chart - Status Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Розподіл по статусах</CardTitle>
-            <CardDescription>Всі департаменти разом</CardDescription>
+            <CardTitle>{t('status_distribution')}</CardTitle>
+            <CardDescription>{t('all_departments_combined')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -226,13 +228,13 @@ export default function DepartmentsOverview() {
           <Card key={dept.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center justify-between">
-                <span>{dept.nameUa}</span>
+                <span>{i18n.language === 'de' ? dept.name : dept.nameUa}</span>
                 <Badge variant={dept.dbExists ? 'success' : 'destructive'}>
-                  {dept.dbExists ? 'Active' : 'Offline'}
+                  {dept.dbExists ? t('active') : t('offline')}
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs">
-                {dept.dbExists ? 'База даних підключена' : 'База даних не знайдена'}
+                {dept.dbExists ? t('db_connected') : t('db_not_found')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -240,19 +242,19 @@ export default function DepartmentsOverview() {
                 <>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
-                      <span className="text-gray-500">Всього:</span>
+                      <span className="text-gray-500">{t('total_reports')}:</span>
                       <span className="ml-2 font-semibold">{dept.stats.totalReports}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Очікують:</span>
+                      <span className="text-gray-500">{t('pending')}:</span>
                       <span className="ml-2 font-semibold text-yellow-600">{dept.stats.pendingReports}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Схвалено:</span>
+                      <span className="text-gray-500">{t('approved')}:</span>
                       <span className="ml-2 font-semibold text-green-600">{dept.stats.approvedReports}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Виконано:</span>
+                      <span className="text-gray-500">{t('completed')}:</span>
                       <span className="ml-2 font-semibold text-blue-600">{dept.stats.completedReports}</span>
                     </div>
                   </div>
@@ -263,13 +265,13 @@ export default function DepartmentsOverview() {
                     disabled={!dept.dbExists}
                   >
                     <ExternalLink className="w-3 h-3 mr-2" />
-                    Відкрити дашборд
+                    {t('open_dashboard')}
                   </Button>
                 </>
               ) : (
                 <div className="text-center py-4 text-gray-500">
                   <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
-                  <p>Немає даних</p>
+                  <p>{t('no_data')}</p>
                   {dept.error && <p className="text-xs text-red-500 mt-1">{dept.error}</p>}
                 </div>
               )}

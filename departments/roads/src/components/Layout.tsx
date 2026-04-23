@@ -1,3 +1,5 @@
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -13,14 +15,16 @@ import { useSocket, useSocketEvent } from '@/lib/socket';
 import { cn } from '@/lib/utils';
 import { useDepartment } from '../App';
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Звіти', href: '/reports', icon: FileText },
-  { name: 'Користувачі', href: '/users', icon: Users },
-  { name: 'Налаштування', href: '/settings', icon: Settings },
-];
+
 
 export default function Layout() {
+  const { t } = useTranslation();
+  const navigation = [
+  { name: t('dashboard'), href: '/', icon: LayoutDashboard },
+  { name: t('reports'), href: '/reports', icon: FileText },
+  { name: t('users'), href: '/users', icon: Users },
+  { name: t('settings'), href: '/settings', icon: Settings },
+];
   const department = useDepartment();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -79,7 +83,7 @@ export default function Layout() {
       >
         <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
           <h1 className="text-xl font-bold" style={{ color: deptColor }}>
-            {deptEmoji} {deptName}
+            {deptEmoji} {t(deptName)}
           </h1>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -119,13 +123,11 @@ export default function Layout() {
               connected ? 'bg-green-500' : 'bg-red-500'
             )} />
             <span className="text-xs text-gray-600 dark:text-gray-400">
-              {connected ? 'Підключено' : 'Відключено'}
+              {connected ? t('connected') : t('disconnected')}
             </span>
           </div>
           <button className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-red-600">
-            <LogOut className="h-4 w-4" />
-            Вихід
-          </button>
+            <LogOut className="h-4 w-4" />{t('logout')}</button>
         </div>
       </aside>
 
@@ -137,6 +139,7 @@ export default function Layout() {
         {/* Header */}
         <header className="sticky top-0 z-40 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="flex h-full items-center justify-between px-6">
+            <LanguageSwitcher />
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -164,7 +167,7 @@ export default function Layout() {
                 {showNotifications && (
                   <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
                     <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">Сповіщення</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{t('notifications')}</h3>
                       {notificationCount > 0 && (
                         <button
                           onClick={() => {
@@ -173,16 +176,14 @@ export default function Layout() {
                             socket?.emit('notification:mark-read', { all: true });
                           }}
                           className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400"
-                        >
-                          Позначити як прочитано
-                        </button>
+                        >{t('__')}</button>
                       )}
                     </div>
                     <div className="max-h-96 overflow-y-auto">
                       {notifications.length === 0 ? (
                         <div className="p-8 text-center text-gray-500">
                           <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>Немає нових сповіщень</p>
+                          <p>{t('__')}</p>
                         </div>
                       ) : (
                         <div className="divide-y divide-gray-200 dark:divide-gray-700">

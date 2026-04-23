@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -23,6 +24,7 @@ interface User {
 }
 
 function Users() {
+  const { t, i18n } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const { socket } = useSocket();
@@ -95,12 +97,8 @@ function Users() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Користувачі
-        </h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Управління користувачами системи
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t("users_title")}</h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t("users_desc")}</p>
       </div>
 
       {/* Stats */}
@@ -110,7 +108,7 @@ function Users() {
             <div className="text-2xl font-bold">
               {users.filter(u => u.status === 'PENDING').length}
             </div>
-            <p className="text-sm text-gray-600">Очікують підтвердження</p>
+            <p className="text-sm text-gray-600">{t("awaiting_confirmation")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -118,7 +116,7 @@ function Users() {
             <div className="text-2xl font-bold">
               {users.filter(u => u.status === 'ACTIVE').length}
             </div>
-            <p className="text-sm text-gray-600">Активні</p>
+            <p className="text-sm text-gray-600">{t("active_plural")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -126,7 +124,7 @@ function Users() {
             <div className="text-2xl font-bold">
               {users.filter(u => u.role === 'STUDENT').length}
             </div>
-            <p className="text-sm text-gray-600">Учні</p>
+            <p className="text-sm text-gray-600">{t("students")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -134,7 +132,7 @@ function Users() {
             <div className="text-2xl font-bold">
               {users.filter(u => u.role === 'PARENT').length}
             </div>
-            <p className="text-sm text-gray-600">Батьки</p>
+            <p className="text-sm text-gray-600">{t("parents")}</p>
           </CardContent>
         </Card>
       </div>
@@ -142,7 +140,7 @@ function Users() {
       {/* Users Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Список користувачів</CardTitle>
+          <CardTitle>{t("users_list")}</CardTitle>
           <CardDescription>
             Всі зареєстровані користувачі
           </CardDescription>
@@ -152,12 +150,12 @@ function Users() {
             <table className="w-full">
               <thead>
                 <tr className="border-b text-left text-sm text-gray-600">
-                  <th className="pb-3 font-medium">Користувач</th>
-                  <th className="pb-3 font-medium">Контакти</th>
-                  <th className="pb-3 font-medium">Роль</th>
-                  <th className="pb-3 font-medium">Статус</th>
-                  <th className="pb-3 font-medium">Реєстрація</th>
-                  <th className="pb-3 font-medium text-right">Дії</th>
+                  <th className="pb-3 font-medium">{t("user")}</th>
+                  <th className="pb-3 font-medium">{t("contacts")}</th>
+                  <th className="pb-3 font-medium">{t("role")}</th>
+                  <th className="pb-3 font-medium">{t("status")}</th>
+                  <th className="pb-3 font-medium">{t("registration")}</th>
+                  <th className="pb-3 font-medium text-right">{t("actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -174,7 +172,7 @@ function Users() {
                           </div>
                           {user.stats && (
                             <div className="text-xs text-gray-500 mt-1">
-                              {user.stats.questsCompleted} квестів • {user.stats.reportsSubmitted} звітів
+                              {user.stats.questsCompleted} {t('quests_completed')} • {user.stats.reportsSubmitted} {t('reports')}
                             </div>
                           )}
                         </div>

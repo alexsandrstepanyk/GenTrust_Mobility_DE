@@ -11,7 +11,7 @@ const router = express.Router();
 const prisma = new PrismaClient();
 const execAsync = promisify(exec);
 
-const PROJECT_DIR = '/Users/apple/Desktop/GenTrust_Mobility_DE';
+const PROJECT_DIR = '/Users/oleksandrstepaniuk/Downloads/GenTrust_Mobility_DE';
 const DEPARTMENTS_DIR = path.join(PROJECT_DIR, 'departments');
 const DATABASES_DIR = path.join(PROJECT_DIR, 'databases');
 const DEPARTMENT_SCHEMA_TEMPLATE = path.join(PROJECT_DIR, 'prisma', 'schema_departments.prisma');

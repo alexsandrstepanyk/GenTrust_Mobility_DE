@@ -1,14 +1,14 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Bell, Shield, Database, Webhook } from 'lucide-react';
 
 function Settings() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Налаштування
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('')}</h1>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           Конфігурація системи City Hall Dashboard
         </p>
@@ -22,7 +22,7 @@ function Settings() {
                 <Bell className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle>Сповіщення</CardTitle>
+                <CardTitle>{t('')}</CardTitle>
                 <CardDescription>Налаштування push-сповіщень</CardDescription>
               </div>
             </div>
@@ -115,21 +115,21 @@ function Settings() {
               <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                 <div>
                   <div className="font-medium text-sm">Telegram Bot</div>
-                  <div className="text-xs text-gray-600">Підключено</div>
+                  <div className="text-xs text-gray-600">{t('')}</div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-green-500" />
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                 <div>
                   <div className="font-medium text-sm">Mobile App</div>
-                  <div className="text-xs text-gray-600">Підключено</div>
+                  <div className="text-xs text-gray-600">{t('')}</div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-green-500" />
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                 <div>
                   <div className="font-medium text-sm">Staff Panel</div>
-                  <div className="text-xs text-gray-600">Підключено</div>
+                  <div className="text-xs text-gray-600">{t('')}</div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-green-500" />
               </div>
